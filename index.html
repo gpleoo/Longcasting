@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LongCast Pro - App per Long Casting</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <path d="M20 5L35 15V25L20 35L5 25V15L20 5Z" fill="#00D9FF" opacity="0.2"/>
+                    <path d="M20 5L35 15V25L20 35L5 25V15L20 5Z" stroke="#00D9FF" stroke-width="2"/>
+                    <circle cx="20" cy="20" r="6" fill="#00D9FF"/>
+                </svg>
+                <h1>LongCast Pro</h1>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" data-section="dashboard">Dashboard</button>
+                <button class="nav-btn" data-section="nuovo-lancio">Nuovo Lancio</button>
+                <button class="nav-btn" data-section="storico">Storico</button>
+                <button class="nav-btn" data-section="profilo">Profilo</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="container">
+                <h2 class="section-title">Dashboard</h2>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Distanza Media</p>
+                            <p class="stat-value" id="stat-media">-- m</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Record Personale</p>
+                            <p class="stat-value" id="stat-record">-- m</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Totale Lanci</p>
+                            <p class="stat-value" id="stat-totale">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M3 3v18h18"/>
+                                <path d="M18 17l-5-5-4 4-6-6"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Miglioramento 30gg</p>
+                            <p class="stat-value" id="stat-miglioramento">-- %</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container">
+                    <h3>Andamento Distanze</h3>
+                    <canvas id="chartCanvas"></canvas>
+                    <div id="noDataMessage" class="no-data">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5">
+                            <path d="M3 3v18h18"/>
+                            <path d="M7 12h10"/>
+                        </svg>
+                        <p>Nessun dato disponibile. Aggiungi il tuo primo lancio!</p>
+                    </div>
+                </div>
+
+                <!-- Recent Casts -->
+                <div class="recent-casts">
+                    <h3>Ultimi Lanci</h3>
+                    <div id="recentCastsList" class="casts-list">
+                        <p class="no-data-text">Nessun lancio registrato</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nuovo Lancio Section -->
+        <section id="nuovo-lancio" class="section">
+            <div class="container">
+                <h2 class="section-title">Nuovo Lancio</h2>
+
+                <form id="newCastForm" class="form-card">
+                    <div class="form-section">
+                        <h3 class="form-section-title">Dati del Lancio</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="distanza">Distanza (metri) *</label>
+                                <input type="number" id="distanza" name="distanza" required min="0" step="0.1" placeholder="es. 125.5">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="data">Data e Ora *</label>
+                                <input type="datetime-local" id="data" name="data" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="peso-piombo">Peso Piombo (grammi) *</label>
+                                <input type="number" id="peso-piombo" name="peso-piombo" required min="0" step="1" placeholder="es. 150">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tecnica">Tecnica di Lancio *</label>
+                                <select id="tecnica" name="tecnica" required>
+                                    <option value="">Seleziona tecnica</option>
+                                    <option value="overhead">Overhead</option>
+                                    <option value="pendulum">Pendulum</option>
+                                    <option value="ground">Ground Cast</option>
+                                    <option value="off-ground">Off-Ground</option>
+                                    <option value="altro">Altro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Attrezzatura</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="canna-lunghezza">Lunghezza Canna (metri)</label>
+                                <input type="number" id="canna-lunghezza" name="canna-lunghezza" min="0" step="0.1" placeholder="es. 4.2">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="canna-grammatura">Grammatura Canna (gr)</label>
+                                <input type="text" id="canna-grammatura" name="canna-grammatura" placeholder="es. 100-200">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="mulinello">Mulinello</label>
+                                <input type="text" id="mulinello" name="mulinello" placeholder="es. Shimano 8000">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="filo">Filo/Shock Leader</label>
+                                <input type="text" id="filo" name="filo" placeholder="es. 0.28mm + SL 0.60mm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Condizioni</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="vento">Vento</label>
+                                <select id="vento" name="vento">
+                                    <option value="">Seleziona</option>
+                                    <option value="calmo">Calmo</option>
+                                    <option value="leggero">Leggero (1-10 km/h)</option>
+                                    <option value="moderato">Moderato (10-20 km/h)</option>
+                                    <option value="forte">Forte (20+ km/h)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="direzione-vento">Direzione Vento</label>
+                                <select id="direzione-vento" name="direzione-vento">
+                                    <option value="">Seleziona</option>
+                                    <option value="favore">A favore</option>
+                                    <option value="contrario">Contrario</option>
+                                    <option value="laterale">Laterale</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="temperatura">Temperatura (°C)</label>
+                                <input type="number" id="temperatura" name="temperatura" step="0.1" placeholder="es. 18.5">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="luogo">Luogo</label>
+                                <input type="text" id="luogo" name="luogo" placeholder="es. Campo gara, Spiaggia...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-group full-width">
+                            <label for="note">Note</label>
+                            <textarea id="note" name="note" rows="3" placeholder="Annotazioni, sensazioni, punti da migliorare..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                <polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                            Salva Lancio
+                        </button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Storico Section -->
+        <section id="storico" class="section">
+            <div class="container">
+                <h2 class="section-title">Storico Lanci</h2>
+
+                <!-- Filters -->
+                <div class="filters-card">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="filter-tecnica">Filtra per Tecnica</label>
+                            <select id="filter-tecnica">
+                                <option value="">Tutte</option>
+                                <option value="overhead">Overhead</option>
+                                <option value="pendulum">Pendulum</option>
+                                <option value="ground">Ground Cast</option>
+                                <option value="off-ground">Off-Ground</option>
+                                <option value="altro">Altro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="filter-periodo">Periodo</label>
+                            <select id="filter-periodo">
+                                <option value="tutti">Tutti</option>
+                                <option value="7">Ultimi 7 giorni</option>
+                                <option value="30">Ultimi 30 giorni</option>
+                                <option value="90">Ultimi 3 mesi</option>
+                                <option value="365">Ultimo anno</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sort-by">Ordina per</label>
+                            <select id="sort-by">
+                                <option value="data-desc">Data (più recente)</option>
+                                <option value="data-asc">Data (più vecchio)</option>
+                                <option value="distanza-desc">Distanza (maggiore)</option>
+                                <option value="distanza-asc">Distanza (minore)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Casts List -->
+                <div id="historyCastsList" class="history-list">
+                    <p class="no-data-text">Nessun lancio trovato</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profilo Section -->
+        <section id="profilo" class="section">
+            <div class="container">
+                <h2 class="section-title">Profilo Atleta</h2>
+
+                <form id="profileForm" class="form-card">
+                    <div class="form-section">
+                        <h3 class="form-section-title">Dati Personali</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nome">Nome *</label>
+                                <input type="text" id="nome" name="nome" required placeholder="Il tuo nome">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cognome">Cognome *</label>
+                                <input type="text" id="cognome" name="cognome" required placeholder="Il tuo cognome">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="eta">Età *</label>
+                                <input type="number" id="eta" name="eta" required min="1" max="120" placeholder="es. 35">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sesso">Sesso *</label>
+                                <select id="sesso" name="sesso" required>
+                                    <option value="">Seleziona</option>
+                                    <option value="M">Maschio</option>
+                                    <option value="F">Femmina</option>
+                                    <option value="Altro">Altro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Dati Fisici</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="altezza">Altezza (cm) *</label>
+                                <input type="number" id="altezza" name="altezza" required min="100" max="250" placeholder="es. 175">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="peso">Peso (kg) *</label>
+                                <input type="number" id="peso" name="peso" required min="30" max="300" step="0.1" placeholder="es. 75.5">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bmi">BMI (calcolato automaticamente)</label>
+                                <input type="text" id="bmi" name="bmi" readonly placeholder="--">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="livello">Livello di Esperienza</label>
+                                <select id="livello" name="livello">
+                                    <option value="">Seleziona</option>
+                                    <option value="principiante">Principiante</option>
+                                    <option value="intermedio">Intermedio</option>
+                                    <option value="avanzato">Avanzato</option>
+                                    <option value="professionista">Professionista</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Preferenze</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="obiettivo">Obiettivo di Distanza (m)</label>
+                                <input type="number" id="obiettivo" name="obiettivo" min="0" step="0.1" placeholder="es. 150">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="campo-allenamento">Campo di Allenamento</label>
+                                <input type="text" id="campo-allenamento" name="campo-allenamento" placeholder="es. Campo Gara XYZ">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                <polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                            Salva Profilo
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Export/Import Data -->
+                <div class="data-management">
+                    <h3>Gestione Dati</h3>
+                    <div class="data-actions">
+                        <button id="exportBtn" class="btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Esporta Dati
+                        </button>
+                        <button id="importBtn" class="btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Importa Dati
+                        </button>
+                        <input type="file" id="importFile" accept=".json" style="display: none;">
+                        <button id="clearDataBtn" class="btn btn-danger">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Elimina Tutti i Dati
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
