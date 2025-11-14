@@ -4,21 +4,33 @@ class LongCastApp {
         this.casts = [];
         this.profile = null;
         this.chart = null;
+        this.currentSession = null; // Active training session
+        this.suggestions = {
+            tecniche: [],
+            pesoPiombo: [],
+            vento: [],
+            direzioneVento: [],
+            cannaModello: []
+        };
         this.init();
     }
 
     init() {
         this.loadData();
+        this.loadSuggestions();
+        this.updateDatalistSuggestions();
         this.setupEventListeners();
         this.updateDashboard();
         this.loadProfile();
         this.setDefaultDateTime();
+        this.checkActiveSession();
     }
 
     // Data Management
     loadData() {
         const savedCasts = localStorage.getItem('longcast_casts');
         const savedProfile = localStorage.getItem('longcast_profile');
+        const savedSession = sessionStorage.getItem('longcast_active_session');
 
         if (savedCasts) {
             this.casts = JSON.parse(savedCasts);
@@ -26,6 +38,10 @@ class LongCastApp {
 
         if (savedProfile) {
             this.profile = JSON.parse(savedProfile);
+        }
+
+        if (savedSession) {
+            this.currentSession = JSON.parse(savedSession);
         }
     }
 
@@ -36,6 +52,85 @@ class LongCastApp {
         }
     }
 
+    saveSession() {
+        if (this.currentSession) {
+            sessionStorage.setItem('longcast_active_session', JSON.stringify(this.currentSession));
+        } else {
+            sessionStorage.removeItem('longcast_active_session');
+        }
+    }
+
+    // Suggestions Management
+    loadSuggestions() {
+        const saved = localStorage.getItem('longcast_suggestions');
+        if (saved) {
+            this.suggestions = JSON.parse(saved);
+        }
+    }
+
+    saveSuggestions() {
+        localStorage.setItem('longcast_suggestions', JSON.stringify(this.suggestions));
+    }
+
+    addSuggestion(type, value) {
+        if (!value || value.trim() === '') return;
+
+        const trimmedValue = value.trim();
+        if (!this.suggestions[type].includes(trimmedValue)) {
+            this.suggestions[type].push(trimmedValue);
+            this.saveSuggestions();
+            this.updateDatalistSuggestions();
+        }
+    }
+
+    updateDatalistSuggestions() {
+        // Tecnica
+        const tecnicaList = document.getElementById('tecnica-list');
+        if (tecnicaList) {
+            tecnicaList.innerHTML = this.suggestions.tecniche.map(t =>
+                `<option value="${this.escapeHtml(t)}">`
+            ).join('');
+        }
+
+        // Peso Piombo
+        const pesoPiomboList = document.getElementById('peso-piombo-list');
+        if (pesoPiomboList) {
+            pesoPiomboList.innerHTML = this.suggestions.pesoPiombo.map(p =>
+                `<option value="${this.escapeHtml(p)}">`
+            ).join('');
+        }
+
+        // Vento
+        const ventoList = document.getElementById('vento-list');
+        if (ventoList) {
+            ventoList.innerHTML = this.suggestions.vento.map(v =>
+                `<option value="${this.escapeHtml(v)}">`
+            ).join('');
+        }
+
+        // Direzione Vento
+        const direzioneList = document.getElementById('direzione-vento-list');
+        if (direzioneList) {
+            direzioneList.innerHTML = this.suggestions.direzioneVento.map(d =>
+                `<option value="${this.escapeHtml(d)}">`
+            ).join('');
+        }
+
+        // Canna Modello
+        const cannaModelloList = document.getElementById('canna-modello-list');
+        if (cannaModelloList) {
+            cannaModelloList.innerHTML = this.suggestions.cannaModello.map(c =>
+                `<option value="${this.escapeHtml(c)}">`
+            ).join('');
+        }
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Event Listeners
     setupEventListeners() {
         // Navigation
@@ -43,10 +138,19 @@ class LongCastApp {
             btn.addEventListener('click', (e) => this.navigate(e.target.dataset.section));
         });
 
-        // New Cast Form
-        document.getElementById('newCastForm').addEventListener('submit', (e) => {
+        // Session Forms
+        document.getElementById('startSessionForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            this.addCast();
+            this.startSession();
+        });
+
+        document.getElementById('addCastForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addCastToSession();
+        });
+
+        document.getElementById('endSessionBtn').addEventListener('click', () => {
+            this.endSession();
         });
 
         // Profile Form
@@ -60,7 +164,7 @@ class LongCastApp {
         document.getElementById('altezza').addEventListener('input', () => this.calculateBMI());
 
         // Filters
-        document.getElementById('filter-tecnica').addEventListener('change', () => this.filterHistory());
+        document.getElementById('filter-tecnica').addEventListener('input', () => this.filterHistory());
         document.getElementById('filter-periodo').addEventListener('change', () => this.filterHistory());
         document.getElementById('sort-by').addEventListener('change', () => this.filterHistory());
 
@@ -90,41 +194,312 @@ class LongCastApp {
             this.filterHistory();
         } else if (section === 'profilo') {
             this.loadProfile();
+        } else if (section === 'nuovo-lancio') {
+            this.checkActiveSession();
         }
     }
 
-    // Add New Cast
-    addCast() {
-        const formData = new FormData(document.getElementById('newCastForm'));
-
-        const cast = {
-            id: Date.now(),
-            distanza: parseFloat(formData.get('distanza')),
-            data: formData.get('data'),
-            pesoPiombo: parseFloat(formData.get('peso-piombo')),
-            tecnica: formData.get('tecnica'),
-            cannaLunghezza: formData.get('canna-lunghezza') ? parseFloat(formData.get('canna-lunghezza')) : null,
-            cannaGrammatura: formData.get('canna-grammatura'),
-            mulinello: formData.get('mulinello'),
-            filo: formData.get('filo'),
-            vento: formData.get('vento'),
-            direzioneVento: formData.get('direzione-vento'),
-            temperatura: formData.get('temperatura') ? parseFloat(formData.get('temperatura')) : null,
-            luogo: formData.get('luogo'),
-            note: formData.get('note')
-        };
-
-        this.casts.push(cast);
-        this.saveData();
-
-        this.showToast('Lancio salvato con successo!', 'success');
-        document.getElementById('newCastForm').reset();
-        this.setDefaultDateTime();
-
-        this.updateDashboard();
+    // Session Management
+    checkActiveSession() {
+        if (this.currentSession) {
+            this.showSessionActive();
+        } else {
+            this.showSessionNotStarted();
+        }
     }
 
-    // Delete Cast
+    showSessionNotStarted() {
+        document.getElementById('sessionNotStarted').style.display = 'block';
+        document.getElementById('sessionActive').style.display = 'none';
+    }
+
+    showSessionActive() {
+        document.getElementById('sessionNotStarted').style.display = 'none';
+        document.getElementById('sessionActive').style.display = 'block';
+        this.updateSessionUI();
+    }
+
+    startSession() {
+        const formData = new FormData(document.getElementById('startSessionForm'));
+
+        const pesoPiombo = formData.get('session-peso-piombo');
+        const tecnica = formData.get('session-tecnica');
+        const cannaModello = formData.get('session-canna-modello');
+        const vento = formData.get('session-vento');
+        const direzioneVento = formData.get('session-direzione-vento');
+
+        this.currentSession = {
+            id: Date.now(),
+            dataInizio: formData.get('session-data'),
+            luogo: formData.get('session-luogo'),
+            pesoPiombo: pesoPiombo,
+            tecnica: tecnica,
+            cannaModello: cannaModello,
+            cannaLunghezza: formData.get('session-canna-lunghezza') ? parseFloat(formData.get('session-canna-lunghezza')) : null,
+            cannaGrammatura: formData.get('session-canna-grammatura'),
+            mulinello: formData.get('session-mulinello'),
+            filo: formData.get('session-filo'),
+            vento: vento,
+            direzioneVento: direzioneVento,
+            temperatura: formData.get('session-temperatura') ? parseFloat(formData.get('session-temperatura')) : null,
+            umidita: formData.get('session-umidita') ? parseInt(formData.get('session-umidita')) : null,
+            note: formData.get('session-note'),
+            lanci: []
+        };
+
+        // Save suggestions
+        this.addSuggestion('pesoPiombo', pesoPiombo);
+        this.addSuggestion('tecniche', tecnica);
+        this.addSuggestion('cannaModello', cannaModello);
+        this.addSuggestion('vento', vento);
+        this.addSuggestion('direzioneVento', direzioneVento);
+
+        this.saveSession();
+        this.showSessionActive();
+        this.showToast('Sessione di allenamento iniziata!', 'success');
+
+        // Reset form
+        document.getElementById('startSessionForm').reset();
+        this.setDefaultDateTime();
+    }
+
+    updateSessionUI() {
+        if (!this.currentSession) return;
+
+        // Update session info
+        const startDate = new Date(this.currentSession.dataInizio);
+        document.getElementById('sessionStartTime').textContent = startDate.toLocaleTimeString('it-IT', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        document.getElementById('sessionCastCount').textContent = this.currentSession.lanci.length;
+        document.getElementById('sessionLocation').textContent = this.currentSession.luogo;
+
+        // Update session details
+        const details = [];
+
+        details.push({ label: 'Tecnica', value: this.currentSession.tecnica });
+        details.push({ label: 'Peso Piombo', value: this.currentSession.pesoPiombo });
+
+        if (this.currentSession.cannaModello) {
+            details.push({ label: 'Modello Canna', value: this.currentSession.cannaModello });
+        }
+
+        if (this.currentSession.cannaLunghezza) {
+            details.push({ label: 'Lunghezza', value: this.currentSession.cannaLunghezza + 'm' });
+        }
+
+        if (this.currentSession.cannaGrammatura) {
+            details.push({ label: 'Grammatura', value: this.currentSession.cannaGrammatura + 'g' });
+        }
+
+        if (this.currentSession.mulinello) {
+            details.push({ label: 'Mulinello', value: this.currentSession.mulinello });
+        }
+
+        if (this.currentSession.filo) {
+            details.push({ label: 'Filo', value: this.currentSession.filo });
+        }
+
+        if (this.currentSession.vento) {
+            details.push({ label: 'Vento', value: this.currentSession.vento });
+        }
+
+        if (this.currentSession.direzioneVento) {
+            details.push({ label: 'Dir. Vento', value: this.currentSession.direzioneVento });
+        }
+
+        if (this.currentSession.temperatura) {
+            details.push({ label: 'Temperatura', value: this.currentSession.temperatura + '°C' });
+        }
+
+        if (this.currentSession.umidita) {
+            details.push({ label: 'Umidità', value: this.currentSession.umidita + '%' });
+        }
+
+        const detailsHTML = details.map(d => `
+            <div class="session-detail-item">
+                <span class="session-detail-label">${d.label}</span>
+                <span class="session-detail-value">${d.value}</span>
+            </div>
+        `).join('');
+
+        document.getElementById('sessionDetails').innerHTML = detailsHTML;
+
+        // Pre-fill weather fields with current session data
+        document.getElementById('cast-vento').value = this.currentSession.vento || '';
+        document.getElementById('cast-direzione-vento').value = this.currentSession.direzioneVento || '';
+        document.getElementById('cast-temperatura').value = this.currentSession.temperatura || '';
+        document.getElementById('cast-umidita').value = this.currentSession.umidita || '';
+
+        // Update session casts list
+        this.updateSessionCastsList();
+    }
+
+    addCastToSession() {
+        if (!this.currentSession) return;
+
+        const distanza = parseFloat(document.getElementById('cast-distanza').value);
+        const note = document.getElementById('cast-note').value;
+
+        // Get weather data (might have been updated)
+        const vento = document.getElementById('cast-vento').value;
+        const direzioneVento = document.getElementById('cast-direzione-vento').value;
+        const temperatura = document.getElementById('cast-temperatura').value ? parseFloat(document.getElementById('cast-temperatura').value) : null;
+        const umidita = document.getElementById('cast-umidita').value ? parseInt(document.getElementById('cast-umidita').value) : null;
+
+        // Update session weather if changed
+        this.currentSession.vento = vento;
+        this.currentSession.direzioneVento = direzioneVento;
+        this.currentSession.temperatura = temperatura;
+        this.currentSession.umidita = umidita;
+
+        // Save weather suggestions
+        this.addSuggestion('vento', vento);
+        this.addSuggestion('direzioneVento', direzioneVento);
+
+        // Create cast object
+        const cast = {
+            distanza: distanza,
+            orario: new Date().toISOString(),
+            note: note
+        };
+
+        this.currentSession.lanci.push(cast);
+        this.saveSession();
+
+        // Update UI
+        this.updateSessionUI();
+
+        // Clear form
+        document.getElementById('cast-distanza').value = '';
+        document.getElementById('cast-note').value = '';
+
+        // Focus back to distance
+        document.getElementById('cast-distanza').focus();
+
+        this.showToast(`Lancio registrato: ${distanza.toFixed(1)}m`, 'success');
+    }
+
+    updateSessionCastsList() {
+        if (!this.currentSession || this.currentSession.lanci.length === 0) {
+            document.getElementById('sessionCastsList').innerHTML = '<p class="no-data-text">Nessun lancio ancora registrato in questa sessione</p>';
+            return;
+        }
+
+        const castsHTML = this.currentSession.lanci.map((cast, index) => {
+            const orario = new Date(cast.orario);
+            const orarioFormatted = orario.toLocaleTimeString('it-IT', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            return `
+                <div class="cast-item">
+                    <div class="cast-distance">${cast.distanza.toFixed(1)}m</div>
+                    <div class="cast-info">
+                        <div class="cast-technique">Lancio #${index + 1}</div>
+                        <div class="cast-details">
+                            ${cast.note ? cast.note : 'Nessuna nota'}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="cast-date">${orarioFormatted}</div>
+                        <div class="cast-actions">
+                            <button class="delete" data-index="${index}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('sessionCastsList').innerHTML = castsHTML;
+
+        // Add delete listeners
+        document.querySelectorAll('#sessionCastsList .delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt(btn.dataset.index);
+                this.deleteSessionCast(index);
+            });
+        });
+    }
+
+    deleteSessionCast(index) {
+        if (!this.currentSession) return;
+
+        if (confirm('Eliminare questo lancio dalla sessione?')) {
+            this.currentSession.lanci.splice(index, 1);
+            this.saveSession();
+            this.updateSessionUI();
+            this.showToast('Lancio eliminato', 'success');
+        }
+    }
+
+    endSession() {
+        if (!this.currentSession) return;
+
+        if (this.currentSession.lanci.length === 0) {
+            if (!confirm('La sessione non contiene lanci. Terminarla comunque?')) {
+                return;
+            }
+        }
+
+        const confirmation = confirm(
+            `Terminare la sessione di allenamento?\n\n` +
+            `Lanci registrati: ${this.currentSession.lanci.length}\n` +
+            `Tutti i lanci verranno salvati nello storico.`
+        );
+
+        if (!confirmation) return;
+
+        // Save all casts from session to main casts array
+        this.currentSession.lanci.forEach(lancio => {
+            const cast = {
+                id: Date.now() + Math.random(), // Unique ID
+                distanza: lancio.distanza,
+                data: lancio.orario,
+                pesoPiombo: this.currentSession.pesoPiombo,
+                tecnica: this.currentSession.tecnica,
+                cannaModello: this.currentSession.cannaModello,
+                cannaLunghezza: this.currentSession.cannaLunghezza,
+                cannaGrammatura: this.currentSession.cannaGrammatura,
+                mulinello: this.currentSession.mulinello,
+                filo: this.currentSession.filo,
+                vento: this.currentSession.vento,
+                direzioneVento: this.currentSession.direzioneVento,
+                temperatura: this.currentSession.temperatura,
+                umidita: this.currentSession.umidita,
+                luogo: this.currentSession.luogo,
+                note: lancio.note || '',
+                sessionId: this.currentSession.id
+            };
+
+            this.casts.push(cast);
+        });
+
+        this.saveData();
+
+        // Clear session
+        this.currentSession = null;
+        this.saveSession();
+
+        this.showToast('Sessione di allenamento terminata! Tutti i lanci sono stati salvati.', 'success');
+
+        // Update UI
+        this.showSessionNotStarted();
+        this.updateDashboard();
+
+        // Reset form
+        this.setDefaultDateTime();
+    }
+
+    // Delete Cast (from history)
     deleteCast(id) {
         if (confirm('Sei sicuro di voler eliminare questo lancio?')) {
             this.casts = this.casts.filter(c => c.id !== id);
@@ -319,7 +694,7 @@ class LongCastApp {
         // Add delete listeners
         container.querySelectorAll('.delete').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = parseInt(btn.dataset.id);
+                const id = parseFloat(btn.dataset.id);
                 this.deleteCast(id);
             });
         });
@@ -335,21 +710,13 @@ class LongCastApp {
             minute: '2-digit'
         });
 
-        const tecnicaLabels = {
-            'overhead': 'Overhead',
-            'pendulum': 'Pendulum',
-            'ground': 'Ground Cast',
-            'off-ground': 'Off-Ground',
-            'altro': 'Altro'
-        };
-
         return `
             <div class="cast-item">
                 <div class="cast-distance">${cast.distanza.toFixed(1)}m</div>
                 <div class="cast-info">
-                    <div class="cast-technique">${tecnicaLabels[cast.tecnica] || cast.tecnica}</div>
+                    <div class="cast-technique">${cast.tecnica || 'N/A'}</div>
                     <div class="cast-details">
-                        ${cast.pesoPiombo}g
+                        ${cast.pesoPiombo || 'N/A'}
                         ${cast.vento ? ' • ' + cast.vento : ''}
                         ${cast.luogo ? ' • ' + cast.luogo : ''}
                     </div>
@@ -421,7 +788,7 @@ class LongCastApp {
         // Add delete listeners
         container.querySelectorAll('.delete').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = parseInt(btn.dataset.id);
+                const id = parseFloat(btn.dataset.id);
                 this.deleteCast(id);
             });
         });
@@ -535,9 +902,20 @@ class LongCastApp {
             if (confirm('Conferma ancora: eliminare tutti i dati?')) {
                 this.casts = [];
                 this.profile = null;
+                this.currentSession = null;
+                this.suggestions = {
+                    tecniche: [],
+                    pesoPiombo: [],
+                    vento: [],
+                    direzioneVento: [],
+                    cannaModello: []
+                };
                 localStorage.clear();
+                sessionStorage.clear();
 
                 this.updateDashboard();
+                this.showSessionNotStarted();
+                this.updateDatalistSuggestions();
                 document.getElementById('profileForm').reset();
 
                 this.showToast('Tutti i dati sono stati eliminati', 'warning');
@@ -549,7 +927,12 @@ class LongCastApp {
     setDefaultDateTime() {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        document.getElementById('data').value = now.toISOString().slice(0, 16);
+        const datetime = now.toISOString().slice(0, 16);
+
+        const sessionDataInput = document.getElementById('session-data');
+        if (sessionDataInput) {
+            sessionDataInput.value = datetime;
+        }
     }
 
     showToast(message, type = 'success') {
