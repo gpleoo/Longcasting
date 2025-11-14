@@ -5,11 +5,20 @@ class LongCastApp {
         this.profile = null;
         this.chart = null;
         this.currentSession = null; // Active training session
+        this.suggestions = {
+            tecniche: [],
+            pesoPiombo: [],
+            vento: [],
+            direzioneVento: [],
+            cannaModello: []
+        };
         this.init();
     }
 
     init() {
         this.loadData();
+        this.loadSuggestions();
+        this.updateDatalistSuggestions();
         this.setupEventListeners();
         this.updateDashboard();
         this.loadProfile();
@@ -51,6 +60,77 @@ class LongCastApp {
         }
     }
 
+    // Suggestions Management
+    loadSuggestions() {
+        const saved = localStorage.getItem('longcast_suggestions');
+        if (saved) {
+            this.suggestions = JSON.parse(saved);
+        }
+    }
+
+    saveSuggestions() {
+        localStorage.setItem('longcast_suggestions', JSON.stringify(this.suggestions));
+    }
+
+    addSuggestion(type, value) {
+        if (!value || value.trim() === '') return;
+
+        const trimmedValue = value.trim();
+        if (!this.suggestions[type].includes(trimmedValue)) {
+            this.suggestions[type].push(trimmedValue);
+            this.saveSuggestions();
+            this.updateDatalistSuggestions();
+        }
+    }
+
+    updateDatalistSuggestions() {
+        // Tecnica
+        const tecnicaList = document.getElementById('tecnica-list');
+        if (tecnicaList) {
+            tecnicaList.innerHTML = this.suggestions.tecniche.map(t =>
+                `<option value="${this.escapeHtml(t)}">`
+            ).join('');
+        }
+
+        // Peso Piombo
+        const pesoPiomboList = document.getElementById('peso-piombo-list');
+        if (pesoPiomboList) {
+            pesoPiomboList.innerHTML = this.suggestions.pesoPiombo.map(p =>
+                `<option value="${this.escapeHtml(p)}">`
+            ).join('');
+        }
+
+        // Vento
+        const ventoList = document.getElementById('vento-list');
+        if (ventoList) {
+            ventoList.innerHTML = this.suggestions.vento.map(v =>
+                `<option value="${this.escapeHtml(v)}">`
+            ).join('');
+        }
+
+        // Direzione Vento
+        const direzioneList = document.getElementById('direzione-vento-list');
+        if (direzioneList) {
+            direzioneList.innerHTML = this.suggestions.direzioneVento.map(d =>
+                `<option value="${this.escapeHtml(d)}">`
+            ).join('');
+        }
+
+        // Canna Modello
+        const cannaModelloList = document.getElementById('canna-modello-list');
+        if (cannaModelloList) {
+            cannaModelloList.innerHTML = this.suggestions.cannaModello.map(c =>
+                `<option value="${this.escapeHtml(c)}">`
+            ).join('');
+        }
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Event Listeners
     setupEventListeners() {
         // Navigation
@@ -84,7 +164,7 @@ class LongCastApp {
         document.getElementById('altezza').addEventListener('input', () => this.calculateBMI());
 
         // Filters
-        document.getElementById('filter-tecnica').addEventListener('change', () => this.filterHistory());
+        document.getElementById('filter-tecnica').addEventListener('input', () => this.filterHistory());
         document.getElementById('filter-periodo').addEventListener('change', () => this.filterHistory());
         document.getElementById('sort-by').addEventListener('change', () => this.filterHistory());
 
@@ -142,22 +222,37 @@ class LongCastApp {
     startSession() {
         const formData = new FormData(document.getElementById('startSessionForm'));
 
+        const pesoPiombo = formData.get('session-peso-piombo');
+        const tecnica = formData.get('session-tecnica');
+        const cannaModello = formData.get('session-canna-modello');
+        const vento = formData.get('session-vento');
+        const direzioneVento = formData.get('session-direzione-vento');
+
         this.currentSession = {
             id: Date.now(),
             dataInizio: formData.get('session-data'),
             luogo: formData.get('session-luogo'),
-            pesoPiombo: parseFloat(formData.get('session-peso-piombo')),
-            tecnica: formData.get('session-tecnica'),
+            pesoPiombo: pesoPiombo,
+            tecnica: tecnica,
+            cannaModello: cannaModello,
             cannaLunghezza: formData.get('session-canna-lunghezza') ? parseFloat(formData.get('session-canna-lunghezza')) : null,
             cannaGrammatura: formData.get('session-canna-grammatura'),
             mulinello: formData.get('session-mulinello'),
             filo: formData.get('session-filo'),
-            vento: formData.get('session-vento'),
-            direzioneVento: formData.get('session-direzione-vento'),
+            vento: vento,
+            direzioneVento: direzioneVento,
             temperatura: formData.get('session-temperatura') ? parseFloat(formData.get('session-temperatura')) : null,
+            umidita: formData.get('session-umidita') ? parseInt(formData.get('session-umidita')) : null,
             note: formData.get('session-note'),
             lanci: []
         };
+
+        // Save suggestions
+        this.addSuggestion('pesoPiombo', pesoPiombo);
+        this.addSuggestion('tecniche', tecnica);
+        this.addSuggestion('cannaModello', cannaModello);
+        this.addSuggestion('vento', vento);
+        this.addSuggestion('direzioneVento', direzioneVento);
 
         this.saveSession();
         this.showSessionActive();
@@ -181,34 +276,17 @@ class LongCastApp {
         document.getElementById('sessionLocation').textContent = this.currentSession.luogo;
 
         // Update session details
-        const tecnicaLabels = {
-            'overhead': 'Overhead',
-            'pendulum': 'Pendulum',
-            'ground': 'Ground Cast',
-            'off-ground': 'Off-Ground',
-            'altro': 'Altro'
-        };
-
-        const ventoLabels = {
-            'calmo': 'Calmo',
-            'leggero': 'Leggero',
-            'moderato': 'Moderato',
-            'forte': 'Forte'
-        };
-
-        const direzioneLabels = {
-            'favore': 'A favore',
-            'contrario': 'Contrario',
-            'laterale': 'Laterale'
-        };
-
         const details = [];
 
-        details.push({ label: 'Tecnica', value: tecnicaLabels[this.currentSession.tecnica] || this.currentSession.tecnica });
-        details.push({ label: 'Peso Piombo', value: this.currentSession.pesoPiombo + 'g' });
+        details.push({ label: 'Tecnica', value: this.currentSession.tecnica });
+        details.push({ label: 'Peso Piombo', value: this.currentSession.pesoPiombo });
+
+        if (this.currentSession.cannaModello) {
+            details.push({ label: 'Modello Canna', value: this.currentSession.cannaModello });
+        }
 
         if (this.currentSession.cannaLunghezza) {
-            details.push({ label: 'Canna', value: this.currentSession.cannaLunghezza + 'm' });
+            details.push({ label: 'Lunghezza', value: this.currentSession.cannaLunghezza + 'm' });
         }
 
         if (this.currentSession.cannaGrammatura) {
@@ -224,15 +302,19 @@ class LongCastApp {
         }
 
         if (this.currentSession.vento) {
-            details.push({ label: 'Vento', value: ventoLabels[this.currentSession.vento] || this.currentSession.vento });
+            details.push({ label: 'Vento', value: this.currentSession.vento });
         }
 
         if (this.currentSession.direzioneVento) {
-            details.push({ label: 'Dir. Vento', value: direzioneLabels[this.currentSession.direzioneVento] || this.currentSession.direzioneVento });
+            details.push({ label: 'Dir. Vento', value: this.currentSession.direzioneVento });
         }
 
         if (this.currentSession.temperatura) {
             details.push({ label: 'Temperatura', value: this.currentSession.temperatura + '°C' });
+        }
+
+        if (this.currentSession.umidita) {
+            details.push({ label: 'Umidità', value: this.currentSession.umidita + '%' });
         }
 
         const detailsHTML = details.map(d => `
@@ -248,6 +330,7 @@ class LongCastApp {
         document.getElementById('cast-vento').value = this.currentSession.vento || '';
         document.getElementById('cast-direzione-vento').value = this.currentSession.direzioneVento || '';
         document.getElementById('cast-temperatura').value = this.currentSession.temperatura || '';
+        document.getElementById('cast-umidita').value = this.currentSession.umidita || '';
 
         // Update session casts list
         this.updateSessionCastsList();
@@ -263,11 +346,17 @@ class LongCastApp {
         const vento = document.getElementById('cast-vento').value;
         const direzioneVento = document.getElementById('cast-direzione-vento').value;
         const temperatura = document.getElementById('cast-temperatura').value ? parseFloat(document.getElementById('cast-temperatura').value) : null;
+        const umidita = document.getElementById('cast-umidita').value ? parseInt(document.getElementById('cast-umidita').value) : null;
 
         // Update session weather if changed
         this.currentSession.vento = vento;
         this.currentSession.direzioneVento = direzioneVento;
         this.currentSession.temperatura = temperatura;
+        this.currentSession.umidita = umidita;
+
+        // Save weather suggestions
+        this.addSuggestion('vento', vento);
+        this.addSuggestion('direzioneVento', direzioneVento);
 
         // Create cast object
         const cast = {
@@ -377,6 +466,7 @@ class LongCastApp {
                 data: lancio.orario,
                 pesoPiombo: this.currentSession.pesoPiombo,
                 tecnica: this.currentSession.tecnica,
+                cannaModello: this.currentSession.cannaModello,
                 cannaLunghezza: this.currentSession.cannaLunghezza,
                 cannaGrammatura: this.currentSession.cannaGrammatura,
                 mulinello: this.currentSession.mulinello,
@@ -384,6 +474,7 @@ class LongCastApp {
                 vento: this.currentSession.vento,
                 direzioneVento: this.currentSession.direzioneVento,
                 temperatura: this.currentSession.temperatura,
+                umidita: this.currentSession.umidita,
                 luogo: this.currentSession.luogo,
                 note: lancio.note || '',
                 sessionId: this.currentSession.id
@@ -619,21 +710,13 @@ class LongCastApp {
             minute: '2-digit'
         });
 
-        const tecnicaLabels = {
-            'overhead': 'Overhead',
-            'pendulum': 'Pendulum',
-            'ground': 'Ground Cast',
-            'off-ground': 'Off-Ground',
-            'altro': 'Altro'
-        };
-
         return `
             <div class="cast-item">
                 <div class="cast-distance">${cast.distanza.toFixed(1)}m</div>
                 <div class="cast-info">
-                    <div class="cast-technique">${tecnicaLabels[cast.tecnica] || cast.tecnica}</div>
+                    <div class="cast-technique">${cast.tecnica || 'N/A'}</div>
                     <div class="cast-details">
-                        ${cast.pesoPiombo}g
+                        ${cast.pesoPiombo || 'N/A'}
                         ${cast.vento ? ' • ' + cast.vento : ''}
                         ${cast.luogo ? ' • ' + cast.luogo : ''}
                     </div>
@@ -820,11 +903,19 @@ class LongCastApp {
                 this.casts = [];
                 this.profile = null;
                 this.currentSession = null;
+                this.suggestions = {
+                    tecniche: [],
+                    pesoPiombo: [],
+                    vento: [],
+                    direzioneVento: [],
+                    cannaModello: []
+                };
                 localStorage.clear();
                 sessionStorage.clear();
 
                 this.updateDashboard();
                 this.showSessionNotStarted();
+                this.updateDatalistSuggestions();
                 document.getElementById('profileForm').reset();
 
                 this.showToast('Tutti i dati sono stati eliminati', 'warning');
