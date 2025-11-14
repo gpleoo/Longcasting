@@ -776,7 +776,7 @@ class LongCastApp {
             <div class="session-card" onclick="app.showSessionDetail(${session.id})">
                 <div class="session-card-header">
                     <div>
-                        <div class="session-card-title">${session.luogo}</div>
+                        <div class="session-card-title">${this.escapeHtml(session.luogo || 'Sessione')}</div>
                         <div class="session-card-date">${formattedDate} • ${formattedTime}</div>
                     </div>
                 </div>
@@ -795,9 +795,9 @@ class LongCastApp {
                     </div>
                 </div>
                 <div class="session-card-info">
-                    <span>${session.tecnica}</span>
-                    <span>${session.pesoPiombo}</span>
-                    ${session.vento ? `<span>${session.vento}</span>` : ''}
+                    ${session.tecnica ? `<span>${this.escapeHtml(session.tecnica)}</span>` : ''}
+                    ${session.pesoPiombo ? `<span>${this.escapeHtml(session.pesoPiombo)}</span>` : ''}
+                    ${session.vento ? `<span>${this.escapeHtml(session.vento)}</span>` : ''}
                 </div>
             </div>
         `;
@@ -1268,6 +1268,7 @@ class LongCastApp {
 }
 
 // Initialize app when DOM is loaded
+let app;
 document.addEventListener('DOMContentLoaded', () => {
-    new LongCastApp();
+    app = new LongCastApp();
 });
