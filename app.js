@@ -1,7 +1,7 @@
 // LongCast Pro - Main Application
 class LongCastApp {
     constructor() {
-        this.casts = [];
+        this.sessions = []; // Array of completed training sessions
         this.profile = null;
         this.chart = null;
         this.currentSession = null; // Active training session
@@ -10,7 +10,11 @@ class LongCastApp {
             pesoPiombo: [],
             vento: [],
             direzioneVento: [],
-            cannaModello: []
+            cannaModello: [],
+            luoghi: [],
+            grammatura: [],
+            mulinello: [],
+            filo: []
         };
         this.init();
     }
@@ -28,25 +32,25 @@ class LongCastApp {
 
     // Data Management
     loadData() {
-        const savedCasts = localStorage.getItem('longcast_casts');
+        const savedSessions = localStorage.getItem('longcast_sessions');
         const savedProfile = localStorage.getItem('longcast_profile');
-        const savedSession = sessionStorage.getItem('longcast_active_session');
+        const savedActiveSession = sessionStorage.getItem('longcast_active_session');
 
-        if (savedCasts) {
-            this.casts = JSON.parse(savedCasts);
+        if (savedSessions) {
+            this.sessions = JSON.parse(savedSessions);
         }
 
         if (savedProfile) {
             this.profile = JSON.parse(savedProfile);
         }
 
-        if (savedSession) {
-            this.currentSession = JSON.parse(savedSession);
+        if (savedActiveSession) {
+            this.currentSession = JSON.parse(savedActiveSession);
         }
     }
 
     saveData() {
-        localStorage.setItem('longcast_casts', JSON.stringify(this.casts));
+        localStorage.setItem('longcast_sessions', JSON.stringify(this.sessions));
         if (this.profile) {
             localStorage.setItem('longcast_profile', JSON.stringify(this.profile));
         }
@@ -123,6 +127,38 @@ class LongCastApp {
                 `<option value="${this.escapeHtml(c)}">`
             ).join('');
         }
+
+        // Luoghi
+        const luogoList = document.getElementById('luogo-list');
+        if (luogoList) {
+            luogoList.innerHTML = this.suggestions.luoghi.map(l =>
+                `<option value="${this.escapeHtml(l)}">`
+            ).join('');
+        }
+
+        // Grammatura
+        const grammaturaList = document.getElementById('grammatura-list');
+        if (grammaturaList) {
+            grammaturaList.innerHTML = this.suggestions.grammatura.map(g =>
+                `<option value="${this.escapeHtml(g)}">`
+            ).join('');
+        }
+
+        // Mulinello
+        const mulinelloList = document.getElementById('mulinello-list');
+        if (mulinelloList) {
+            mulinelloList.innerHTML = this.suggestions.mulinello.map(m =>
+                `<option value="${this.escapeHtml(m)}">`
+            ).join('');
+        }
+
+        // Filo
+        const filoList = document.getElementById('filo-list');
+        if (filoList) {
+            filoList.innerHTML = this.suggestions.filo.map(f =>
+                `<option value="${this.escapeHtml(f)}">`
+            ).join('');
+        }
     }
 
     escapeHtml(text) {
@@ -164,9 +200,12 @@ class LongCastApp {
         document.getElementById('altezza').addEventListener('input', () => this.calculateBMI());
 
         // Filters
-        document.getElementById('filter-tecnica').addEventListener('input', () => this.filterHistory());
+        document.getElementById('filter-luogo').addEventListener('input', () => this.filterHistory());
         document.getElementById('filter-periodo').addEventListener('change', () => this.filterHistory());
         document.getElementById('sort-by').addEventListener('change', () => this.filterHistory());
+
+        // Session Detail
+        document.getElementById('backToSessions').addEventListener('click', () => this.showSessionsList());
 
         // Data Management
         document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
@@ -227,18 +266,22 @@ class LongCastApp {
         const cannaModello = formData.get('session-canna-modello');
         const vento = formData.get('session-vento');
         const direzioneVento = formData.get('session-direzione-vento');
+        const luogo = formData.get('session-luogo');
+        const cannaGrammatura = formData.get('session-canna-grammatura');
+        const mulinello = formData.get('session-mulinello');
+        const filo = formData.get('session-filo');
 
         this.currentSession = {
             id: Date.now(),
             dataInizio: formData.get('session-data'),
-            luogo: formData.get('session-luogo'),
+            luogo: luogo,
             pesoPiombo: pesoPiombo,
             tecnica: tecnica,
             cannaModello: cannaModello,
             cannaLunghezza: formData.get('session-canna-lunghezza') ? parseFloat(formData.get('session-canna-lunghezza')) : null,
-            cannaGrammatura: formData.get('session-canna-grammatura'),
-            mulinello: formData.get('session-mulinello'),
-            filo: formData.get('session-filo'),
+            cannaGrammatura: cannaGrammatura,
+            mulinello: mulinello,
+            filo: filo,
             vento: vento,
             direzioneVento: direzioneVento,
             temperatura: formData.get('session-temperatura') ? parseFloat(formData.get('session-temperatura')) : null,
@@ -253,6 +296,10 @@ class LongCastApp {
         this.addSuggestion('cannaModello', cannaModello);
         this.addSuggestion('vento', vento);
         this.addSuggestion('direzioneVento', direzioneVento);
+        this.addSuggestion('luoghi', luogo);
+        this.addSuggestion('grammatura', cannaGrammatura);
+        this.addSuggestion('mulinello', mulinello);
+        this.addSuggestion('filo', filo);
 
         this.saveSession();
         this.showSessionActive();
@@ -453,43 +500,32 @@ class LongCastApp {
         const confirmation = confirm(
             `Terminare la sessione di allenamento?\n\n` +
             `Lanci registrati: ${this.currentSession.lanci.length}\n` +
-            `Tutti i lanci verranno salvati nello storico.`
+            `La sessione verrà salvata nello storico.`
         );
 
         if (!confirmation) return;
 
-        // Save all casts from session to main casts array
-        this.currentSession.lanci.forEach(lancio => {
-            const cast = {
-                id: Date.now() + Math.random(), // Unique ID
-                distanza: lancio.distanza,
-                data: lancio.orario,
-                pesoPiombo: this.currentSession.pesoPiombo,
-                tecnica: this.currentSession.tecnica,
-                cannaModello: this.currentSession.cannaModello,
-                cannaLunghezza: this.currentSession.cannaLunghezza,
-                cannaGrammatura: this.currentSession.cannaGrammatura,
-                mulinello: this.currentSession.mulinello,
-                filo: this.currentSession.filo,
-                vento: this.currentSession.vento,
-                direzioneVento: this.currentSession.direzioneVento,
-                temperatura: this.currentSession.temperatura,
-                umidita: this.currentSession.umidita,
-                luogo: this.currentSession.luogo,
-                note: lancio.note || '',
-                sessionId: this.currentSession.id
-            };
+        // Mark session as completed with end time
+        this.currentSession.dataFine = new Date().toISOString();
+        this.currentSession.completata = true;
 
-            this.casts.push(cast);
-        });
+        // Calculate session stats
+        if (this.currentSession.lanci.length > 0) {
+            const distanze = this.currentSession.lanci.map(l => l.distanza);
+            this.currentSession.distanzaMedia = distanze.reduce((a, b) => a + b, 0) / distanze.length;
+            this.currentSession.distanzaMassima = Math.max(...distanze);
+            this.currentSession.distanzaMinima = Math.min(...distanze);
+        }
 
+        // Save completed session to sessions array
+        this.sessions.push({...this.currentSession});
         this.saveData();
 
-        // Clear session
+        // Clear active session
         this.currentSession = null;
         this.saveSession();
 
-        this.showToast('Sessione di allenamento terminata! Tutti i lanci sono stati salvati.', 'success');
+        this.showToast('Sessione di allenamento terminata e salvata!', 'success');
 
         // Update UI
         this.showSessionNotStarted();
@@ -499,12 +535,12 @@ class LongCastApp {
         this.setDefaultDateTime();
     }
 
-    // Delete Cast (from history)
-    deleteCast(id) {
-        if (confirm('Sei sicuro di voler eliminare questo lancio?')) {
-            this.casts = this.casts.filter(c => c.id !== id);
+    // Delete Session (from history)
+    deleteSession(sessionId) {
+        if (confirm('Sei sicuro di voler eliminare questa sessione? Verranno eliminati tutti i lanci associati.')) {
+            this.sessions = this.sessions.filter(s => s.id !== sessionId);
             this.saveData();
-            this.showToast('Lancio eliminato', 'success');
+            this.showToast('Sessione eliminata', 'success');
             this.updateDashboard();
             this.filterHistory();
         }
@@ -512,14 +548,14 @@ class LongCastApp {
 
     // Update Dashboard
     updateDashboard() {
-        if (this.casts.length === 0) {
+        if (this.sessions.length === 0) {
             this.showEmptyDashboard();
             return;
         }
 
         this.updateStats();
         this.updateChart();
-        this.updateRecentCasts();
+        this.updateRecentSessions();
     }
 
     showEmptyDashboard() {
@@ -531,56 +567,76 @@ class LongCastApp {
         document.getElementById('chartCanvas').style.display = 'none';
         document.getElementById('noDataMessage').style.display = 'block';
 
-        document.getElementById('recentCastsList').innerHTML = '<p class="no-data-text">Nessun lancio registrato</p>';
+        document.getElementById('recentCastsList').innerHTML = '<p class="no-data-text">Nessuna sessione registrata</p>';
     }
 
     updateStats() {
-        const distanze = this.casts.map(c => c.distanza);
+        // Collect all casts from all sessions
+        const allCasts = this.sessions.flatMap(s => s.lanci || []);
 
-        // Media
+        if (allCasts.length === 0) {
+            this.showEmptyDashboard();
+            return;
+        }
+
+        const distanze = allCasts.map(c => c.distanza);
+
+        // Media totale
         const media = distanze.reduce((a, b) => a + b, 0) / distanze.length;
         document.getElementById('stat-media').textContent = media.toFixed(1) + ' m';
 
-        // Record
+        // Record assoluto
         const record = Math.max(...distanze);
         document.getElementById('stat-record').textContent = record.toFixed(1) + ' m';
 
-        // Totale
-        document.getElementById('stat-totale').textContent = this.casts.length;
+        // Totale lanci
+        document.getElementById('stat-totale').textContent = allCasts.length;
 
-        // Miglioramento 30 giorni
-        const improvement = this.calculateImprovement(30);
+        // Miglioramento tra sessioni
+        const improvement = this.calculateSessionImprovement();
         const improvementText = improvement !== null ?
             (improvement > 0 ? '+' : '') + improvement.toFixed(1) + '%' :
             '-- %';
         document.getElementById('stat-miglioramento').textContent = improvementText;
     }
 
-    calculateImprovement(days) {
-        const now = new Date();
-        const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-
-        const recentCasts = this.casts.filter(c => new Date(c.data) >= cutoff);
-        const olderCasts = this.casts.filter(c => new Date(c.data) < cutoff);
-
-        if (recentCasts.length === 0 || olderCasts.length === 0) {
+    calculateSessionImprovement() {
+        if (this.sessions.length < 2) {
             return null;
         }
 
-        const recentAvg = recentCasts.reduce((sum, c) => sum + c.distanza, 0) / recentCasts.length;
-        const olderAvg = olderCasts.reduce((sum, c) => sum + c.distanza, 0) / olderCasts.length;
+        // Sort sessions by date
+        const sortedSessions = [...this.sessions].sort((a, b) =>
+            new Date(a.dataInizio) - new Date(b.dataInizio)
+        );
 
-        return ((recentAvg - olderAvg) / olderAvg) * 100;
+        // Get last 2 sessions that have casts
+        const sessionsWithCasts = sortedSessions.filter(s => s.lanci && s.lanci.length > 0);
+
+        if (sessionsWithCasts.length < 2) {
+            return null;
+        }
+
+        // Compare last session with previous one
+        const lastSession = sessionsWithCasts[sessionsWithCasts.length - 1];
+        const previousSession = sessionsWithCasts[sessionsWithCasts.length - 2];
+
+        const lastAvg = lastSession.distanzaMedia ||
+            lastSession.lanci.reduce((sum, l) => sum + l.distanza, 0) / lastSession.lanci.length;
+        const prevAvg = previousSession.distanzaMedia ||
+            previousSession.lanci.reduce((sum, l) => sum + l.distanza, 0) / previousSession.lanci.length;
+
+        return ((lastAvg - prevAvg) / prevAvg) * 100;
     }
 
     updateChart() {
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Sort casts by date
-        const sortedCasts = [...this.casts].sort((a, b) => new Date(a.data) - new Date(b.data));
+        // Sort sessions by date
+        const sortedSessions = [...this.sessions].sort((a, b) => new Date(a.dataInizio) - new Date(b.dataInizio));
 
-        if (sortedCasts.length === 0) {
+        if (sortedSessions.length === 0) {
             canvas.style.display = 'none';
             document.getElementById('noDataMessage').style.display = 'block';
             return;
@@ -597,10 +653,16 @@ class LongCastApp {
         const chartWidth = canvas.width - padding * 2;
         const chartHeight = canvas.height - padding * 2;
 
-        // Get data
-        const distances = sortedCasts.map(c => c.distanza);
-        const maxDistance = Math.max(...distances);
-        const minDistance = Math.min(...distances);
+        // Get session averages
+        const sessionAverages = sortedSessions.map(s => {
+            if (s.lanci && s.lanci.length > 0) {
+                return s.distanzaMedia || s.lanci.reduce((sum, l) => sum + l.distanza, 0) / s.lanci.length;
+            }
+            return 0;
+        });
+
+        const maxDistance = Math.max(...sessionAverages);
+        const minDistance = Math.min(...sessionAverages);
         const range = maxDistance - minDistance || 1;
 
         // Clear canvas
@@ -630,9 +692,10 @@ class LongCastApp {
         ctx.lineWidth = 3;
         ctx.beginPath();
 
-        sortedCasts.forEach((cast, i) => {
-            const x = padding + (chartWidth / (sortedCasts.length - 1 || 1)) * i;
-            const y = padding + chartHeight - ((cast.distanza - minDistance) / range) * chartHeight;
+        sortedSessions.forEach((session, i) => {
+            const avg = sessionAverages[i];
+            const x = padding + (chartWidth / (sortedSessions.length - 1 || 1)) * i;
+            const y = padding + chartHeight - ((avg - minDistance) / range) * chartHeight;
 
             if (i === 0) {
                 ctx.moveTo(x, y);
@@ -644,9 +707,10 @@ class LongCastApp {
         ctx.stroke();
 
         // Draw points
-        sortedCasts.forEach((cast, i) => {
-            const x = padding + (chartWidth / (sortedCasts.length - 1 || 1)) * i;
-            const y = padding + chartHeight - ((cast.distanza - minDistance) / range) * chartHeight;
+        sortedSessions.forEach((session, i) => {
+            const avg = sessionAverages[i];
+            const x = padding + (chartWidth / (sortedSessions.length - 1 || 1)) * i;
+            const y = padding + chartHeight - ((avg - minDistance) / range) * chartHeight;
 
             // Outer circle
             ctx.beginPath();
@@ -662,42 +726,81 @@ class LongCastApp {
         });
 
         // X-axis labels (show max 10 labels)
-        const labelInterval = Math.ceil(sortedCasts.length / 10);
+        const labelInterval = Math.ceil(sortedSessions.length / 10);
         ctx.fillStyle = '#a0aec0';
         ctx.font = '11px sans-serif';
         ctx.textAlign = 'center';
 
-        sortedCasts.forEach((cast, i) => {
-            if (i % labelInterval === 0 || i === sortedCasts.length - 1) {
-                const x = padding + (chartWidth / (sortedCasts.length - 1 || 1)) * i;
-                const date = new Date(cast.data);
+        sortedSessions.forEach((session, i) => {
+            if (i % labelInterval === 0 || i === sortedSessions.length - 1) {
+                const x = padding + (chartWidth / (sortedSessions.length - 1 || 1)) * i;
+                const date = new Date(session.dataInizio);
                 const label = date.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
                 ctx.fillText(label, x, canvas.height - padding + 20);
             }
         });
     }
 
-    updateRecentCasts() {
-        const recentCasts = [...this.casts]
-            .sort((a, b) => new Date(b.data) - new Date(a.data))
-            .slice(0, 5);
+    updateRecentSessions() {
+        const recentSessions = [...this.sessions]
+            .sort((a, b) => new Date(b.dataInizio) - new Date(a.dataInizio))
+            .slice(0, 3);
 
         const container = document.getElementById('recentCastsList');
 
-        if (recentCasts.length === 0) {
-            container.innerHTML = '<p class="no-data-text">Nessun lancio registrato</p>';
+        if (recentSessions.length === 0) {
+            container.innerHTML = '<p class="no-data-text">Nessuna sessione registrata</p>';
             return;
         }
 
-        container.innerHTML = recentCasts.map(cast => this.createCastHTML(cast)).join('');
+        container.innerHTML = recentSessions.map(session => this.createSessionCardHTML(session, true)).join('');
+    }
 
-        // Add delete listeners
-        container.querySelectorAll('.delete').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = parseFloat(btn.dataset.id);
-                this.deleteCast(id);
-            });
+    createSessionCardHTML(session, compact = false) {
+        const date = new Date(session.dataInizio);
+        const formattedDate = date.toLocaleDateString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
         });
+        const formattedTime = date.toLocaleTimeString('it-IT', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const numLanci = session.lanci ? session.lanci.length : 0;
+        const mediaDistanza = session.distanzaMedia ? session.distanzaMedia.toFixed(1) : '--';
+        const maxDistanza = session.distanzaMassima ? session.distanzaMassima.toFixed(1) : '--';
+
+        return `
+            <div class="session-card" onclick="app.showSessionDetail(${session.id})">
+                <div class="session-card-header">
+                    <div>
+                        <div class="session-card-title">${session.luogo}</div>
+                        <div class="session-card-date">${formattedDate} • ${formattedTime}</div>
+                    </div>
+                </div>
+                <div class="session-card-stats">
+                    <div class="session-card-stat">
+                        <span class="session-card-stat-label">Lanci</span>
+                        <span class="session-card-stat-value">${numLanci}</span>
+                    </div>
+                    <div class="session-card-stat">
+                        <span class="session-card-stat-label">Media</span>
+                        <span class="session-card-stat-value">${mediaDistanza}m</span>
+                    </div>
+                    <div class="session-card-stat">
+                        <span class="session-card-stat-label">Massima</span>
+                        <span class="session-card-stat-value">${maxDistanza}m</span>
+                    </div>
+                </div>
+                <div class="session-card-info">
+                    <span>${session.tecnica}</span>
+                    <span>${session.pesoPiombo}</span>
+                    ${session.vento ? `<span>${session.vento}</span>` : ''}
+                </div>
+            </div>
+        `;
     }
 
     createCastHTML(cast) {

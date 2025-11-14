@@ -129,7 +129,8 @@
 
                                 <div class="form-group">
                                     <label for="session-luogo">Luogo *</label>
-                                    <input type="text" id="session-luogo" name="session-luogo" required placeholder="es. Campo gara, Spiaggia...">
+                                    <input type="text" id="session-luogo" name="session-luogo" required list="luogo-list" placeholder="es. Campo gara, Spiaggia...">
+                                    <datalist id="luogo-list"></datalist>
                                 </div>
                             </div>
 
@@ -167,19 +168,22 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="session-canna-grammatura">Grammatura Canna (gr)</label>
-                                    <input type="text" id="session-canna-grammatura" name="session-canna-grammatura" placeholder="es. 100-200">
+                                    <input type="text" id="session-canna-grammatura" name="session-canna-grammatura" list="grammatura-list" placeholder="es. 100-200">
+                                    <datalist id="grammatura-list"></datalist>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="session-mulinello">Mulinello</label>
-                                    <input type="text" id="session-mulinello" name="session-mulinello" placeholder="es. Shimano 8000">
+                                    <input type="text" id="session-mulinello" name="session-mulinello" list="mulinello-list" placeholder="es. Shimano 8000">
+                                    <datalist id="mulinello-list"></datalist>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="session-filo">Filo/Shock Leader</label>
-                                    <input type="text" id="session-filo" name="session-filo" placeholder="es. 0.28mm + SL 0.60mm">
+                                    <input type="text" id="session-filo" name="session-filo" list="filo-list" placeholder="es. 0.28mm + SL 0.60mm">
+                                    <datalist id="filo-list"></datalist>
                                 </div>
                             </div>
                         </div>
@@ -349,45 +353,71 @@
             </div>
         </section>
 
-        <!-- Storico Section -->
+        <!-- Storico Sessioni Section -->
         <section id="storico" class="section">
             <div class="container">
-                <h2 class="section-title">Storico Lanci</h2>
+                <div id="sessionsList">
+                    <h2 class="section-title">Storico Sessioni</h2>
 
-                <!-- Filters -->
-                <div class="filters-card">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="filter-tecnica">Filtra per Tecnica</label>
-                            <input type="text" id="filter-tecnica" list="tecnica-list" placeholder="Tutte le tecniche">
-                        </div>
+                    <!-- Filters -->
+                    <div class="filters-card">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="filter-luogo">Filtra per Luogo</label>
+                                <input type="text" id="filter-luogo" list="luogo-list" placeholder="Tutti i luoghi">
+                            </div>
 
-                        <div class="form-group">
-                            <label for="filter-periodo">Periodo</label>
-                            <select id="filter-periodo">
-                                <option value="tutti">Tutti</option>
-                                <option value="7">Ultimi 7 giorni</option>
-                                <option value="30">Ultimi 30 giorni</option>
-                                <option value="90">Ultimi 3 mesi</option>
-                                <option value="365">Ultimo anno</option>
-                            </select>
-                        </div>
+                            <div class="form-group">
+                                <label for="filter-periodo">Periodo</label>
+                                <select id="filter-periodo">
+                                    <option value="tutti">Tutti</option>
+                                    <option value="7">Ultimi 7 giorni</option>
+                                    <option value="30">Ultimi 30 giorni</option>
+                                    <option value="90">Ultimi 3 mesi</option>
+                                    <option value="365">Ultimo anno</option>
+                                </select>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="sort-by">Ordina per</label>
-                            <select id="sort-by">
-                                <option value="data-desc">Data (più recente)</option>
-                                <option value="data-asc">Data (più vecchio)</option>
-                                <option value="distanza-desc">Distanza (maggiore)</option>
-                                <option value="distanza-asc">Distanza (minore)</option>
-                            </select>
+                            <div class="form-group">
+                                <label for="sort-by">Ordina per</label>
+                                <select id="sort-by">
+                                    <option value="data-desc">Data (più recente)</option>
+                                    <option value="data-asc">Data (più vecchio)</option>
+                                </select>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Sessions List -->
+                    <div id="historySessionsList" class="history-list">
+                        <p class="no-data-text">Nessuna sessione trovata</p>
                     </div>
                 </div>
 
-                <!-- Casts List -->
-                <div id="historyCastsList" class="history-list">
-                    <p class="no-data-text">Nessun lancio trovato</p>
+                <!-- Session Detail View -->
+                <div id="sessionDetail" style="display: none;">
+                    <div class="session-detail-header">
+                        <button id="backToSessions" class="btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            Torna alle Sessioni
+                        </button>
+                        <h2 class="section-title" id="sessionDetailTitle">Dettaglio Sessione</h2>
+                    </div>
+
+                    <!-- Session Info Card -->
+                    <div class="session-info-card" id="sessionDetailInfo">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Session Casts -->
+                    <div class="session-casts">
+                        <h3>Lanci della Sessione</h3>
+                        <div id="sessionDetailCastsList" class="casts-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
