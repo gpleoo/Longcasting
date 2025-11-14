@@ -841,60 +841,206 @@ class LongCastApp {
 
     // Filter History
     filterHistory() {
-        const tecnicaFilter = document.getElementById('filter-tecnica').value;
+        const luogoFilter = document.getElementById('filter-luogo').value;
         const periodoFilter = parseInt(document.getElementById('filter-periodo').value);
         const sortBy = document.getElementById('sort-by').value;
 
-        let filtered = [...this.casts];
+        let filtered = [...this.sessions];
 
-        // Filter by technique
-        if (tecnicaFilter) {
-            filtered = filtered.filter(c => c.tecnica === tecnicaFilter);
+        // Filter by location
+        if (luogoFilter && luogoFilter.trim()) {
+            filtered = filtered.filter(s =>
+                s.luogo && s.luogo.toLowerCase().includes(luogoFilter.toLowerCase())
+            );
         }
 
         // Filter by period
         if (periodoFilter && periodoFilter !== 'tutti') {
             const cutoff = new Date();
             cutoff.setDate(cutoff.getDate() - periodoFilter);
-            filtered = filtered.filter(c => new Date(c.data) >= cutoff);
+            filtered = filtered.filter(s => new Date(s.dataInizio) >= cutoff);
         }
 
         // Sort
         filtered.sort((a, b) => {
             switch (sortBy) {
                 case 'data-desc':
-                    return new Date(b.data) - new Date(a.data);
+                    return new Date(b.dataInizio) - new Date(a.dataInizio);
                 case 'data-asc':
-                    return new Date(a.data) - new Date(b.data);
-                case 'distanza-desc':
-                    return b.distanza - a.distanza;
-                case 'distanza-asc':
-                    return a.distanza - b.distanza;
+                    return new Date(a.dataInizio) - new Date(b.dataInizio);
                 default:
                     return 0;
             }
         });
 
-        this.displayHistory(filtered);
+        this.displaySessionHistory(filtered);
     }
 
-    displayHistory(casts) {
-        const container = document.getElementById('historyCastsList');
+    displaySessionHistory(sessions) {
+        const container = document.getElementById('historySessionsList');
 
-        if (casts.length === 0) {
-            container.innerHTML = '<p class="no-data-text">Nessun lancio trovato</p>';
+        if (sessions.length === 0) {
+            container.innerHTML = '<p class="no-data-text">Nessuna sessione trovata</p>';
             return;
         }
 
-        container.innerHTML = casts.map(cast => this.createCastHTML(cast)).join('');
+        container.innerHTML = sessions.map(session => this.createSessionCardHTML(session)).join('');
+    }
 
-        // Add delete listeners
-        container.querySelectorAll('.delete').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = parseFloat(btn.dataset.id);
-                this.deleteCast(id);
-            });
+    showSessionDetail(sessionId) {
+        const session = this.sessions.find(s => s.id === sessionId);
+        if (!session) {
+            this.showToast('Sessione non trovata', 'error');
+            return;
+        }
+
+        // Hide sessions list, show detail view
+        document.getElementById('sessionsList').style.display = 'none';
+        document.getElementById('sessionDetail').style.display = 'block';
+
+        // Update title
+        document.getElementById('sessionDetailTitle').textContent = `Sessione del ${new Date(session.dataInizio).toLocaleDateString('it-IT')}`;
+
+        // Populate session info
+        const infoContainer = document.getElementById('sessionDetailInfo');
+        infoContainer.innerHTML = this.createSessionInfoHTML(session);
+
+        // Populate casts list
+        const castsContainer = document.getElementById('sessionDetailCastsList');
+        if (session.lanci && session.lanci.length > 0) {
+            castsContainer.innerHTML = session.lanci.map((lancio, index) =>
+                this.createCastDetailHTML(lancio, index + 1)
+            ).join('');
+        } else {
+            castsContainer.innerHTML = '<p class="no-data-text">Nessun lancio in questa sessione</p>';
+        }
+    }
+
+    showSessionsList() {
+        document.getElementById('sessionsList').style.display = 'block';
+        document.getElementById('sessionDetail').style.display = 'none';
+        this.filterHistory(); // Refresh list
+    }
+
+    createSessionInfoHTML(session) {
+        const dataInizio = new Date(session.dataInizio);
+        const dataFine = session.dataFine ? new Date(session.dataFine) : null;
+
+        const durata = dataFine ?
+            Math.round((dataFine - dataInizio) / (1000 * 60)) :
+            'In corso';
+
+        const numLanci = session.lanci ? session.lanci.length : 0;
+        let mediaDistanza = 0;
+        let maxDistanza = 0;
+        let minDistanza = 0;
+
+        if (session.lanci && session.lanci.length > 0) {
+            const distanze = session.lanci.map(l => l.distanza);
+            mediaDistanza = session.distanzaMedia || (distanze.reduce((a, b) => a + b, 0) / distanze.length);
+            maxDistanza = session.distanzaMassima || Math.max(...distanze);
+            minDistanza = session.distanzaMinima || Math.min(...distanze);
+        }
+
+        return `
+            <div class="session-header">
+                <h3>📍 ${this.escapeHtml(session.luogo || 'N/A')}</h3>
+                <div class="session-stats">
+                    <span class="session-stat">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                        Durata: <strong>${typeof durata === 'number' ? durata + ' min' : durata}</strong>
+                    </span>
+                    <span class="session-stat">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                        Lanci: <strong>${numLanci}</strong>
+                    </span>
+                </div>
+            </div>
+
+            <div class="session-details">
+                <div class="detail-section">
+                    <h4>📊 Statistiche</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Media</span>
+                            <span class="detail-value">${mediaDistanza.toFixed(1)}m</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Massima</span>
+                            <span class="detail-value">${maxDistanza.toFixed(1)}m</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Minima</span>
+                            <span class="detail-value">${minDistanza.toFixed(1)}m</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>🎣 Attrezzatura</h4>
+                    <div class="detail-grid">
+                        ${session.cannaModello ? `<div class="detail-item"><span class="detail-label">Canna</span><span class="detail-value">${this.escapeHtml(session.cannaModello)}</span></div>` : ''}
+                        ${session.cannaLunghezza ? `<div class="detail-item"><span class="detail-label">Lunghezza</span><span class="detail-value">${session.cannaLunghezza}m</span></div>` : ''}
+                        ${session.cannaGrammatura ? `<div class="detail-item"><span class="detail-label">Grammatura</span><span class="detail-value">${this.escapeHtml(session.cannaGrammatura)}</span></div>` : ''}
+                        ${session.mulinello ? `<div class="detail-item"><span class="detail-label">Mulinello</span><span class="detail-value">${this.escapeHtml(session.mulinello)}</span></div>` : ''}
+                        ${session.filo ? `<div class="detail-item"><span class="detail-label">Filo</span><span class="detail-value">${this.escapeHtml(session.filo)}</span></div>` : ''}
+                        ${session.tecnica ? `<div class="detail-item"><span class="detail-label">Tecnica</span><span class="detail-value">${this.escapeHtml(session.tecnica)}</span></div>` : ''}
+                        ${session.pesoPiombo ? `<div class="detail-item"><span class="detail-label">Piombo</span><span class="detail-value">${this.escapeHtml(session.pesoPiombo)}</span></div>` : ''}
+                    </div>
+                </div>
+
+                ${session.vento || session.direzioneVento || session.temperatura || session.umidita ? `
+                <div class="detail-section">
+                    <h4>🌤️ Condizioni Iniziali</h4>
+                    <div class="detail-grid">
+                        ${session.vento ? `<div class="detail-item"><span class="detail-label">Vento</span><span class="detail-value">${this.escapeHtml(session.vento)}</span></div>` : ''}
+                        ${session.direzioneVento ? `<div class="detail-item"><span class="detail-label">Direzione</span><span class="detail-value">${this.escapeHtml(session.direzioneVento)}</span></div>` : ''}
+                        ${session.temperatura ? `<div class="detail-item"><span class="detail-label">Temperatura</span><span class="detail-value">${session.temperatura}°C</span></div>` : ''}
+                        ${session.umidita ? `<div class="detail-item"><span class="detail-label">Umidità</span><span class="detail-value">${session.umidita}%</span></div>` : ''}
+                    </div>
+                </div>
+                ` : ''}
+
+                ${session.note ? `
+                <div class="detail-section">
+                    <h4>📝 Note Sessione</h4>
+                    <p class="session-notes">${this.escapeHtml(session.note)}</p>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    createCastDetailHTML(lancio, numero) {
+        const data = new Date(lancio.data);
+        const formattedTime = data.toLocaleTimeString('it-IT', {
+            hour: '2-digit',
+            minute: '2-digit'
         });
+
+        return `
+            <div class="cast-detail-item">
+                <div class="cast-detail-header">
+                    <span class="cast-number">#${numero}</span>
+                    <span class="cast-distance-large">${lancio.distanza.toFixed(1)}m</span>
+                    <span class="cast-time">${formattedTime}</span>
+                </div>
+                ${lancio.vento || lancio.direzioneVento || lancio.temperatura || lancio.umidita || lancio.note ? `
+                <div class="cast-detail-info">
+                    ${lancio.vento ? `<span class="cast-info-badge">🌬️ ${this.escapeHtml(lancio.vento)}</span>` : ''}
+                    ${lancio.direzioneVento ? `<span class="cast-info-badge">➜ ${this.escapeHtml(lancio.direzioneVento)}</span>` : ''}
+                    ${lancio.temperatura ? `<span class="cast-info-badge">🌡️ ${lancio.temperatura}°C</span>` : ''}
+                    ${lancio.umidita ? `<span class="cast-info-badge">💧 ${lancio.umidita}%</span>` : ''}
+                    ${lancio.note ? `<div class="cast-note">${this.escapeHtml(lancio.note)}</div>` : ''}
+                </div>
+                ` : ''}
+            </div>
+        `;
     }
 
     // Profile Management
@@ -955,9 +1101,11 @@ class LongCastApp {
     // Data Import/Export
     exportData() {
         const data = {
-            casts: this.casts,
+            sessions: this.sessions,
             profile: this.profile,
-            exportDate: new Date().toISOString()
+            suggestions: this.suggestions,
+            exportDate: new Date().toISOString(),
+            version: '2.0' // Session-based version
         };
 
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -981,17 +1129,31 @@ class LongCastApp {
                 const data = JSON.parse(e.target.result);
 
                 if (confirm('Importare i dati? Questo sovrascriverà i dati attuali.')) {
-                    if (data.casts) this.casts = data.casts;
+                    // Support both old (casts) and new (sessions) format
+                    if (data.sessions) {
+                        this.sessions = data.sessions;
+                    } else if (data.casts) {
+                        // Convert old format to new format
+                        this.sessions = this.convertCastsToSessions(data.casts);
+                    }
+
                     if (data.profile) this.profile = data.profile;
 
+                    if (data.suggestions) {
+                        this.suggestions = data.suggestions;
+                    }
+
                     this.saveData();
+                    this.saveSuggestions();
                     this.updateDashboard();
+                    this.updateDatalistSuggestions();
                     this.loadProfile();
 
                     this.showToast('Dati importati con successo!', 'success');
                 }
             } catch (error) {
                 this.showToast('Errore durante l\'importazione dei dati', 'error');
+                console.error('Import error:', error);
             }
         };
         reader.readAsText(file);
@@ -1000,10 +1162,61 @@ class LongCastApp {
         event.target.value = '';
     }
 
+    convertCastsToSessions(casts) {
+        // Group casts by date (same day = same session)
+        const sessionMap = new Map();
+
+        casts.forEach(cast => {
+            const date = new Date(cast.data);
+            const dateKey = date.toISOString().split('T')[0];
+
+            if (!sessionMap.has(dateKey)) {
+                sessionMap.set(dateKey, {
+                    id: Date.now() + Math.random(),
+                    dataInizio: cast.data,
+                    dataFine: cast.data,
+                    luogo: cast.luogo || 'Importato',
+                    completata: true,
+                    lanci: []
+                });
+            }
+
+            const session = sessionMap.get(dateKey);
+            session.lanci.push(cast);
+
+            // Update session metadata from first cast
+            if (session.lanci.length === 1) {
+                session.tecnica = cast.tecnica;
+                session.pesoPiombo = cast.pesoPiombo;
+                session.cannaLunghezza = cast.cannaLunghezza;
+                session.cannaGrammatura = cast.cannaGrammatura;
+                session.mulinello = cast.mulinello;
+                session.filo = cast.filo;
+                session.vento = cast.vento;
+                session.direzioneVento = cast.direzioneVento;
+                session.temperatura = cast.temperatura;
+                session.umidita = cast.umidita;
+            }
+        });
+
+        // Calculate stats for each session
+        const sessions = Array.from(sessionMap.values());
+        sessions.forEach(session => {
+            if (session.lanci.length > 0) {
+                const distanze = session.lanci.map(l => l.distanza);
+                session.distanzaMedia = distanze.reduce((a, b) => a + b, 0) / distanze.length;
+                session.distanzaMassima = Math.max(...distanze);
+                session.distanzaMinima = Math.min(...distanze);
+            }
+        });
+
+        return sessions;
+    }
+
     clearAllData() {
         if (confirm('Sei sicuro di voler eliminare TUTTI i dati? Questa azione è irreversibile!')) {
             if (confirm('Conferma ancora: eliminare tutti i dati?')) {
-                this.casts = [];
+                this.sessions = [];
                 this.profile = null;
                 this.currentSession = null;
                 this.suggestions = {
@@ -1011,7 +1224,11 @@ class LongCastApp {
                     pesoPiombo: [],
                     vento: [],
                     direzioneVento: [],
-                    cannaModello: []
+                    cannaModello: [],
+                    luoghi: [],
+                    grammatura: [],
+                    mulinello: [],
+                    filo: []
                 };
                 localStorage.clear();
                 sessionStorage.clear();
