@@ -503,6 +503,119 @@ body {
     flex-wrap: wrap;
 }
 
+/* Session Training Styles */
+.session-info-card {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+    border: 2px solid var(--primary-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 16px rgba(0, 217, 255, 0.2);
+}
+
+.session-header {
+    margin-bottom: 1.5rem;
+}
+
+.session-header h3 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.session-stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.session-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.session-stat svg {
+    color: var(--primary-color);
+}
+
+.session-stat strong {
+    color: var(--text-primary);
+}
+
+.session-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.session-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.session-detail-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.session-detail-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.session-casts {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.session-casts h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.weather-confirm-section {
+    background: rgba(237, 137, 54, 0.05);
+    border: 1px solid rgba(237, 137, 54, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.weather-header {
+    margin-bottom: 1rem;
+}
+
+.weather-subtitle {
+    font-size: 0.9rem;
+    color: var(--warning);
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.end-session-container {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border);
+    text-align: center;
+}
+
+.end-session-container .btn {
+    min-width: 280px;
+}
+
 /* Toast Notification */
 .toast {
     position: fixed;
