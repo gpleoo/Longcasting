@@ -14,7 +14,11 @@ class LongCastApp {
             luoghi: [],
             grammatura: [],
             mulinello: [],
-            filo: []
+            filo: [],
+            lunghezzaCanna: [],
+            temperatura: [],
+            umidita: [],
+            note: []
         };
         this.init();
     }
@@ -24,56 +28,141 @@ class LongCastApp {
         this.loadSuggestions();
         this.updateDatalistSuggestions();
         this.setupEventListeners();
+        this.setupPersistenceListeners();
         this.updateDashboard();
         this.loadProfile();
         this.setDefaultDateTime();
         this.checkActiveSession();
     }
 
+    // Setup listeners for better data persistence on iOS
+    setupPersistenceListeners() {
+        // Save before page unload (iOS)
+        window.addEventListener('beforeunload', () => {
+            this.saveData();
+            this.saveSuggestions();
+            this.saveSession();
+        });
+
+        // Save when page goes to background (iOS Safari)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.saveData();
+                this.saveSuggestions();
+                this.saveSession();
+            }
+        });
+
+        // Save when iOS Safari freezes the page
+        window.addEventListener('pagehide', () => {
+            this.saveData();
+            this.saveSuggestions();
+            this.saveSession();
+        });
+
+        // Periodic auto-save every 30 seconds
+        setInterval(() => {
+            this.saveData();
+            this.saveSuggestions();
+            this.saveSession();
+        }, 30000);
+    }
+
     // Data Management
     loadData() {
-        const savedSessions = localStorage.getItem('longcast_sessions');
-        const savedProfile = localStorage.getItem('longcast_profile');
-        const savedActiveSession = sessionStorage.getItem('longcast_active_session');
+        try {
+            const savedSessions = localStorage.getItem('longcast_sessions');
+            const savedProfile = localStorage.getItem('longcast_profile');
+            const savedActiveSession = sessionStorage.getItem('longcast_active_session');
 
-        if (savedSessions) {
-            this.sessions = JSON.parse(savedSessions);
-        }
+            if (savedSessions) {
+                this.sessions = JSON.parse(savedSessions);
+            }
 
-        if (savedProfile) {
-            this.profile = JSON.parse(savedProfile);
-        }
+            if (savedProfile) {
+                this.profile = JSON.parse(savedProfile);
+            }
 
-        if (savedActiveSession) {
-            this.currentSession = JSON.parse(savedActiveSession);
+            if (savedActiveSession) {
+                this.currentSession = JSON.parse(savedActiveSession);
+            }
+        } catch (error) {
+            console.error('Errore nel caricare i dati:', error);
+            // Reset to defaults on error
+            this.sessions = [];
+            this.profile = null;
+            this.currentSession = null;
         }
     }
 
     saveData() {
-        localStorage.setItem('longcast_sessions', JSON.stringify(this.sessions));
-        if (this.profile) {
-            localStorage.setItem('longcast_profile', JSON.stringify(this.profile));
+        try {
+            localStorage.setItem('longcast_sessions', JSON.stringify(this.sessions));
+            if (this.profile) {
+                localStorage.setItem('longcast_profile', JSON.stringify(this.profile));
+            }
+        } catch (error) {
+            console.error('Errore nel salvare i dati:', error);
+            // Try to free space by removing old data if quota exceeded
+            if (error.name === 'QuotaExceededError') {
+                try {
+                    // Keep only last 20 sessions
+                    if (this.sessions.length > 20) {
+                        this.sessions = this.sessions.slice(-20);
+                        localStorage.setItem('longcast_sessions', JSON.stringify(this.sessions));
+                    }
+                } catch (e) {
+                    console.error('Impossibile salvare i dati anche dopo pulizia:', e);
+                }
+            }
         }
     }
 
     saveSession() {
-        if (this.currentSession) {
-            sessionStorage.setItem('longcast_active_session', JSON.stringify(this.currentSession));
-        } else {
-            sessionStorage.removeItem('longcast_active_session');
+        try {
+            if (this.currentSession) {
+                sessionStorage.setItem('longcast_active_session', JSON.stringify(this.currentSession));
+            } else {
+                sessionStorage.removeItem('longcast_active_session');
+            }
+        } catch (error) {
+            console.error('Errore nel salvare la sessione attiva:', error);
         }
     }
 
     // Suggestions Management
     loadSuggestions() {
-        const saved = localStorage.getItem('longcast_suggestions');
-        if (saved) {
-            this.suggestions = JSON.parse(saved);
+        try {
+            const saved = localStorage.getItem('longcast_suggestions');
+            if (saved) {
+                this.suggestions = JSON.parse(saved);
+            }
+        } catch (error) {
+            console.error('Errore nel caricare i suggerimenti:', error);
+            this.suggestions = {
+                tecniche: [],
+                pesoPiombo: [],
+                vento: [],
+                direzioneVento: [],
+                cannaModello: [],
+                luoghi: [],
+                grammatura: [],
+                mulinello: [],
+                filo: [],
+                lunghezzaCanna: [],
+                temperatura: [],
+                umidita: [],
+                note: []
+            };
         }
     }
 
     saveSuggestions() {
-        localStorage.setItem('longcast_suggestions', JSON.stringify(this.suggestions));
+        try {
+            localStorage.setItem('longcast_suggestions', JSON.stringify(this.suggestions));
+        } catch (error) {
+            console.error('Errore nel salvare i suggerimenti:', error);
+        }
     }
 
     addSuggestion(type, value) {
@@ -157,6 +246,38 @@ class LongCastApp {
         if (filoList) {
             filoList.innerHTML = this.suggestions.filo.map(f =>
                 `<option value="${this.escapeHtml(f)}">`
+            ).join('');
+        }
+
+        // Lunghezza Canna
+        const lunghezzaCannaList = document.getElementById('lunghezza-canna-list');
+        if (lunghezzaCannaList) {
+            lunghezzaCannaList.innerHTML = this.suggestions.lunghezzaCanna.map(l =>
+                `<option value="${this.escapeHtml(l)}">`
+            ).join('');
+        }
+
+        // Temperatura
+        const temperaturaList = document.getElementById('temperatura-list');
+        if (temperaturaList) {
+            temperaturaList.innerHTML = this.suggestions.temperatura.map(t =>
+                `<option value="${this.escapeHtml(t)}">`
+            ).join('');
+        }
+
+        // Umidità
+        const umiditaList = document.getElementById('umidita-list');
+        if (umiditaList) {
+            umiditaList.innerHTML = this.suggestions.umidita.map(u =>
+                `<option value="${this.escapeHtml(u)}">`
+            ).join('');
+        }
+
+        // Note
+        const noteList = document.getElementById('note-list');
+        if (noteList) {
+            noteList.innerHTML = this.suggestions.note.map(n =>
+                `<option value="${this.escapeHtml(n)}">`
             ).join('');
         }
     }
@@ -270,6 +391,10 @@ class LongCastApp {
         const cannaGrammatura = formData.get('session-canna-grammatura');
         const mulinello = formData.get('session-mulinello');
         const filo = formData.get('session-filo');
+        const cannaLunghezza = formData.get('session-canna-lunghezza');
+        const temperatura = formData.get('session-temperatura');
+        const umidita = formData.get('session-umidita');
+        const note = formData.get('session-note');
 
         this.currentSession = {
             id: Date.now(),
@@ -278,15 +403,15 @@ class LongCastApp {
             pesoPiombo: pesoPiombo,
             tecnica: tecnica,
             cannaModello: cannaModello,
-            cannaLunghezza: formData.get('session-canna-lunghezza') ? parseFloat(formData.get('session-canna-lunghezza')) : null,
+            cannaLunghezza: cannaLunghezza,
             cannaGrammatura: cannaGrammatura,
             mulinello: mulinello,
             filo: filo,
             vento: vento,
             direzioneVento: direzioneVento,
-            temperatura: formData.get('session-temperatura') ? parseFloat(formData.get('session-temperatura')) : null,
-            umidita: formData.get('session-umidita') ? parseInt(formData.get('session-umidita')) : null,
-            note: formData.get('session-note'),
+            temperatura: temperatura,
+            umidita: umidita,
+            note: note,
             lanci: []
         };
 
@@ -300,6 +425,10 @@ class LongCastApp {
         this.addSuggestion('grammatura', cannaGrammatura);
         this.addSuggestion('mulinello', mulinello);
         this.addSuggestion('filo', filo);
+        this.addSuggestion('lunghezzaCanna', cannaLunghezza);
+        this.addSuggestion('temperatura', temperatura);
+        this.addSuggestion('umidita', umidita);
+        this.addSuggestion('note', note);
 
         this.saveSession();
         this.showSessionActive();
@@ -392,8 +521,8 @@ class LongCastApp {
         // Get weather data (might have been updated)
         const vento = document.getElementById('cast-vento').value;
         const direzioneVento = document.getElementById('cast-direzione-vento').value;
-        const temperatura = document.getElementById('cast-temperatura').value ? parseFloat(document.getElementById('cast-temperatura').value) : null;
-        const umidita = document.getElementById('cast-umidita').value ? parseInt(document.getElementById('cast-umidita').value) : null;
+        const temperatura = document.getElementById('cast-temperatura').value;
+        const umidita = document.getElementById('cast-umidita').value;
 
         // Update session weather if changed
         this.currentSession.vento = vento;
@@ -404,6 +533,8 @@ class LongCastApp {
         // Save weather suggestions
         this.addSuggestion('vento', vento);
         this.addSuggestion('direzioneVento', direzioneVento);
+        this.addSuggestion('temperatura', temperatura);
+        this.addSuggestion('umidita', umidita);
 
         // Create cast object
         const cast = {
@@ -1228,7 +1359,11 @@ class LongCastApp {
                     luoghi: [],
                     grammatura: [],
                     mulinello: [],
-                    filo: []
+                    filo: [],
+                    lunghezzaCanna: [],
+                    temperatura: [],
+                    umidita: [],
+                    note: []
                 };
                 localStorage.clear();
                 sessionStorage.clear();
