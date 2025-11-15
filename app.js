@@ -20,6 +20,19 @@ class LongCastApp {
             umidita: [],
             note: []
         };
+
+        // Database mulinelli con metri per giro
+        this.mulinelliDB = {
+            'Shimano 8000': 0.82,
+            'Shimano 10000': 0.91,
+            'Shimano 14000': 1.05,
+            'Daiwa 5000': 0.79,
+            'Daiwa 6000': 0.88,
+            'Daiwa 7000': 0.95,
+            'Penn Spinfisher 8500': 0.89,
+            'Okuma 8K': 0.85
+        };
+
         this.init();
     }
 
@@ -362,6 +375,11 @@ class LongCastApp {
         });
         document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
         document.getElementById('clearDataBtn').addEventListener('click', () => this.clearAllData());
+
+        // Campo/Mare Logic
+        document.getElementById('session-tipo').addEventListener('change', () => this.handleTipoSessioneChange());
+        document.getElementById('session-mulinello').addEventListener('input', () => this.handleMulinelloChange());
+        document.getElementById('cast-distanza').addEventListener('input', () => this.calculateDistanzaMare());
     }
 
     // Navigation
@@ -386,6 +404,65 @@ class LongCastApp {
         }
     }
 
+    // Campo/Mare Management
+    handleTipoSessioneChange() {
+        const tipo = document.getElementById('session-tipo').value;
+        const metriPerGiroGroup = document.getElementById('metri-per-giro-group');
+
+        if (tipo === 'mare') {
+            // Mostra campo metri-per-giro
+            metriPerGiroGroup.style.display = 'block';
+        } else {
+            // Nascondi campo metri-per-giro
+            metriPerGiroGroup.style.display = 'none';
+        }
+    }
+
+    handleMulinelloChange() {
+        const mulinelloNome = document.getElementById('session-mulinello').value;
+        const metriPerGiroInput = document.getElementById('session-metri-per-giro');
+        const tipo = document.getElementById('session-tipo').value;
+
+        // Auto-compila metri-per-giro se mulinello conosciuto e tipo=mare
+        if (tipo === 'mare' && this.mulinelliDB[mulinelloNome]) {
+            metriPerGiroInput.value = this.mulinelliDB[mulinelloNome];
+            console.log(`✅ Mulinello "${mulinelloNome}" riconosciuto: ${this.mulinelliDB[mulinelloNome]} m/giro`);
+        }
+    }
+
+    calculateDistanzaMare() {
+        if (!this.currentSession) return;
+        if (this.currentSession.tipo !== 'mare') return;
+
+        const giri = parseFloat(document.getElementById('cast-distanza').value);
+        const metriPerGiro = this.currentSession.metriPerGiro;
+
+        if (giri && metriPerGiro) {
+            const distanzaCalcolata = giri * metriPerGiro;
+            document.getElementById('cast-distanza-calc').style.display = 'block';
+            document.getElementById('cast-distanza-calc-value').textContent = distanzaCalcolata.toFixed(1) + ' m';
+        } else {
+            document.getElementById('cast-distanza-calc').style.display = 'none';
+        }
+    }
+
+    updateCastDistanzaField() {
+        if (!this.currentSession) return;
+
+        const label = document.getElementById('cast-distanza-label');
+        const input = document.getElementById('cast-distanza');
+
+        if (this.currentSession.tipo === 'mare') {
+            label.textContent = 'Giri Mulinello *';
+            input.placeholder = 'es. 150';
+            input.step = '1';
+        } else {
+            label.textContent = 'Distanza (metri) *';
+            input.placeholder = 'es. 125.5';
+            input.step = '0.1';
+        }
+    }
+
     // Session Management
     checkActiveSession() {
         if (this.currentSession) {
@@ -404,11 +481,13 @@ class LongCastApp {
         document.getElementById('sessionNotStarted').style.display = 'none';
         document.getElementById('sessionActive').style.display = 'block';
         this.updateSessionUI();
+        this.updateCastDistanzaField();
     }
 
     startSession() {
         const formData = new FormData(document.getElementById('startSessionForm'));
 
+        const tipo = formData.get('session-tipo');
         const pesoPiombo = formData.get('session-peso-piombo');
         const tecnica = formData.get('session-tecnica');
         const cannaModello = formData.get('session-canna-modello');
@@ -422,9 +501,11 @@ class LongCastApp {
         const temperatura = formData.get('session-temperatura');
         const umidita = formData.get('session-umidita');
         const note = formData.get('session-note');
+        const metriPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-metri-per-giro')) : null;
 
         this.currentSession = {
             id: Date.now(),
+            tipo: tipo,
             dataInizio: formData.get('session-data'),
             luogo: luogo,
             pesoPiombo: pesoPiombo,
@@ -433,6 +514,7 @@ class LongCastApp {
             cannaLunghezza: cannaLunghezza,
             cannaGrammatura: cannaGrammatura,
             mulinello: mulinello,
+            metriPerGiro: metriPerGiro,
             filo: filo,
             vento: vento,
             direzioneVento: direzioneVento,
@@ -542,8 +624,22 @@ class LongCastApp {
     addCastToSession() {
         if (!this.currentSession) return;
 
-        const distanza = parseFloat(document.getElementById('cast-distanza').value);
+        let distanzaInput = parseFloat(document.getElementById('cast-distanza').value);
         const note = document.getElementById('cast-note').value;
+
+        // Calculate distance based on session type
+        let distanzaFinale;
+        let giri = null;
+
+        if (this.currentSession.tipo === 'mare') {
+            // Mare: distanzaInput = giri, calcoliamo distanza
+            giri = distanzaInput;
+            distanzaFinale = giri * this.currentSession.metriPerGiro;
+            console.log(`🌊 Mare: ${giri} giri × ${this.currentSession.metriPerGiro} m/giro = ${distanzaFinale.toFixed(1)} m`);
+        } else {
+            // Campo: distanzaInput = metri
+            distanzaFinale = distanzaInput;
+        }
 
         // Get weather data (might have been updated)
         const vento = document.getElementById('cast-vento').value;
@@ -565,7 +661,8 @@ class LongCastApp {
 
         // Create cast object
         const cast = {
-            distanza: distanza,
+            distanza: distanzaFinale,
+            giri: giri,
             orario: new Date().toISOString(),
             note: note
         };
@@ -587,7 +684,14 @@ class LongCastApp {
             distanzaField.focus();
         }, 100);
 
-        this.showToast(`Lancio registrato: ${distanza.toFixed(1)}m`, 'success');
+        // Show toast with appropriate message
+        let toastMessage;
+        if (this.currentSession.tipo === 'mare') {
+            toastMessage = `🌊 Lancio registrato: ${giri} giri = ${distanzaFinale.toFixed(1)}m`;
+        } else {
+            toastMessage = `📍 Lancio registrato: ${distanzaFinale.toFixed(1)}m`;
+        }
+        this.showToast(toastMessage, 'success');
     }
 
     updateSessionCastsList() {
