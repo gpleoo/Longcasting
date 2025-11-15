@@ -580,8 +580,12 @@ class LongCastApp {
         document.getElementById('cast-distanza').value = '';
         document.getElementById('cast-note').value = '';
 
-        // Focus back to distance
-        document.getElementById('cast-distanza').focus();
+        // Scroll to distance field and focus
+        const distanzaField = document.getElementById('cast-distanza');
+        setTimeout(() => {
+            distanzaField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            distanzaField.focus();
+        }, 100);
 
         this.showToast(`Lancio registrato: ${distanza.toFixed(1)}m`, 'success');
     }
