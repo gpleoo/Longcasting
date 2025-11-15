@@ -2,8 +2,30 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LongCast Pro - App per Long Casting</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LongCast Pro">
+
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0a0e27">
+    <meta name="msapplication-TileColor" content="#00D9FF">
+
+    <!-- Description -->
+    <meta name="description" content="App professionale per tracking lanci long casting con statistiche, storico sessioni e grafici di miglioramento">
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -555,6 +577,29 @@
                             </svg>
                             Elimina Tutti i Dati
                         </button>
+                    </div>
+                </div>
+
+                <!-- iOS Installation Instructions -->
+                <div class="data-management install-instructions">
+                    <h3>📱 Installa l'App su iPhone</h3>
+                    <p style="color: #00D9FF; margin-bottom: 1rem;">Per garantire il <strong>salvataggio permanente dei dati</strong>, installa l'app sulla Home Screen del tuo iPhone:</p>
+                    <ol style="color: var(--text-secondary); line-height: 2; padding-left: 1.5rem;">
+                        <li>Apri questa pagina in <strong>Safari</strong> (non Chrome)</li>
+                        <li>Tocca il pulsante <strong>Condividi</strong> <svg style="display: inline; width: 18px; height: 18px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> (in basso al centro)</li>
+                        <li>Scorri e tocca <strong>"Aggiungi a Home"</strong></li>
+                        <li>Tocca <strong>"Aggiungi"</strong> in alto a destra</li>
+                        <li>L'icona LongCast Pro apparirà sulla tua Home Screen!</li>
+                    </ol>
+                    <div style="background: rgba(0, 217, 255, 0.1); border-left: 4px solid #00D9FF; padding: 1rem; margin-top: 1rem; border-radius: 4px;">
+                        <strong>✨ Vantaggi:</strong>
+                        <ul style="margin-top: 0.5rem; color: var(--text-secondary);">
+                            <li>✅ Dati salvati permanentemente (anche dopo riavvio iPhone)</li>
+                            <li>✅ Funziona come app nativa</li>
+                            <li>✅ Nessuna barra Safari</li>
+                            <li>✅ Icona personalizzata sulla Home Screen</li>
+                            <li>✅ Avvio immediato</li>
+                        </ul>
                     </div>
                 </div>
             </div>

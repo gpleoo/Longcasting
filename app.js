@@ -24,6 +24,8 @@ class LongCastApp {
     }
 
     init() {
+        // Check if localStorage is available
+        this.checkStorageAvailability();
         this.loadData();
         this.loadSuggestions();
         this.updateDatalistSuggestions();
@@ -33,6 +35,19 @@ class LongCastApp {
         this.loadProfile();
         this.setDefaultDateTime();
         this.checkActiveSession();
+    }
+
+    checkStorageAvailability() {
+        try {
+            const test = '__storage_test__';
+            localStorage.setItem(test, test);
+            localStorage.removeItem(test);
+            return true;
+        } catch (e) {
+            console.error('localStorage non disponibile:', e);
+            alert('ATTENZIONE: Il salvataggio dati potrebbe non funzionare. Per iOS: aggiungi questa app alla Home Screen per garantire il salvataggio dei dati.');
+            return false;
+        }
     }
 
     // Setup listeners for better data persistence on iOS
@@ -77,17 +92,22 @@ class LongCastApp {
 
             if (savedSessions) {
                 this.sessions = JSON.parse(savedSessions);
+                console.log('✅ Caricate', this.sessions.length, 'sessioni da localStorage');
+            } else {
+                console.log('ℹ️ Nessuna sessione salvata in localStorage');
             }
 
             if (savedProfile) {
                 this.profile = JSON.parse(savedProfile);
+                console.log('✅ Profilo caricato');
             }
 
             if (savedActiveSession) {
                 this.currentSession = JSON.parse(savedActiveSession);
+                console.log('✅ Sessione attiva recuperata con', this.currentSession.lanci.length, 'lanci');
             }
         } catch (error) {
-            console.error('Errore nel caricare i dati:', error);
+            console.error('❌ Errore nel caricare i dati:', error);
             // Reset to defaults on error
             this.sessions = [];
             this.profile = null;
@@ -97,12 +117,16 @@ class LongCastApp {
 
     saveData() {
         try {
-            localStorage.setItem('longcast_sessions', JSON.stringify(this.sessions));
+            const sessionsJson = JSON.stringify(this.sessions);
+            localStorage.setItem('longcast_sessions', sessionsJson);
+            console.log('✅ Sessioni salvate:', this.sessions.length, 'sessioni');
+
             if (this.profile) {
                 localStorage.setItem('longcast_profile', JSON.stringify(this.profile));
+                console.log('✅ Profilo salvato');
             }
         } catch (error) {
-            console.error('Errore nel salvare i dati:', error);
+            console.error('❌ Errore nel salvare i dati:', error);
             // Try to free space by removing old data if quota exceeded
             if (error.name === 'QuotaExceededError') {
                 try {
@@ -110,9 +134,11 @@ class LongCastApp {
                     if (this.sessions.length > 20) {
                         this.sessions = this.sessions.slice(-20);
                         localStorage.setItem('longcast_sessions', JSON.stringify(this.sessions));
+                        console.log('✅ Sessioni salvate dopo pulizia:', this.sessions.length);
                     }
                 } catch (e) {
-                    console.error('Impossibile salvare i dati anche dopo pulizia:', e);
+                    console.error('❌ Impossibile salvare i dati anche dopo pulizia:', e);
+                    alert('ERRORE: Impossibile salvare i dati. Memoria piena o localStorage disabilitato.');
                 }
             }
         }
@@ -160,8 +186,9 @@ class LongCastApp {
     saveSuggestions() {
         try {
             localStorage.setItem('longcast_suggestions', JSON.stringify(this.suggestions));
+            console.log('✅ Suggerimenti salvati');
         } catch (error) {
-            console.error('Errore nel salvare i suggerimenti:', error);
+            console.error('❌ Errore nel salvare i suggerimenti:', error);
         }
     }
 
