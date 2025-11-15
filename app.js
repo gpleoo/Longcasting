@@ -21,7 +21,7 @@ class LongCastApp {
             note: []
         };
 
-        // Database mulinelli con metri per giro
+        // Database mulinelli con metri per giro (predefiniti)
         this.mulinelliDB = {
             'Shimano 8000': 0.82,
             'Shimano 10000': 0.91,
@@ -33,6 +33,9 @@ class LongCastApp {
             'Okuma 8K': 0.85
         };
 
+        // Configurazione mulinelli custom (salvata in localStorage)
+        this.mulinelliConfig = {};
+
         this.init();
     }
 
@@ -41,6 +44,7 @@ class LongCastApp {
         this.checkStorageAvailability();
         this.loadData();
         this.loadSuggestions();
+        this.loadMulinelliConfig();
         this.updateDatalistSuggestions();
         this.setupEventListeners();
         this.setupPersistenceListeners();
@@ -203,6 +207,40 @@ class LongCastApp {
         } catch (error) {
             console.error('❌ Errore nel salvare i suggerimenti:', error);
         }
+    }
+
+    // Mulinelli Configuration Management
+    loadMulinelliConfig() {
+        try {
+            const saved = localStorage.getItem('longcast_mulinelli_config');
+            if (saved) {
+                this.mulinelliConfig = JSON.parse(saved);
+                console.log('✅ Configurazione mulinelli caricata:', Object.keys(this.mulinelliConfig).length, 'mulinelli custom');
+            }
+        } catch (error) {
+            console.error('❌ Errore nel caricare configurazione mulinelli:', error);
+            this.mulinelliConfig = {};
+        }
+    }
+
+    saveMulinelliConfig() {
+        try {
+            localStorage.setItem('longcast_mulinelli_config', JSON.stringify(this.mulinelliConfig));
+            console.log('✅ Configurazione mulinelli salvata');
+        } catch (error) {
+            console.error('❌ Errore nel salvare configurazione mulinelli:', error);
+        }
+    }
+
+    getMulinelloMetriPerGiro(nomeMuslinello) {
+        // Controlla prima config custom, poi database predefinito
+        if (this.mulinelliConfig[nomeMuslinello] !== undefined) {
+            return this.mulinelliConfig[nomeMuslinello];
+        }
+        if (this.mulinelliDB[nomeMuslinello] !== undefined) {
+            return this.mulinelliDB[nomeMuslinello];
+        }
+        return null;
     }
 
     addSuggestion(type, value) {
@@ -379,6 +417,7 @@ class LongCastApp {
         // Campo/Mare Logic
         document.getElementById('session-tipo').addEventListener('change', () => this.handleTipoSessioneChange());
         document.getElementById('session-mulinello').addEventListener('input', () => this.handleMulinelloChange());
+        document.getElementById('session-metri-per-giro').addEventListener('change', () => this.handleMetriPerGiroChange());
         document.getElementById('cast-distanza').addEventListener('input', () => this.calculateDistanzaMare());
     }
 
@@ -419,14 +458,31 @@ class LongCastApp {
     }
 
     handleMulinelloChange() {
-        const mulinelloNome = document.getElementById('session-mulinello').value;
+        const mulinelloNome = document.getElementById('session-mulinello').value.trim();
         const metriPerGiroInput = document.getElementById('session-metri-per-giro');
         const tipo = document.getElementById('session-tipo').value;
 
         // Auto-compila metri-per-giro se mulinello conosciuto e tipo=mare
-        if (tipo === 'mare' && this.mulinelliDB[mulinelloNome]) {
-            metriPerGiroInput.value = this.mulinelliDB[mulinelloNome];
-            console.log(`✅ Mulinello "${mulinelloNome}" riconosciuto: ${this.mulinelliDB[mulinelloNome]} m/giro`);
+        if (tipo === 'mare' && mulinelloNome) {
+            const metriPerGiro = this.getMulinelloMetriPerGiro(mulinelloNome);
+            if (metriPerGiro !== null) {
+                metriPerGiroInput.value = metriPerGiro;
+                const source = this.mulinelliConfig[mulinelloNome] !== undefined ? 'custom' : 'predefinito';
+                console.log(`✅ Mulinello "${mulinelloNome}" riconosciuto (${source}): ${metriPerGiro} m/giro`);
+            }
+        }
+    }
+
+    handleMetriPerGiroChange() {
+        const mulinelloNome = document.getElementById('session-mulinello').value.trim();
+        const metriPerGiro = parseFloat(document.getElementById('session-metri-per-giro').value);
+        const tipo = document.getElementById('session-tipo').value;
+
+        // Salva configurazione mulinello se valida
+        if (tipo === 'mare' && mulinelloNome && !isNaN(metriPerGiro) && metriPerGiro > 0) {
+            this.mulinelliConfig[mulinelloNome] = metriPerGiro;
+            this.saveMulinelliConfig();
+            console.log(`💾 Salvato mulinello "${mulinelloNome}": ${metriPerGiro} m/giro`);
         }
     }
 
