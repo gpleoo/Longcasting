@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Generatore Icone LongCast Pro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0e27;
+            color: white;
+        }
+        h1 { color: #00D9FF; }
+        .icon-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+        .icon-item {
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #00D9FF;
+            border-radius: 10px;
+            margin: 10px 0;
+            background: white;
+        }
+        button {
+            background: linear-gradient(135deg, #00D9FF 0%, #667EEA 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .instructions {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid #00D9FF;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎣 Generatore Icone LongCast Pro</h1>
+
+    <div class="instructions">
+        <h3>Istruzioni:</h3>
+        <ol>
+            <li>Clicca su "Genera Tutte le Icone"</li>
+            <li>Le icone appariranno sotto</li>
+            <li>Clicca con il tasto destro su ogni icona e scegli "Salva immagine con nome"</li>
+            <li>Salva ogni icona con il nome esatto indicato nella cartella LongCasting</li>
+        </ol>
+    </div>
+
+    <button onclick="generateAllIcons()">Genera Tutte le Icone</button>
+
+    <div class="icon-container" id="iconContainer"></div>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+
+            // Background
+            const bgGradient = ctx.createLinearGradient(0, 0, size, size);
+            bgGradient.addColorStop(0, '#0a0e27');
+            bgGradient.addColorStop(1, '#141a3f');
+            ctx.fillStyle = bgGradient;
+            const cornerRadius = size * 0.175;
+            roundRect(ctx, 0, 0, size, size, cornerRadius);
+            ctx.fill();
+
+            // Gradient for shapes
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#00D9FF');
+            gradient.addColorStop(1, '#667EEA');
+
+            // Draw hexagon with glow
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const radius = size * 0.35;
+
+            // Outer glow
+            ctx.shadowBlur = size * 0.05;
+            ctx.shadowColor = '#00D9FF';
+
+            // Hexagon shape (filled, semi-transparent)
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i - Math.PI / 6;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(0, 217, 255, 0.15)';
+            ctx.fill();
+
+            // Hexagon stroke
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = size * 0.015;
+            ctx.stroke();
+
+            // Center circle
+            ctx.shadowBlur = size * 0.08;
+            ctx.shadowColor = '#00D9FF';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, size * 0.12, 0, Math.PI * 2);
+            ctx.fillStyle = '#00D9FF';
+            ctx.fill();
+
+            // Casting line effect
+            ctx.shadowBlur = 0;
+            const lineEndX = centerX + radius * 0.7;
+            const lineEndY = centerY - radius * 0.5;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(lineEndX, lineEndY);
+            ctx.strokeStyle = 'rgba(0, 217, 255, 0.6)';
+            ctx.lineWidth = size * 0.008;
+            ctx.stroke();
+
+            // End circle
+            ctx.beginPath();
+            ctx.arc(lineEndX, lineEndY, size * 0.024, 0, Math.PI * 2);
+            ctx.fillStyle = '#667EEA';
+            ctx.fill();
+
+            // Text
+            ctx.shadowBlur = 0;
+            ctx.font = `bold ${size * 0.09}px Arial, sans-serif`;
+            ctx.fillStyle = '#00D9FF';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('LongCast', centerX, size * 0.88);
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function createIconElement(size, filename) {
+            const container = document.createElement('div');
+            container.className = 'icon-item';
+
+            const title = document.createElement('h3');
+            title.textContent = filename;
+            title.style.color = '#00D9FF';
+
+            const canvas = document.createElement('canvas');
+            drawIcon(canvas, size);
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = `Download ${filename}`;
+            downloadBtn.onclick = () => {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+
+            container.appendChild(title);
+            container.appendChild(canvas);
+            container.appendChild(downloadBtn);
+
+            return container;
+        }
+
+        function generateAllIcons() {
+            const container = document.getElementById('iconContainer');
+            container.innerHTML = '';
+
+            const icons = [
+                { size: 180, name: 'apple-touch-icon.png' },
+                { size: 192, name: 'icon-192.png' },
+                { size: 512, name: 'icon-512.png' }
+            ];
+
+            icons.forEach(icon => {
+                container.appendChild(createIconElement(icon.size, icon.name));
+            });
+        }
+
+        // Auto-generate on load
+        window.onload = generateAllIcons;
+    </script>
+</body>
+</html>
