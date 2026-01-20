@@ -1,10 +1,329 @@
-// LongCast Pro - Main Application
+// ============================================
+// GPS TRACKER CLASS (Professional Module)
+// ============================================
+class GPSTracker {
+    constructor() {
+        this.isTracking = false;
+        this.watchId = null;
+        this.trackingPoints = [];
+        this.startPosition = null;
+        this.currentPosition = null;
+        this.startTime = null;
+        this.timerInterval = null;
+
+        // Statistics
+        this.totalDistance = 0;
+        this.averageAccuracy = 0;
+        this.pointsCollected = 0;
+
+        // Configuration
+        this.config = {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0,
+            minAccuracy: 50, // meters - scarta punti con accuracy peggiore
+            maxSpeed: 15, // m/s - velocità massima realistica (filtro anti-salti)
+            smoothingWindow: 3 // numero di punti per media mobile
+        };
+    }
+
+    // Check if GPS is available
+    isGPSAvailable() {
+        return 'geolocation' in navigator;
+    }
+
+    // Start GPS tracking
+    async start() {
+        if (!this.isGPSAvailable()) {
+            throw new Error('GPS non disponibile su questo dispositivo');
+        }
+
+        if (this.isTracking) {
+            throw new Error('Tracking GPS già in corso');
+        }
+
+        // Reset state
+        this.reset();
+        this.isTracking = true;
+        this.startTime = Date.now();
+
+        // Get initial position
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    this.startPosition = this.createGPSPoint(position);
+                    this.trackingPoints.push(this.startPosition);
+                    this.currentPosition = this.startPosition;
+
+                    // Start continuous watching
+                    this.watchId = navigator.geolocation.watchPosition(
+                        (pos) => this.onPositionUpdate(pos),
+                        (error) => this.onPositionError(error),
+                        this.config
+                    );
+
+                    // Start timer
+                    this.startTimer();
+
+                    resolve(this.startPosition);
+                },
+                (error) => {
+                    this.isTracking = false;
+                    reject(this.handleGPSError(error));
+                },
+                this.config
+            );
+        });
+    }
+
+    // Stop GPS tracking
+    stop() {
+        if (!this.isTracking) {
+            return null;
+        }
+
+        this.isTracking = false;
+
+        if (this.watchId !== null) {
+            navigator.geolocation.clearWatch(this.watchId);
+            this.watchId = null;
+        }
+
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+
+        // Calculate final statistics
+        return this.calculateFinalStats();
+    }
+
+    // Reset tracker state
+    reset() {
+        this.trackingPoints = [];
+        this.startPosition = null;
+        this.currentPosition = null;
+        this.totalDistance = 0;
+        this.averageAccuracy = 0;
+        this.pointsCollected = 0;
+        this.startTime = null;
+
+        if (this.watchId !== null) {
+            navigator.geolocation.clearWatch(this.watchId);
+            this.watchId = null;
+        }
+
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+    }
+
+    // Create GPS point object
+    createGPSPoint(position) {
+        return {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            altitude: position.coords.altitude,
+            timestamp: position.timestamp,
+            speed: position.coords.speed
+        };
+    }
+
+    // Handle position update
+    onPositionUpdate(position) {
+        const newPoint = this.createGPSPoint(position);
+
+        // Filter: Reject points with poor accuracy
+        if (newPoint.accuracy > this.config.minAccuracy) {
+            console.warn(`GPS point rejected: accuracy too low (${newPoint.accuracy.toFixed(1)}m)`);
+            return;
+        }
+
+        // Filter: Reject unrealistic speed jumps
+        if (this.currentPosition) {
+            const timeDelta = (newPoint.timestamp - this.currentPosition.timestamp) / 1000; // seconds
+            const distance = this.calculateDistance(this.currentPosition, newPoint);
+            const speed = distance / timeDelta;
+
+            if (speed > this.config.maxSpeed) {
+                console.warn(`GPS point rejected: unrealistic speed (${speed.toFixed(1)} m/s)`);
+                return;
+            }
+        }
+
+        // Add point to tracking
+        this.trackingPoints.push(newPoint);
+        this.pointsCollected++;
+
+        // Update current position
+        const previousPosition = this.currentPosition;
+        this.currentPosition = newPoint;
+
+        // Calculate incremental distance
+        if (previousPosition) {
+            const incrementalDistance = this.calculateDistance(previousPosition, newPoint);
+            this.totalDistance += incrementalDistance;
+        }
+
+        // Update average accuracy
+        this.updateAverageAccuracy();
+
+        // Trigger callback if set
+        if (this.onUpdate) {
+            this.onUpdate(this.getCurrentStats());
+        }
+    }
+
+    // Handle position error
+    onPositionError(error) {
+        console.error('GPS Error:', error);
+        if (this.onError) {
+            this.onError(this.handleGPSError(error));
+        }
+    }
+
+    // Handle GPS errors
+    handleGPSError(error) {
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                return new Error('Permesso GPS negato. Abilita la geolocalizzazione nelle impostazioni.');
+            case error.POSITION_UNAVAILABLE:
+                return new Error('Posizione GPS non disponibile. Assicurati di essere all\'aperto.');
+            case error.TIMEOUT:
+                return new Error('Timeout GPS. Riprova.');
+            default:
+                return new Error('Errore GPS sconosciuto.');
+        }
+    }
+
+    // Calculate distance between two GPS points using Haversine formula
+    calculateDistance(point1, point2) {
+        const R = 6371e3; // Earth radius in meters
+        const φ1 = point1.latitude * Math.PI / 180;
+        const φ2 = point2.latitude * Math.PI / 180;
+        const Δφ = (point2.latitude - point1.latitude) * Math.PI / 180;
+        const Δλ = (point2.longitude - point1.longitude) * Math.PI / 180;
+
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c; // Distance in meters
+    }
+
+    // Apply smoothing to distance (moving average)
+    getSmoothedDistance() {
+        if (this.trackingPoints.length < 2) {
+            return 0;
+        }
+
+        // Calculate distance for last N points
+        const window = Math.min(this.config.smoothingWindow, this.trackingPoints.length - 1);
+        let smoothedDistance = 0;
+
+        for (let i = this.trackingPoints.length - window; i < this.trackingPoints.length; i++) {
+            if (i > 0) {
+                smoothedDistance += this.calculateDistance(
+                    this.trackingPoints[i - 1],
+                    this.trackingPoints[i]
+                );
+            }
+        }
+
+        // Scale to total distance
+        const ratio = (this.trackingPoints.length - 1) / window;
+        return smoothedDistance * ratio;
+    }
+
+    // Update average accuracy
+    updateAverageAccuracy() {
+        if (this.trackingPoints.length === 0) {
+            this.averageAccuracy = 0;
+            return;
+        }
+
+        const sum = this.trackingPoints.reduce((acc, point) => acc + point.accuracy, 0);
+        this.averageAccuracy = sum / this.trackingPoints.length;
+    }
+
+    // Get current statistics
+    getCurrentStats() {
+        return {
+            distance: this.totalDistance,
+            smoothedDistance: this.getSmoothedDistance(),
+            accuracy: this.averageAccuracy,
+            points: this.pointsCollected,
+            duration: this.getElapsedTime(),
+            quality: this.getQualityRating()
+        };
+    }
+
+    // Calculate final statistics
+    calculateFinalStats() {
+        const stats = this.getCurrentStats();
+
+        // Use smoothed distance for better accuracy
+        const finalDistance = stats.smoothedDistance > 0 ? stats.smoothedDistance : stats.distance;
+
+        return {
+            distance: finalDistance,
+            accuracy: stats.accuracy,
+            points: stats.points,
+            duration: stats.duration,
+            quality: stats.quality,
+            rawDistance: stats.distance,
+            startPosition: this.startPosition,
+            endPosition: this.currentPosition,
+            allPoints: this.trackingPoints
+        };
+    }
+
+    // Get elapsed time in seconds
+    getElapsedTime() {
+        if (!this.startTime) return 0;
+        return Math.floor((Date.now() - this.startTime) / 1000);
+    }
+
+    // Get quality rating based on accuracy and points
+    getQualityRating() {
+        if (this.pointsCollected < 5) return 'Scarsa';
+        if (this.averageAccuracy > 20) return 'Bassa';
+        if (this.averageAccuracy > 10) return 'Media';
+        if (this.averageAccuracy > 5) return 'Buona';
+        return 'Ottima';
+    }
+
+    // Format duration as MM:SS
+    formatDuration(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Start timer for UI updates
+    startTimer() {
+        this.timerInterval = setInterval(() => {
+            if (this.onTimerUpdate) {
+                this.onTimerUpdate(this.getElapsedTime());
+            }
+        }, 1000);
+    }
+}
+
+// ============================================
+// LONGCAST PRO - MAIN APPLICATION
+// ============================================
 class LongCastApp {
     constructor() {
         this.sessions = []; // Array of completed training sessions
         this.profile = null;
         this.chart = null;
         this.currentSession = null; // Active training session
+        this.gpsTracker = new GPSTracker(); // GPS Tracker instance
+        this.gpsResult = null; // Temporary GPS result storage
         this.suggestions = {
             tecniche: [],
             pesoPiombo: [],
@@ -419,6 +738,14 @@ class LongCastApp {
         document.getElementById('session-mulinello').addEventListener('input', () => this.handleMulinelloChange());
         document.getElementById('session-metri-per-giro').addEventListener('change', () => this.handleMetriPerGiroChange());
         document.getElementById('cast-distanza').addEventListener('input', () => this.calculateDistanzaMare());
+
+        // GPS Tracking
+        document.getElementById('gpsStartBtn').addEventListener('click', () => this.startGPSTracking());
+        document.getElementById('gpsStopBtn').addEventListener('click', () => this.stopGPSTracking());
+
+        // GPS Confirm Modal
+        document.getElementById('gpsConfirmSave').addEventListener('click', () => this.saveGPSCast());
+        document.getElementById('gpsConfirmCancel').addEventListener('click', () => this.cancelGPSCast());
     }
 
     // Navigation
@@ -764,9 +1091,14 @@ class LongCastApp {
                 second: '2-digit'
             });
 
+            // GPS badge if measured with GPS
+            const gpsBadge = cast.gps && cast.gps.misurato ?
+                `<span class="gps-badge" title="Misurato con GPS - Precisione: ±${cast.gps.accuracy.toFixed(1)}m">📍 GPS</span>` :
+                '';
+
             return `
                 <div class="cast-item">
-                    <div class="cast-distance">${cast.distanza.toFixed(1)}m</div>
+                    <div class="cast-distance">${cast.distanza.toFixed(1)}m ${gpsBadge}</div>
                     <div class="cast-info">
                         <div class="cast-technique">Lancio #${index + 1}</div>
                         <div class="cast-details">
@@ -1590,6 +1922,268 @@ class LongCastApp {
         setTimeout(() => {
             toast.classList.remove('show');
         }, 3000);
+    }
+
+    // ============================================
+    // GPS TRACKING METHODS
+    // ============================================
+
+    async startGPSTracking() {
+        if (!this.currentSession) {
+            this.showToast('Devi prima avviare una sessione di allenamento', 'error');
+            return;
+        }
+
+        // Check GPS availability
+        if (!this.gpsTracker.isGPSAvailable()) {
+            this.showToast('GPS non disponibile su questo dispositivo', 'error');
+            return;
+        }
+
+        try {
+            // Update UI
+            document.getElementById('gpsStartBtn').style.display = 'none';
+            document.getElementById('gpsStopBtn').style.display = 'block';
+
+            this.showToast('Inizializzazione GPS...', 'success');
+
+            // Setup GPS callbacks
+            this.gpsTracker.onUpdate = (stats) => this.updateGPSUI(stats);
+            this.gpsTracker.onTimerUpdate = (seconds) => this.updateGPSTimer(seconds);
+            this.gpsTracker.onError = (error) => {
+                this.showToast(error.message, 'error');
+                this.resetGPSUI();
+            };
+
+            // Start GPS tracking
+            await this.gpsTracker.start();
+
+            // Show GPS status and tracking UI
+            document.getElementById('gpsStatus').style.display = 'block';
+            document.getElementById('gpsTracking').style.display = 'block';
+
+            this.showToast('GPS attivo! Lancia e cammina fino al piombo', 'success');
+
+        } catch (error) {
+            console.error('GPS Start Error:', error);
+            this.showToast(error.message || 'Errore nell\'avvio del GPS', 'error');
+            this.resetGPSUI();
+        }
+    }
+
+    stopGPSTracking() {
+        if (!this.gpsTracker.isTracking) {
+            return;
+        }
+
+        // Stop GPS and get final stats
+        const stats = this.gpsTracker.stop();
+
+        if (!stats) {
+            this.showToast('Errore nel recupero dei dati GPS', 'error');
+            this.resetGPSUI();
+            return;
+        }
+
+        // Validate distance
+        if (stats.distance < 10) {
+            const confirm = window.confirm(
+                'La distanza misurata è molto bassa (< 10m).\n' +
+                'Vuoi cancellare questa misurazione?'
+            );
+            if (confirm) {
+                this.resetGPSUI();
+                this.showToast('Misurazione GPS cancellata', 'warning');
+                return;
+            }
+        }
+
+        if (stats.distance > 500) {
+            const confirm = window.confirm(
+                'La distanza misurata è molto alta (> 500m).\n' +
+                'Questo potrebbe essere un errore del GPS.\n' +
+                'Vuoi continuare comunque?'
+            );
+            if (!confirm) {
+                this.resetGPSUI();
+                this.showToast('Misurazione GPS cancellata', 'warning');
+                return;
+            }
+        }
+
+        // Store result temporarily
+        this.gpsResult = stats;
+
+        // Show confirmation modal
+        this.showGPSConfirmModal(stats);
+    }
+
+    updateGPSUI(stats) {
+        // Update status display
+        const satellites = stats.points > 0 ? Math.min(12, Math.floor(stats.points / 3) + 4) : '--';
+        document.getElementById('gpsSatellites').textContent = satellites;
+        document.getElementById('gpsAccuracy').textContent = stats.accuracy > 0 ?
+            `±${stats.accuracy.toFixed(1)} m` : '-- m';
+        document.getElementById('gpsQuality').textContent = stats.quality;
+        document.getElementById('gpsPoints').textContent = stats.points;
+
+        // Update quality color
+        const qualityElement = document.getElementById('gpsQuality');
+        qualityElement.style.color = this.getQualityColor(stats.quality);
+
+        // Update distance display
+        const distance = stats.smoothedDistance > 0 ? stats.smoothedDistance : stats.distance;
+        document.getElementById('gpsDistanceValue').textContent = distance.toFixed(1) + ' m';
+    }
+
+    updateGPSTimer(seconds) {
+        const formatted = this.gpsTracker.formatDuration(seconds);
+        document.getElementById('gpsTrackingTime').textContent = formatted;
+    }
+
+    getQualityColor(quality) {
+        switch (quality) {
+            case 'Ottima': return '#43e97b';
+            case 'Buona': return '#38f9d7';
+            case 'Media': return '#f5af19';
+            case 'Bassa': return '#ed8936';
+            case 'Scarsa': return '#f56565';
+            default: return 'var(--text-secondary)';
+        }
+    }
+
+    showGPSConfirmModal(stats) {
+        const modal = document.getElementById('gpsConfirmModal');
+
+        // Populate modal with stats
+        document.getElementById('gpsResultDistance').textContent = stats.distance.toFixed(1) + ' m';
+        document.getElementById('gpsResultAccuracy').textContent = `±${stats.accuracy.toFixed(1)} m`;
+        document.getElementById('gpsResultPoints').textContent = stats.points;
+        document.getElementById('gpsResultDuration').textContent = this.gpsTracker.formatDuration(stats.duration);
+        document.getElementById('gpsResultQuality').textContent = stats.quality;
+        document.getElementById('gpsResultQuality').style.color = this.getQualityColor(stats.quality);
+
+        // Clear note field
+        document.getElementById('gpsResultNote').value = '';
+
+        // Show modal
+        modal.style.display = 'flex';
+
+        // Hide GPS UI
+        this.resetGPSUI();
+    }
+
+    hideGPSConfirmModal() {
+        const modal = document.getElementById('gpsConfirmModal');
+        modal.style.display = 'none';
+    }
+
+    saveGPSCast() {
+        if (!this.gpsResult || !this.currentSession) {
+            this.showToast('Errore: dati GPS non disponibili', 'error');
+            this.hideGPSConfirmModal();
+            return;
+        }
+
+        const note = document.getElementById('gpsResultNote').value.trim();
+
+        // Calculate final distance based on session type
+        let distanzaFinale;
+        let giri = null;
+
+        if (this.currentSession.tipo === 'mare') {
+            // Mare: calcola giri dal GPS
+            const metriPerGiro = this.currentSession.metriPerGiro;
+            if (metriPerGiro && metriPerGiro > 0) {
+                giri = this.gpsResult.distance / metriPerGiro;
+                distanzaFinale = this.gpsResult.distance;
+            } else {
+                this.showToast('Errore: metri per giro non configurati', 'error');
+                return;
+            }
+        } else {
+            // Campo: usa distanza GPS diretta
+            distanzaFinale = this.gpsResult.distance;
+        }
+
+        // Get weather data
+        const vento = document.getElementById('cast-vento').value;
+        const direzioneVento = document.getElementById('cast-direzione-vento').value;
+        const temperatura = document.getElementById('cast-temperatura').value;
+        const umidita = document.getElementById('cast-umidita').value;
+
+        // Update session weather
+        this.currentSession.vento = vento;
+        this.currentSession.direzioneVento = direzioneVento;
+        this.currentSession.temperatura = temperatura;
+        this.currentSession.umidita = umidita;
+
+        // Create cast object with GPS metadata
+        const cast = {
+            distanza: distanzaFinale,
+            giri: giri,
+            orario: new Date().toISOString(),
+            note: note,
+            gps: {
+                misurato: true,
+                accuracy: this.gpsResult.accuracy,
+                points: this.gpsResult.points,
+                duration: this.gpsResult.duration,
+                quality: this.gpsResult.quality,
+                rawDistance: this.gpsResult.rawDistance
+            }
+        };
+
+        // Add cast to session
+        this.currentSession.lanci.push(cast);
+        this.saveSession();
+
+        // Update UI
+        this.updateSessionUI();
+
+        // Hide modal
+        this.hideGPSConfirmModal();
+
+        // Clear GPS result
+        this.gpsResult = null;
+
+        // Show success message
+        let toastMessage;
+        if (this.currentSession.tipo === 'mare') {
+            toastMessage = `📍 GPS: ${distanzaFinale.toFixed(1)}m (${giri.toFixed(0)} giri) - ${this.gpsResult.quality}`;
+        } else {
+            toastMessage = `📍 GPS: ${distanzaFinale.toFixed(1)}m - ${this.gpsResult.quality}`;
+        }
+        this.showToast(toastMessage, 'success');
+    }
+
+    cancelGPSCast() {
+        if (confirm('Sei sicuro di voler cancellare questa misurazione GPS?')) {
+            this.gpsResult = null;
+            this.hideGPSConfirmModal();
+            this.showToast('Misurazione GPS cancellata', 'warning');
+        }
+    }
+
+    resetGPSUI() {
+        // Hide tracking UI
+        document.getElementById('gpsStatus').style.display = 'none';
+        document.getElementById('gpsTracking').style.display = 'none';
+
+        // Reset buttons
+        document.getElementById('gpsStartBtn').style.display = 'block';
+        document.getElementById('gpsStopBtn').style.display = 'none';
+
+        // Reset displays
+        document.getElementById('gpsDistanceValue').textContent = '0.0 m';
+        document.getElementById('gpsTrackingTime').textContent = '00:00';
+        document.getElementById('gpsSatellites').textContent = '--';
+        document.getElementById('gpsAccuracy').textContent = '-- m';
+        document.getElementById('gpsQuality').textContent = '--';
+        document.getElementById('gpsPoints').textContent = '0';
+
+        // Reset GPS tracker
+        this.gpsTracker.reset();
     }
 }
 

@@ -313,10 +313,81 @@
                         </div>
                     </div>
 
+                    <!-- GPS Distance Measurement -->
+                    <div class="gps-measurement-card">
+                        <div class="gps-header">
+                            <h3 class="form-section-title">📍 Misurazione GPS Distanza</h3>
+                            <p class="gps-subtitle">Misura la distanza camminando dal punto di lancio al piombo</p>
+                        </div>
+
+                        <!-- GPS Status -->
+                        <div id="gpsStatus" class="gps-status" style="display: none;">
+                            <div class="gps-status-grid">
+                                <div class="gps-status-item">
+                                    <span class="gps-status-label">📡 Satelliti</span>
+                                    <span class="gps-status-value" id="gpsSatellites">--</span>
+                                </div>
+                                <div class="gps-status-item">
+                                    <span class="gps-status-label">🎯 Precisione</span>
+                                    <span class="gps-status-value" id="gpsAccuracy">-- m</span>
+                                </div>
+                                <div class="gps-status-item">
+                                    <span class="gps-status-label">📊 Qualità</span>
+                                    <span class="gps-status-value" id="gpsQuality">--</span>
+                                </div>
+                                <div class="gps-status-item">
+                                    <span class="gps-status-label">⏱️ Punti GPS</span>
+                                    <span class="gps-status-value" id="gpsPoints">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GPS Tracking Display -->
+                        <div id="gpsTracking" class="gps-tracking" style="display: none;">
+                            <div class="gps-distance-display">
+                                <div class="gps-distance-label">Distanza Attuale</div>
+                                <div class="gps-distance-value" id="gpsDistanceValue">0.0 m</div>
+                            </div>
+                            <div class="gps-tracking-info">
+                                <span id="gpsTrackingTime">00:00</span>
+                                <span class="gps-tracking-dot"></span>
+                                <span>In registrazione...</span>
+                            </div>
+                        </div>
+
+                        <!-- GPS Controls -->
+                        <div class="gps-controls">
+                            <button type="button" id="gpsStartBtn" class="btn btn-gps-start">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 6v6l4 2"/>
+                                </svg>
+                                START Misurazione GPS
+                            </button>
+                            <button type="button" id="gpsStopBtn" class="btn btn-gps-stop" style="display: none;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="6" y="6" width="12" height="12" rx="2"/>
+                                </svg>
+                                STOP e Salva Lancio
+                            </button>
+                        </div>
+
+                        <div class="gps-instructions">
+                            <p><strong>Come usare:</strong></p>
+                            <ol>
+                                <li>Posizionati al punto di lancio</li>
+                                <li>Premi <strong>START</strong> e attendi segnale GPS</li>
+                                <li>Lancia il piombo</li>
+                                <li>Cammina fino al piombo</li>
+                                <li>Premi <strong>STOP</strong> per salvare il lancio</li>
+                            </ol>
+                        </div>
+                    </div>
+
                     <!-- Add Cast Form -->
                     <form id="addCastForm" class="form-card">
                         <div class="form-section">
-                            <h3 class="form-section-title">Nuovo Lancio</h3>
+                            <h3 class="form-section-title">✍️ Inserimento Manuale Distanza</h3>
 
                             <div class="form-row">
                                 <div class="form-group">
@@ -334,7 +405,7 @@
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M12 5v14M5 12h14"/>
                                     </svg>
-                                    Aggiungi Lancio
+                                    Aggiungi Lancio Manuale
                                 </button>
                             </div>
 
@@ -630,6 +701,61 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
+
+    <!-- GPS Confirm Modal -->
+    <div id="gpsConfirmModal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📍 Lancio Misurato con GPS</h3>
+            </div>
+            <div class="modal-body">
+                <div class="gps-result-display">
+                    <div class="gps-result-main">
+                        <span class="gps-result-label">Distanza Misurata</span>
+                        <span class="gps-result-value" id="gpsResultDistance">0.0 m</span>
+                    </div>
+                    <div class="gps-result-stats">
+                        <div class="gps-result-stat">
+                            <span class="label">Precisione</span>
+                            <span class="value" id="gpsResultAccuracy">±0 m</span>
+                        </div>
+                        <div class="gps-result-stat">
+                            <span class="label">Punti GPS</span>
+                            <span class="value" id="gpsResultPoints">0</span>
+                        </div>
+                        <div class="gps-result-stat">
+                            <span class="label">Durata</span>
+                            <span class="value" id="gpsResultDuration">00:00</span>
+                        </div>
+                        <div class="gps-result-stat">
+                            <span class="label">Qualità</span>
+                            <span class="value" id="gpsResultQuality">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gps-result-note">
+                    <label for="gpsResultNote">Note (opzionale)</label>
+                    <input type="text" id="gpsResultNote" placeholder="Aggiungi note su questo lancio...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="gpsConfirmCancel" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    Cancella
+                </button>
+                <button id="gpsConfirmSave" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Salva Lancio
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
