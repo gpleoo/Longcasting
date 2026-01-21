@@ -379,6 +379,11 @@ class LongCastApp {
         this.mapMarkers = []; // Array of map markers
         this.currentMapSession = null; // Session displayed on map
 
+        // Pagination for storico
+        this.currentPage = 1;
+        this.sessionsPerPage = 5;
+        this.filteredSessions = []; // Store filtered sessions for pagination
+
         this.suggestions = {
             tecniche: [],
             pesoPiombo: [],
@@ -776,6 +781,10 @@ class LongCastApp {
         document.getElementById('filter-luogo').addEventListener('input', () => this.filterHistory());
         document.getElementById('filter-periodo').addEventListener('change', () => this.filterHistory());
         document.getElementById('sort-by').addEventListener('change', () => this.filterHistory());
+
+        // Pagination
+        document.getElementById('prevPage').addEventListener('click', () => this.goToPage('prev'));
+        document.getElementById('nextPage').addEventListener('click', () => this.goToPage('next'));
 
         // Session Detail
         document.getElementById('backToSessions').addEventListener('click', () => this.showSessionsList());
@@ -1607,18 +1616,74 @@ class LongCastApp {
             }
         });
 
-        this.displaySessionHistory(filtered);
+        // Store filtered sessions and reset to page 1
+        this.filteredSessions = filtered;
+        this.currentPage = 1;
+        this.displaySessionHistory();
     }
 
-    displaySessionHistory(sessions) {
+    displaySessionHistory() {
         const container = document.getElementById('historySessionsList');
+        const sessions = this.filteredSessions;
 
         if (sessions.length === 0) {
             container.innerHTML = '<p class="no-data-text">Nessuna sessione trovata</p>';
+            document.getElementById('paginationControls').style.display = 'none';
             return;
         }
 
-        container.innerHTML = sessions.map(session => this.createSessionCardHTML(session)).join('');
+        // Calculate pagination
+        const totalPages = Math.ceil(sessions.length / this.sessionsPerPage);
+        const startIndex = (this.currentPage - 1) * this.sessionsPerPage;
+        const endIndex = startIndex + this.sessionsPerPage;
+        const paginatedSessions = sessions.slice(startIndex, endIndex);
+
+        // Display sessions for current page
+        container.innerHTML = paginatedSessions.map(session => this.createSessionCardHTML(session)).join('');
+
+        // Update pagination controls
+        this.updatePaginationControls(totalPages);
+    }
+
+    updatePaginationControls(totalPages) {
+        const paginationControls = document.getElementById('paginationControls');
+
+        if (totalPages <= 1) {
+            paginationControls.style.display = 'none';
+            return;
+        }
+
+        paginationControls.style.display = 'flex';
+
+        // Update page info
+        const totalSessions = this.filteredSessions.length;
+        const startNum = (this.currentPage - 1) * this.sessionsPerPage + 1;
+        const endNum = Math.min(this.currentPage * this.sessionsPerPage, totalSessions);
+
+        document.getElementById('pageInfo').textContent =
+            `Sessioni ${startNum}-${endNum} di ${totalSessions} (Pagina ${this.currentPage}/${totalPages})`;
+
+        // Update button states
+        const prevBtn = document.getElementById('prevPage');
+        const nextBtn = document.getElementById('nextPage');
+
+        prevBtn.disabled = this.currentPage === 1;
+        nextBtn.disabled = this.currentPage === totalPages;
+    }
+
+    goToPage(direction) {
+        const totalPages = Math.ceil(this.filteredSessions.length / this.sessionsPerPage);
+
+        if (direction === 'prev' && this.currentPage > 1) {
+            this.currentPage--;
+        } else if (direction === 'next' && this.currentPage < totalPages) {
+            this.currentPage++;
+        }
+
+        this.displaySessionHistory();
+
+        // Scroll to top of sessions list
+        document.getElementById('historySessionsList').scrollIntoView({ behavior: 'smooth' });
     }
 
     showSessionDetail(sessionId) {
