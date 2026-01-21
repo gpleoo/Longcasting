@@ -1704,10 +1704,12 @@ class LongCastApp {
         const infoContainer = document.getElementById('sessionDetailInfo');
         infoContainer.innerHTML = this.createSessionInfoHTML(session);
 
-        // Populate casts list
+        // Populate casts list (most recent first)
         const castsContainer = document.getElementById('sessionDetailCastsList');
         if (session.lanci && session.lanci.length > 0) {
-            castsContainer.innerHTML = session.lanci.map((lancio, index) =>
+            // Reverse the array to show most recent first
+            const reversedLanci = [...session.lanci].reverse();
+            castsContainer.innerHTML = reversedLanci.map((lancio, index) =>
                 this.createCastDetailHTML(lancio, index + 1)
             ).join('');
         } else {
