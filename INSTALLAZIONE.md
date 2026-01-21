@@ -1,4 +1,4 @@
-# 📱 Guida Installazione LongCast Pro su iPhone
+# 📱 Guida Installazione Longcasting Pro su iPhone
 
 ## ⚠️ IMPORTANTE: Generare Prima le Icone
 
@@ -71,7 +71,7 @@ Per usare l'app su iPhone, i file devono essere su un server web. Opzioni:
 ## ✅ Verifica Installazione
 
 L'app è installata correttamente se:
-- ✅ C'è un'icona "LongCast Pro" sulla Home Screen
+- ✅ C'è un'icona "Longcasting Pro" sulla Home Screen
 - ✅ Quando la apri, NON vedi la barra di Safari
 - ✅ L'app occupa tutto lo schermo
 - ✅ L'app appare nel multitasking come app separata
@@ -116,7 +116,7 @@ Per vedere i log di debug:
 2. Vai in Impostazioni > Safari > Avanzate > Web Inspector
 3. Abilita Web Inspector
 4. Collega iPhone al Mac
-5. Apri Safari su Mac > Sviluppo > [Tuo iPhone] > [LongCast Pro]
+5. Apri Safari su Mac > Sviluppo > [Tuo iPhone] > [Longcasting Pro]
 6. Nella console vedrai i log:
    - ✅ Sessioni salvate: X sessioni
    - ✅ Suggerimenti salvati

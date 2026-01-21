@@ -1,6 +1,6 @@
 {
-  "name": "LongCast Pro",
-  "short_name": "LongCast",
+  "name": "Longcasting Pro",
+  "short_name": "Longcasting",
   "description": "App professionale per il tracking dei lanci nel long casting",
   "start_url": "./index.html",
   "display": "standalone",

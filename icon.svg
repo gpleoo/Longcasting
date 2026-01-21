@@ -22,5 +22,5 @@
   <circle cx="380" cy="180" r="12" fill="#667EEA"/>
 
   <!-- Text -->
-  <text x="256" y="470" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#00D9FF" text-anchor="middle">LongCast</text>
+  <text x="256" y="470" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#00D9FF" text-anchor="middle">Longcasting</text>
 </svg>
