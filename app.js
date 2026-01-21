@@ -373,6 +373,12 @@ class LongCastApp {
         this.currentSession = null; // Active training session
         this.gpsTracker = new GPSTracker(); // GPS Tracker instance
         this.gpsResult = null; // Temporary GPS result storage
+
+        // Map management
+        this.map = null; // Leaflet map instance
+        this.mapMarkers = []; // Array of map markers
+        this.currentMapSession = null; // Session displayed on map
+
         this.suggestions = {
             tecniche: [],
             pesoPiombo: [],
@@ -2246,6 +2252,253 @@ class LongCastApp {
 
         // Reset GPS tracker
         this.gpsTracker.reset();
+    }
+
+    // ============================================
+    // MAP METHODS
+    // ============================================
+
+    initMap(containerId) {
+        // Remove existing map if any
+        if (this.map) {
+            this.map.remove();
+            this.map = null;
+        }
+
+        // Create map instance
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Map container ${containerId} not found`);
+            return;
+        }
+
+        // Initialize map with default center (Italy)
+        this.map = L.map(containerId).setView([41.9028, 12.4964], 13);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+            minZoom: 3
+        }).addTo(this.map);
+
+        // Add scale control
+        L.control.scale({ imperial: false, metric: true }).addTo(this.map);
+
+        return this.map;
+    }
+
+    clearMapMarkers() {
+        // Remove all markers from map
+        this.mapMarkers.forEach(marker => {
+            if (this.map) {
+                this.map.removeLayer(marker);
+            }
+        });
+        this.mapMarkers = [];
+    }
+
+    showSessionOnMap(sessionId) {
+        const session = this.sessions.find(s => s.id === sessionId);
+        if (!session) {
+            console.error('Session not found:', sessionId);
+            return;
+        }
+
+        // Initialize map if not already done
+        if (!this.map) {
+            this.initMap('storicoMap');
+        }
+
+        // Clear previous markers
+        this.clearMapMarkers();
+
+        // Filter GPS casts
+        const gpsCasts = session.lanci.filter(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
+
+        if (gpsCasts.length === 0) {
+            this.showToast('Nessun lancio GPS in questa sessione', 'warning');
+            return;
+        }
+
+        // Add markers for each GPS cast
+        gpsCasts.forEach((cast, index) => {
+            this.addCastMarkersToMap(cast, index + 1, session);
+        });
+
+        // Fit map to show all markers
+        this.fitMapToMarkers();
+
+        // Update session reference
+        this.currentMapSession = sessionId;
+    }
+
+    addCastMarkersToMap(cast, castNumber, session) {
+        if (!cast.gps || !cast.gps.startPosition || !cast.gps.endPosition) return;
+
+        const { startPosition, endPosition, bearing } = cast.gps;
+
+        // Create custom icon for start marker (green)
+        const startIcon = L.divIcon({
+            className: 'custom-marker-start',
+            html: '<div class="marker-pin marker-start">🟢</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30]
+        });
+
+        // Create custom icon for end marker (red)
+        const endIcon = L.divIcon({
+            className: 'custom-marker-end',
+            html: '<div class="marker-pin marker-end">🔴</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30]
+        });
+
+        // Add start marker
+        const startMarker = L.marker(
+            [startPosition.latitude, startPosition.longitude],
+            { icon: startIcon }
+        ).bindPopup(this.createStartPopupHTML(cast, castNumber));
+
+        // Add end marker
+        const endMarker = L.marker(
+            [endPosition.latitude, endPosition.longitude],
+            { icon: endIcon }
+        ).bindPopup(this.createEndPopupHTML(cast, castNumber));
+
+        // Add line between start and end
+        const castLine = L.polyline([
+            [startPosition.latitude, startPosition.longitude],
+            [endPosition.latitude, endPosition.longitude]
+        ], {
+            color: '#00D9FF',
+            weight: 3,
+            opacity: 0.8
+        });
+
+        // Add distance label at midpoint
+        const midLat = (startPosition.latitude + endPosition.latitude) / 2;
+        const midLon = (startPosition.longitude + endPosition.longitude) / 2;
+
+        const distanceLabel = L.marker([midLat, midLon], {
+            icon: L.divIcon({
+                className: 'distance-label',
+                html: `<div class="distance-label-content">${cast.distanza.toFixed(1)}m</div>`,
+                iconSize: [80, 30]
+            })
+        });
+
+        // Add all to map and store references
+        startMarker.addTo(this.map);
+        endMarker.addTo(this.map);
+        castLine.addTo(this.map);
+        distanceLabel.addTo(this.map);
+
+        this.mapMarkers.push(startMarker, endMarker, castLine, distanceLabel);
+
+        // Add reference line if session has direzioneRiferimento
+        if (session.direzioneRiferimento && session.direzioneRiferimento.impostata) {
+            this.addReferenceLineToMap(session.direzioneRiferimento, cast);
+        }
+    }
+
+    addReferenceLineToMap(direzioneRif, cast) {
+        // Draw ideal reference line (yellow dashed)
+        const refLine = L.polyline([
+            [direzioneRif.puntoPartenza.latitude, direzioneRif.puntoPartenza.longitude],
+            [direzioneRif.puntoArrivo.latitude, direzioneRif.puntoArrivo.longitude]
+        ], {
+            color: '#FFD700',
+            weight: 2,
+            opacity: 0.7,
+            dashArray: '10, 10'
+        });
+
+        refLine.addTo(this.map);
+        this.mapMarkers.push(refLine);
+    }
+
+    createStartPopupHTML(cast, castNumber) {
+        const orario = new Date(cast.orario).toLocaleTimeString('it-IT', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        return `
+            <div class="map-popup">
+                <h4>🟢 Punto Lancio #${castNumber}</h4>
+                <div class="popup-info">
+                    <p><strong>Orario:</strong> ${orario}</p>
+                    <p><strong>Distanza:</strong> ${cast.distanza.toFixed(1)}m</p>
+                    <p><strong>Precisione GPS:</strong> ±${cast.gps.accuracy.toFixed(1)}m</p>
+                    <p><strong>Qualità:</strong> ${cast.gps.quality}</p>
+                    ${cast.note ? `<p><strong>Note:</strong> ${this.escapeHtml(cast.note)}</p>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    createEndPopupHTML(cast, castNumber) {
+        return `
+            <div class="map-popup">
+                <h4>🔴 Caduta Piombo #${castNumber}</h4>
+                <div class="popup-info">
+                    <p><strong>Distanza:</strong> ${cast.distanza.toFixed(1)}m</p>
+                    <p><strong>Angolo:</strong> ${cast.gps.bearing ? cast.gps.bearing.toFixed(1) + '°' : 'N/A'}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    fitMapToMarkers() {
+        if (!this.map || this.mapMarkers.length === 0) return;
+
+        // Get bounds of all markers
+        const latLngs = [];
+        this.mapMarkers.forEach(marker => {
+            if (marker instanceof L.Marker) {
+                latLngs.push(marker.getLatLng());
+            } else if (marker instanceof L.Polyline) {
+                latLngs.push(...marker.getLatLngs());
+            }
+        });
+
+        if (latLngs.length > 0) {
+            const bounds = L.latLngBounds(latLngs);
+            this.map.fitBounds(bounds, { padding: [50, 50] });
+        }
+    }
+
+    calculateDeviationAnalysis(cast, direzioneRiferimento) {
+        if (!cast.gps || !cast.gps.bearing || !direzioneRiferimento || !direzioneRiferimento.impostata) {
+            return null;
+        }
+
+        const castBearing = cast.gps.bearing;
+        const refBearing = direzioneRiferimento.angoloDirezione;
+
+        // Calculate angular difference (-180 to +180)
+        let diff = castBearing - refBearing;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+
+        // Determine direction
+        const direzione = diff > 0 ? 'destra' : diff < 0 ? 'sinistra' : 'perfetto';
+
+        // Calculate cross-track distance (lateral deviation)
+        const distanza = cast.distanza;
+        const diffRad = Math.abs(diff) * Math.PI / 180;
+        const distanzaLaterale = distanza * Math.sin(diffRad);
+
+        return {
+            angoloEffettivo: castBearing,
+            angoloRiferimento: refBearing,
+            differenzaAngolare: diff,
+            direzioneDeviazione: direzione,
+            distanzaLaterale: distanzaLaterale
+        };
     }
 }
 
