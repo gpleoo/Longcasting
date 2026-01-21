@@ -1,8 +1,8 @@
-# LongCast Pro 🎣
+# Longcasting Pro 🎣
 
 **App moderna per il tracciamento e l'analisi del Long Casting**
 
-LongCast Pro è un'applicazione web completa per gli appassionati di Long Casting (lancio da pesca a lunga distanza). Permette di tracciare le distanze di lancio, monitorare i miglioramenti nel tempo e gestire i propri dati fisici e preferenze.
+Longcasting Pro è un'applicazione web completa per gli appassionati di Long Casting (lancio da pesca a lunga distanza). Permette di tracciare le distanze di lancio, monitorare i miglioramenti nel tempo e gestire i propri dati fisici e preferenze.
 
 ## ✨ Caratteristiche Principali
 
