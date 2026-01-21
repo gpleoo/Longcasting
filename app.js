@@ -1215,6 +1215,108 @@ class LongCastApp {
         }
     }
 
+    generateAutomaticNotes(session) {
+        if (!session.lanci || session.lanci.length === 0) {
+            return "Sessione terminata senza lanci registrati.";
+        }
+
+        const distances = session.lanci.map(l => l.distanza);
+        const avgDistance = session.distanzaMedia;
+        const maxDistance = session.distanzaMassima;
+        const minDistance = session.distanzaMinima;
+
+        // Calculate trend (first half vs second half)
+        const half = Math.floor(distances.length / 2);
+        const firstHalf = distances.slice(0, half);
+        const secondHalf = distances.slice(half);
+        const firstHalfAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+        const secondHalfAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+        const improvement = secondHalfAvg - firstHalfAvg;
+
+        // Calculate consistency (standard deviation)
+        const variance = distances.reduce((sum, d) => sum + Math.pow(d - avgDistance, 2), 0) / distances.length;
+        const stdDev = Math.sqrt(variance);
+        const consistencyPercent = ((1 - (stdDev / avgDistance)) * 100).toFixed(1);
+
+        // Compare with last 5 sessions
+        const recentSessions = this.sessions.slice(-5);
+        let historicalComparison = "";
+
+        if (recentSessions.length > 0) {
+            const avgOfRecent = recentSessions.reduce((sum, s) => sum + (s.distanzaMedia || 0), 0) / recentSessions.length;
+            const maxOfRecent = Math.max(...recentSessions.map(s => s.distanzaMassima || 0));
+            const avgDiff = avgDistance - avgOfRecent;
+            const maxDiff = maxDistance - maxOfRecent;
+
+            if (avgDiff > 2) {
+                historicalComparison = `Ottima performance! Media superiore di ${avgDiff.toFixed(1)}m rispetto alle ultime ${recentSessions.length} sessioni. `;
+            } else if (avgDiff < -2) {
+                historicalComparison = `Media inferiore di ${Math.abs(avgDiff).toFixed(1)}m rispetto alle sessioni recenti. Potrebbe essere necessario rivedere la tecnica. `;
+            } else {
+                historicalComparison = `Performance in linea con le ultime sessioni (±${Math.abs(avgDiff).toFixed(1)}m). `;
+            }
+
+            if (maxDistance > maxOfRecent) {
+                historicalComparison += `Nuovo record personale: ${maxDistance.toFixed(1)}m! `;
+            }
+        }
+
+        // Generate trend analysis
+        let trendAnalysis = "";
+        if (improvement > 3) {
+            trendAnalysis = `Tendenza positiva: miglioramento di ${improvement.toFixed(1)}m tra prima e seconda metà della sessione. Buon riscaldamento progressivo. `;
+        } else if (improvement < -3) {
+            trendAnalysis = `Calo di performance: -${Math.abs(improvement).toFixed(1)}m nella seconda metà. Possibile affaticamento o perdita di concentrazione. `;
+        } else {
+            trendAnalysis = `Performance costante durante tutta la sessione. `;
+        }
+
+        // Generate consistency feedback
+        let consistencyFeedback = "";
+        if (consistencyPercent > 90) {
+            consistencyFeedback = `Eccellente consistenza (${consistencyPercent}%). Tecnica molto stabile. `;
+        } else if (consistencyPercent > 80) {
+            consistencyFeedback = `Buona consistenza (${consistencyPercent}%). Lanci abbastanza uniformi. `;
+        } else {
+            consistencyFeedback = `Consistenza da migliorare (${consistencyPercent}%). Ampia variazione tra lanci (±${stdDev.toFixed(1)}m). `;
+        }
+
+        // Generate suggestions
+        let suggestions = "\n\n💡 Suggerimenti:\n";
+
+        if (improvement < -3) {
+            suggestions += "• Fai pause più frequenti per evitare l'affaticamento\n";
+            suggestions += "• Mantieni la concentrazione anche negli ultimi lanci\n";
+        }
+
+        if (stdDev > 10) {
+            suggestions += "• Lavora sulla ripetibilità del gesto tecnico\n";
+            suggestions += "• Concentrati sulla fluidità del movimento\n";
+        }
+
+        if (session.lanci.length < 10) {
+            suggestions += "• Prova ad aumentare il numero di lanci per sessione\n";
+        }
+
+        if (avgDistance < 160 && recentSessions.length > 0) {
+            suggestions += "• Considera di sperimentare con pesi del piombo diversi\n";
+            suggestions += "• Rivedi la tecnica con un istruttore\n";
+        }
+
+        if (maxDistance - avgDistance > 20) {
+            suggestions += "• Analizza il lancio migliore per replicare la tecnica\n";
+        }
+
+        // Build final note
+        const note = `📊 Analisi Automatica Sessione\n\n` +
+            `Lanci: ${session.lanci.length} | Media: ${avgDistance.toFixed(1)}m | Max: ${maxDistance.toFixed(1)}m | Min: ${minDistance.toFixed(1)}m\n\n` +
+            trendAnalysis + consistencyFeedback + "\n\n" +
+            (historicalComparison ? `📈 Confronto Storico:\n${historicalComparison}\n` : '') +
+            suggestions;
+
+        return note;
+    }
+
     endSession() {
         if (!this.currentSession) return;
 
@@ -1243,6 +1345,9 @@ class LongCastApp {
             this.currentSession.distanzaMassima = Math.max(...distanze);
             this.currentSession.distanzaMinima = Math.min(...distanze);
         }
+
+        // Generate automatic intelligent notes
+        this.currentSession.note = this.generateAutomaticNotes(this.currentSession);
 
         // Save completed session to sessions array
         this.sessions.push({...this.currentSession});
