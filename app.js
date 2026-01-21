@@ -801,6 +801,9 @@ class LongCastApp {
         // GPS Confirm Modal
         document.getElementById('gpsConfirmSave').addEventListener('click', () => this.saveGPSCast());
         document.getElementById('gpsConfirmCancel').addEventListener('click', () => this.cancelGPSCast());
+
+        // Map Controls
+        document.getElementById('closeMapBtn').addEventListener('click', () => this.closeMap());
     }
 
     // Navigation
@@ -1481,6 +1484,9 @@ class LongCastApp {
         const mediaDistanza = session.distanzaMedia ? session.distanzaMedia.toFixed(1) : '--';
         const maxDistanza = session.distanzaMassima ? session.distanzaMassima.toFixed(1) : '--';
 
+        // Check if session has GPS casts
+        const hasGPSCasts = session.lanci && session.lanci.some(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
+
         return `
             <div class="session-card" onclick="app.showSessionDetail(${session.id})">
                 <div class="session-card-header">
@@ -1488,6 +1494,15 @@ class LongCastApp {
                         <div class="session-card-title">${this.escapeHtml(session.luogo || 'Sessione')}</div>
                         <div class="session-card-date">${formattedDate} • ${formattedTime}</div>
                     </div>
+                    ${hasGPSCasts ? `
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); app.showSessionOnMap(${session.id})" style="margin-left: auto;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Mappa
+                    </button>
+                    ` : ''}
                 </div>
                 <div class="session-card-stats">
                     <div class="session-card-stat">
@@ -2331,6 +2346,23 @@ class LongCastApp {
 
         // Update session reference
         this.currentMapSession = sessionId;
+
+        // Show map container
+        document.getElementById('storicoMapContainer').style.display = 'block';
+        document.getElementById('historySessionsList').style.display = 'none';
+    }
+
+    closeMap() {
+        // Hide map container
+        document.getElementById('storicoMapContainer').style.display = 'none';
+        document.getElementById('historySessionsList').style.display = 'block';
+
+        // Clear markers
+        if (this.map) {
+            this.clearMapMarkers();
+        }
+
+        this.currentMapSession = null;
     }
 
     addCastMarkersToMap(cast, castNumber, session) {

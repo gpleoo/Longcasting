@@ -517,6 +517,32 @@
                         </div>
                     </div>
 
+                    <!-- Map Container -->
+                    <div id="storicoMapContainer" style="display: none; margin: 2rem 0;">
+                        <div class="map-header">
+                            <h3>🗺️ Mappa Lanci GPS</h3>
+                            <button id="closeMapBtn" class="btn btn-secondary">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                                Chiudi Mappa
+                            </button>
+                        </div>
+                        <div id="storicoMap" class="map-container"></div>
+                        <div class="map-legend">
+                            <span class="legend-item">
+                                <span class="legend-marker">🟢</span> Punto Lancio
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-marker">🔴</span> Caduta Piombo
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-line"></span> Traiettoria
+                            </span>
+                        </div>
+                    </div>
+
                     <!-- Sessions List -->
                     <div id="historySessionsList" class="history-list">
                         <p class="no-data-text">Nessuna sessione trovata</p>
