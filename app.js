@@ -379,6 +379,24 @@ class LongCastApp {
         this.mapMarkers = []; // Array of map markers
         this.currentMapSession = null; // Session displayed on map
 
+        // Pagination for storico
+        this.currentPage = 1;
+        this.sessionsPerPage = 5;
+        this.filteredSessions = []; // Store filtered sessions for pagination
+
+        // Settings
+        this.settings = {
+            language: 'it',
+            units: {
+                distance: 'm',
+                weight: 'g',
+                temperature: 'c',
+                wind: 'kmh',
+                time: '24h',
+                date: 'dmy'
+            }
+        };
+
         this.suggestions = {
             tecniche: [],
             pesoPiombo: [],
@@ -424,6 +442,7 @@ class LongCastApp {
         this.setupPersistenceListeners();
         this.updateDashboard();
         this.loadProfile();
+        this.loadSettings();
         this.setDefaultDateTime();
         this.checkActiveSession();
     }
@@ -777,6 +796,10 @@ class LongCastApp {
         document.getElementById('filter-periodo').addEventListener('change', () => this.filterHistory());
         document.getElementById('sort-by').addEventListener('change', () => this.filterHistory());
 
+        // Pagination
+        document.getElementById('prevPage').addEventListener('click', () => this.goToPage('prev'));
+        document.getElementById('nextPage').addEventListener('click', () => this.goToPage('next'));
+
         // Session Detail
         document.getElementById('backToSessions').addEventListener('click', () => this.showSessionsList());
 
@@ -787,6 +810,18 @@ class LongCastApp {
         });
         document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
         document.getElementById('clearDataBtn').addEventListener('click', () => this.clearAllData());
+
+        // Settings
+        document.querySelectorAll('input[name="language"]').forEach(radio => {
+            radio.addEventListener('change', (e) => this.changeLanguage(e.target.value));
+        });
+        document.getElementById('saveUnitsBtn').addEventListener('click', () => this.saveUnits());
+        document.getElementById('exportBtnSettings').addEventListener('click', () => this.exportData());
+        document.getElementById('importBtnSettings').addEventListener('click', () => {
+            document.getElementById('importFileSettings').click();
+        });
+        document.getElementById('importFileSettings').addEventListener('change', (e) => this.importData(e));
+        document.getElementById('resetBtnSettings').addEventListener('click', () => this.clearAllData());
 
         // Campo/Mare Logic
         document.getElementById('session-tipo').addEventListener('change', () => this.handleTipoSessioneChange());
@@ -1206,6 +1241,108 @@ class LongCastApp {
         }
     }
 
+    generateAutomaticNotes(session) {
+        if (!session.lanci || session.lanci.length === 0) {
+            return "Sessione terminata senza lanci registrati.";
+        }
+
+        const distances = session.lanci.map(l => l.distanza);
+        const avgDistance = session.distanzaMedia;
+        const maxDistance = session.distanzaMassima;
+        const minDistance = session.distanzaMinima;
+
+        // Calculate trend (first half vs second half)
+        const half = Math.floor(distances.length / 2);
+        const firstHalf = distances.slice(0, half);
+        const secondHalf = distances.slice(half);
+        const firstHalfAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+        const secondHalfAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+        const improvement = secondHalfAvg - firstHalfAvg;
+
+        // Calculate consistency (standard deviation)
+        const variance = distances.reduce((sum, d) => sum + Math.pow(d - avgDistance, 2), 0) / distances.length;
+        const stdDev = Math.sqrt(variance);
+        const consistencyPercent = ((1 - (stdDev / avgDistance)) * 100).toFixed(1);
+
+        // Compare with last 5 sessions
+        const recentSessions = this.sessions.slice(-5);
+        let historicalComparison = "";
+
+        if (recentSessions.length > 0) {
+            const avgOfRecent = recentSessions.reduce((sum, s) => sum + (s.distanzaMedia || 0), 0) / recentSessions.length;
+            const maxOfRecent = Math.max(...recentSessions.map(s => s.distanzaMassima || 0));
+            const avgDiff = avgDistance - avgOfRecent;
+            const maxDiff = maxDistance - maxOfRecent;
+
+            if (avgDiff > 2) {
+                historicalComparison = `Ottima performance! Media superiore di ${avgDiff.toFixed(1)}m rispetto alle ultime ${recentSessions.length} sessioni. `;
+            } else if (avgDiff < -2) {
+                historicalComparison = `Media inferiore di ${Math.abs(avgDiff).toFixed(1)}m rispetto alle sessioni recenti. Potrebbe essere necessario rivedere la tecnica. `;
+            } else {
+                historicalComparison = `Performance in linea con le ultime sessioni (±${Math.abs(avgDiff).toFixed(1)}m). `;
+            }
+
+            if (maxDistance > maxOfRecent) {
+                historicalComparison += `Nuovo record personale: ${maxDistance.toFixed(1)}m! `;
+            }
+        }
+
+        // Generate trend analysis
+        let trendAnalysis = "";
+        if (improvement > 3) {
+            trendAnalysis = `Tendenza positiva: miglioramento di ${improvement.toFixed(1)}m tra prima e seconda metà della sessione. Buon riscaldamento progressivo. `;
+        } else if (improvement < -3) {
+            trendAnalysis = `Calo di performance: -${Math.abs(improvement).toFixed(1)}m nella seconda metà. Possibile affaticamento o perdita di concentrazione. `;
+        } else {
+            trendAnalysis = `Performance costante durante tutta la sessione. `;
+        }
+
+        // Generate consistency feedback
+        let consistencyFeedback = "";
+        if (consistencyPercent > 90) {
+            consistencyFeedback = `Eccellente consistenza (${consistencyPercent}%). Tecnica molto stabile. `;
+        } else if (consistencyPercent > 80) {
+            consistencyFeedback = `Buona consistenza (${consistencyPercent}%). Lanci abbastanza uniformi. `;
+        } else {
+            consistencyFeedback = `Consistenza da migliorare (${consistencyPercent}%). Ampia variazione tra lanci (±${stdDev.toFixed(1)}m). `;
+        }
+
+        // Generate suggestions
+        let suggestions = "\n\n💡 Suggerimenti:\n";
+
+        if (improvement < -3) {
+            suggestions += "• Fai pause più frequenti per evitare l'affaticamento\n";
+            suggestions += "• Mantieni la concentrazione anche negli ultimi lanci\n";
+        }
+
+        if (stdDev > 10) {
+            suggestions += "• Lavora sulla ripetibilità del gesto tecnico\n";
+            suggestions += "• Concentrati sulla fluidità del movimento\n";
+        }
+
+        if (session.lanci.length < 10) {
+            suggestions += "• Prova ad aumentare il numero di lanci per sessione\n";
+        }
+
+        if (avgDistance < 160 && recentSessions.length > 0) {
+            suggestions += "• Considera di sperimentare con pesi del piombo diversi\n";
+            suggestions += "• Rivedi la tecnica con un istruttore\n";
+        }
+
+        if (maxDistance - avgDistance > 20) {
+            suggestions += "• Analizza il lancio migliore per replicare la tecnica\n";
+        }
+
+        // Build final note
+        const note = `📊 Analisi Automatica Sessione\n\n` +
+            `Lanci: ${session.lanci.length} | Media: ${avgDistance.toFixed(1)}m | Max: ${maxDistance.toFixed(1)}m | Min: ${minDistance.toFixed(1)}m\n\n` +
+            trendAnalysis + consistencyFeedback + "\n\n" +
+            (historicalComparison ? `📈 Confronto Storico:\n${historicalComparison}\n` : '') +
+            suggestions;
+
+        return note;
+    }
+
     endSession() {
         if (!this.currentSession) return;
 
@@ -1235,6 +1372,9 @@ class LongCastApp {
             this.currentSession.distanzaMinima = Math.min(...distanze);
         }
 
+        // Generate automatic intelligent notes
+        this.currentSession.note = this.generateAutomaticNotes(this.currentSession);
+
         // Save completed session to sessions array
         this.sessions.push({...this.currentSession});
         this.saveData();
@@ -1260,8 +1400,44 @@ class LongCastApp {
             this.saveData();
             this.showToast('Sessione eliminata', 'success');
             this.updateDashboard();
-            this.filterHistory();
+            this.showSessionsList(); // Return to sessions list
         }
+    }
+
+    deleteCast(sessionId, castId) {
+        if (!confirm('Sei sicuro di voler eliminare questo lancio?')) {
+            return;
+        }
+
+        const session = this.sessions.find(s => s.id === sessionId);
+        if (!session) {
+            this.showToast('Sessione non trovata', 'error');
+            return;
+        }
+
+        // Remove the cast from the session
+        session.lanci = session.lanci.filter(l => l.id !== castId);
+
+        // Recalculate session statistics
+        if (session.lanci.length > 0) {
+            const distanze = session.lanci.map(l => l.distanza);
+            session.distanzaMedia = distanze.reduce((a, b) => a + b, 0) / distanze.length;
+            session.distanzaMassima = Math.max(...distanze);
+            session.distanzaMinima = Math.min(...distanze);
+        } else {
+            // If no more casts, delete the entire session
+            if (confirm('Non ci sono più lanci in questa sessione. Vuoi eliminare anche la sessione?')) {
+                this.deleteSession(sessionId);
+                return;
+            }
+        }
+
+        this.saveData();
+        this.showToast('Lancio eliminato', 'success');
+
+        // Refresh the session detail view
+        this.showSessionDetail(sessionId);
+        this.updateDashboard();
     }
 
     // Update Dashboard
@@ -1607,18 +1783,74 @@ class LongCastApp {
             }
         });
 
-        this.displaySessionHistory(filtered);
+        // Store filtered sessions and reset to page 1
+        this.filteredSessions = filtered;
+        this.currentPage = 1;
+        this.displaySessionHistory();
     }
 
-    displaySessionHistory(sessions) {
+    displaySessionHistory() {
         const container = document.getElementById('historySessionsList');
+        const sessions = this.filteredSessions;
 
         if (sessions.length === 0) {
             container.innerHTML = '<p class="no-data-text">Nessuna sessione trovata</p>';
+            document.getElementById('paginationControls').style.display = 'none';
             return;
         }
 
-        container.innerHTML = sessions.map(session => this.createSessionCardHTML(session)).join('');
+        // Calculate pagination
+        const totalPages = Math.ceil(sessions.length / this.sessionsPerPage);
+        const startIndex = (this.currentPage - 1) * this.sessionsPerPage;
+        const endIndex = startIndex + this.sessionsPerPage;
+        const paginatedSessions = sessions.slice(startIndex, endIndex);
+
+        // Display sessions for current page
+        container.innerHTML = paginatedSessions.map(session => this.createSessionCardHTML(session)).join('');
+
+        // Update pagination controls
+        this.updatePaginationControls(totalPages);
+    }
+
+    updatePaginationControls(totalPages) {
+        const paginationControls = document.getElementById('paginationControls');
+
+        if (totalPages <= 1) {
+            paginationControls.style.display = 'none';
+            return;
+        }
+
+        paginationControls.style.display = 'flex';
+
+        // Update page info
+        const totalSessions = this.filteredSessions.length;
+        const startNum = (this.currentPage - 1) * this.sessionsPerPage + 1;
+        const endNum = Math.min(this.currentPage * this.sessionsPerPage, totalSessions);
+
+        document.getElementById('pageInfo').textContent =
+            `Sessioni ${startNum}-${endNum} di ${totalSessions} (Pagina ${this.currentPage}/${totalPages})`;
+
+        // Update button states
+        const prevBtn = document.getElementById('prevPage');
+        const nextBtn = document.getElementById('nextPage');
+
+        prevBtn.disabled = this.currentPage === 1;
+        nextBtn.disabled = this.currentPage === totalPages;
+    }
+
+    goToPage(direction) {
+        const totalPages = Math.ceil(this.filteredSessions.length / this.sessionsPerPage);
+
+        if (direction === 'prev' && this.currentPage > 1) {
+            this.currentPage--;
+        } else if (direction === 'next' && this.currentPage < totalPages) {
+            this.currentPage++;
+        }
+
+        this.displaySessionHistory();
+
+        // Scroll to top of sessions list
+        document.getElementById('historySessionsList').scrollIntoView({ behavior: 'smooth' });
     }
 
     showSessionDetail(sessionId) {
@@ -1635,15 +1867,21 @@ class LongCastApp {
         // Update title
         document.getElementById('sessionDetailTitle').textContent = `Sessione del ${new Date(session.dataInizio).toLocaleDateString('it-IT')}`;
 
+        // Wire up delete session button
+        const deleteBtn = document.getElementById('deleteSessionBtn');
+        deleteBtn.onclick = () => this.deleteSession(sessionId);
+
         // Populate session info
         const infoContainer = document.getElementById('sessionDetailInfo');
         infoContainer.innerHTML = this.createSessionInfoHTML(session);
 
-        // Populate casts list
+        // Populate casts list (most recent first)
         const castsContainer = document.getElementById('sessionDetailCastsList');
         if (session.lanci && session.lanci.length > 0) {
-            castsContainer.innerHTML = session.lanci.map((lancio, index) =>
-                this.createCastDetailHTML(lancio, index + 1)
+            // Reverse the array to show most recent first
+            const reversedLanci = [...session.lanci].reverse();
+            castsContainer.innerHTML = reversedLanci.map((lancio, index) =>
+                this.createCastDetailHTML(lancio, index + 1, session.id)
             ).join('');
         } else {
             castsContainer.innerHTML = '<p class="no-data-text">Nessun lancio in questa sessione</p>';
@@ -1755,7 +1993,7 @@ class LongCastApp {
         `;
     }
 
-    createCastDetailHTML(lancio, numero) {
+    createCastDetailHTML(lancio, numero, sessionId) {
         const data = new Date(lancio.data);
         const formattedTime = data.toLocaleTimeString('it-IT', {
             hour: '2-digit',
@@ -1763,11 +2001,20 @@ class LongCastApp {
         });
 
         return `
-            <div class="cast-detail-item">
+            <div class="cast-detail-item" data-cast-id="${lancio.id}">
                 <div class="cast-detail-header">
-                    <span class="cast-number">#${numero}</span>
-                    <span class="cast-distance-large">${lancio.distanza.toFixed(1)}m</span>
-                    <span class="cast-time">${formattedTime}</span>
+                    <div class="cast-header-left">
+                        <span class="cast-number">#${numero}</span>
+                        <span class="cast-distance-large">${lancio.distanza.toFixed(1)}m</span>
+                        <span class="cast-time">${formattedTime}</span>
+                    </div>
+                    <button class="btn-delete-cast" onclick="app.deleteCast(${sessionId}, ${lancio.id})" title="Elimina lancio">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                    </button>
                 </div>
                 ${lancio.vento || lancio.direzioneVento || lancio.temperatura || lancio.umidita || lancio.note ? `
                 <div class="cast-detail-info">
@@ -1835,6 +2082,51 @@ class LongCastApp {
         } else {
             document.getElementById('bmi').value = '';
         }
+    }
+
+    // Settings Management
+    loadSettings() {
+        const savedSettings = localStorage.getItem('longcast_settings');
+        if (savedSettings) {
+            this.settings = JSON.parse(savedSettings);
+        }
+
+        // Apply language setting
+        const languageRadio = document.querySelector(`input[name="language"][value="${this.settings.language}"]`);
+        if (languageRadio) {
+            languageRadio.checked = true;
+        }
+
+        // Apply units settings
+        if (this.settings.units) {
+            document.getElementById('unitDistance').value = this.settings.units.distance;
+            document.getElementById('unitWeight').value = this.settings.units.weight;
+            document.getElementById('unitTemp').value = this.settings.units.temperature;
+            document.getElementById('unitWind').value = this.settings.units.wind;
+            document.getElementById('unitTime').value = this.settings.units.time;
+            document.getElementById('unitDate').value = this.settings.units.date;
+        }
+    }
+
+    changeLanguage(lang) {
+        this.settings.language = lang;
+        localStorage.setItem('longcast_settings', JSON.stringify(this.settings));
+        this.showToast(`Lingua cambiata in: ${lang.toUpperCase()}`, 'success');
+        // Note: Full i18n implementation would go here
+    }
+
+    saveUnits() {
+        this.settings.units = {
+            distance: document.getElementById('unitDistance').value,
+            weight: document.getElementById('unitWeight').value,
+            temperature: document.getElementById('unitTemp').value,
+            wind: document.getElementById('unitWind').value,
+            time: document.getElementById('unitTime').value,
+            date: document.getElementById('unitDate').value
+        };
+
+        localStorage.setItem('longcast_settings', JSON.stringify(this.settings));
+        this.showToast('Unità di misura salvate con successo!', 'success');
     }
 
     // Data Import/Export
