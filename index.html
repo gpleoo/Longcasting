@@ -54,6 +54,7 @@
                 <button class="nav-btn active" data-section="dashboard">Dashboard</button>
                 <button class="nav-btn" data-section="nuovo-lancio">Sessione Allenamento</button>
                 <button class="nav-btn" data-section="storico">Storico</button>
+                <button class="nav-btn" data-section="impostazioni">⚙️ Impostazioni</button>
                 <button class="nav-btn" data-section="profilo">Profilo</button>
             </nav>
         </div>
@@ -599,6 +600,199 @@
                         <div id="sessionDetailCastsList" class="casts-list">
                             <!-- Populated by JS -->
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Impostazioni Section -->
+        <section id="impostazioni" class="section" style="display: none;">
+            <div class="container">
+                <h2 class="section-title">⚙️ Impostazioni</h2>
+
+                <!-- Language Selection -->
+                <div class="settings-card">
+                    <h3 class="settings-section-title">🌍 Lingua / Language</h3>
+                    <p class="settings-description">Seleziona la lingua dell'applicazione</p>
+
+                    <div class="language-selector">
+                        <label class="language-option">
+                            <input type="radio" name="language" value="it" checked>
+                            <span class="language-flag">🇮🇹</span>
+                            <span class="language-name">Italiano</span>
+                        </label>
+                        <label class="language-option">
+                            <input type="radio" name="language" value="en">
+                            <span class="language-flag">🇬🇧</span>
+                            <span class="language-name">English</span>
+                        </label>
+                        <label class="language-option">
+                            <input type="radio" name="language" value="es">
+                            <span class="language-flag">🇪🇸</span>
+                            <span class="language-name">Español</span>
+                        </label>
+                        <label class="language-option">
+                            <input type="radio" name="language" value="fr">
+                            <span class="language-flag">🇫🇷</span>
+                            <span class="language-name">Français</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Units of Measure -->
+                <div class="settings-card">
+                    <h3 class="settings-section-title">📏 Unità di Misura</h3>
+                    <p class="settings-description">Personalizza le unità di misura utilizzate nell'app</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unitDistance">Distanza</label>
+                            <select id="unitDistance" class="form-input">
+                                <option value="m" selected>Metri (m)</option>
+                                <option value="ft">Piedi (ft)</option>
+                                <option value="yd">Iarde (yd)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unitWeight">Peso</label>
+                            <select id="unitWeight" class="form-input">
+                                <option value="g" selected>Grammi (g)</option>
+                                <option value="oz">Once (oz)</option>
+                                <option value="lb">Libbre (lb)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unitTemp">Temperatura</label>
+                            <select id="unitTemp" class="form-input">
+                                <option value="c" selected>Celsius (°C)</option>
+                                <option value="f">Fahrenheit (°F)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unitWind">Velocità Vento</label>
+                            <select id="unitWind" class="form-input">
+                                <option value="kmh" selected>km/h</option>
+                                <option value="mph">mph</option>
+                                <option value="ms">m/s</option>
+                                <option value="kn">nodi (kn)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unitTime">Formato Ora</label>
+                            <select id="unitTime" class="form-input">
+                                <option value="24h" selected>24 ore (15:30)</option>
+                                <option value="12h">12 ore (3:30 PM)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unitDate">Formato Data</label>
+                            <select id="unitDate" class="form-input">
+                                <option value="dmy" selected>GG/MM/AAAA</option>
+                                <option value="mdy">MM/GG/AAAA</option>
+                                <option value="ymd">AAAA/MM/GG</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="saveUnitsBtn" class="btn btn-primary">Salva Unità di Misura</button>
+                </div>
+
+                <!-- Backup & Cloud -->
+                <div class="settings-card">
+                    <h3 class="settings-section-title">☁️ Backup & Cloud</h3>
+                    <p class="settings-description">Gestisci i tuoi dati e il backup su cloud</p>
+
+                    <div class="backup-options">
+                        <button id="exportBtnSettings" class="btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Esporta Dati (JSON)
+                        </button>
+
+                        <button id="importBtnSettings" class="btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Importa Dati (JSON)
+                        </button>
+                        <input type="file" id="importFileSettings" accept=".json" style="display: none;">
+
+                        <button id="resetBtnSettings" class="btn btn-danger">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Cancella Tutti i Dati
+                        </button>
+                    </div>
+
+                    <div class="cloud-sync-info">
+                        <p><strong>📱 Sincronizzazione Cloud</strong></p>
+                        <p class="text-muted">Funzionalità di sincronizzazione cloud disponibile nella versione premium</p>
+                    </div>
+                </div>
+
+                <!-- Install App -->
+                <div class="settings-card">
+                    <h3 class="settings-section-title">📱 Installa Applicazione</h3>
+                    <p class="settings-description">Installa Longcasting Pro sul tuo dispositivo per un'esperienza ottimale</p>
+
+                    <div class="install-instructions">
+                        <details class="install-details">
+                            <summary><strong>📱 iOS (iPhone/iPad)</strong></summary>
+                            <ol class="install-steps">
+                                <li>Apri questa pagina in <strong>Safari</strong></li>
+                                <li>Tocca il pulsante <strong>Condividi</strong> (quadrato con freccia verso l'alto)</li>
+                                <li>Scorri verso il basso e tocca <strong>"Aggiungi a Home"</strong></li>
+                                <li>Tocca <strong>"Aggiungi"</strong> nell'angolo in alto a destra</li>
+                                <li>L'app apparirà sulla tua Home Screen!</li>
+                            </ol>
+                        </details>
+
+                        <details class="install-details">
+                            <summary><strong>🤖 Android</strong></summary>
+                            <ol class="install-steps">
+                                <li>Apri questa pagina in <strong>Chrome</strong></li>
+                                <li>Tocca il menu (⋮) nell'angolo in alto a destra</li>
+                                <li>Seleziona <strong>"Aggiungi a Home"</strong> o <strong>"Installa app"</strong></li>
+                                <li>Conferma l'installazione</li>
+                                <li>L'app apparirà nel tuo drawer!</li>
+                            </ol>
+                        </details>
+
+                        <details class="install-details">
+                            <summary><strong>💻 Desktop (Chrome/Edge)</strong></summary>
+                            <ol class="install-steps">
+                                <li>Clicca sull'icona <strong>⊕ Installa</strong> nella barra degli indirizzi</li>
+                                <li>Oppure: Menu → <strong>"Installa Longcasting Pro"</strong></li>
+                                <li>Conferma l'installazione</li>
+                                <li>L'app si aprirà in una finestra dedicata!</li>
+                            </ol>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="settings-card">
+                    <h3 class="settings-section-title">ℹ️ Informazioni</h3>
+                    <div class="about-info">
+                        <p><strong>Longcasting Pro</strong></p>
+                        <p class="text-muted">Versione 1.0.0</p>
+                        <p class="text-muted">© 2026 Longcasting Pro. Tutti i diritti riservati.</p>
                     </div>
                 </div>
             </div>

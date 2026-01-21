@@ -384,6 +384,19 @@ class LongCastApp {
         this.sessionsPerPage = 5;
         this.filteredSessions = []; // Store filtered sessions for pagination
 
+        // Settings
+        this.settings = {
+            language: 'it',
+            units: {
+                distance: 'm',
+                weight: 'g',
+                temperature: 'c',
+                wind: 'kmh',
+                time: '24h',
+                date: 'dmy'
+            }
+        };
+
         this.suggestions = {
             tecniche: [],
             pesoPiombo: [],
@@ -429,6 +442,7 @@ class LongCastApp {
         this.setupPersistenceListeners();
         this.updateDashboard();
         this.loadProfile();
+        this.loadSettings();
         this.setDefaultDateTime();
         this.checkActiveSession();
     }
@@ -796,6 +810,18 @@ class LongCastApp {
         });
         document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
         document.getElementById('clearDataBtn').addEventListener('click', () => this.clearAllData());
+
+        // Settings
+        document.querySelectorAll('input[name="language"]').forEach(radio => {
+            radio.addEventListener('change', (e) => this.changeLanguage(e.target.value));
+        });
+        document.getElementById('saveUnitsBtn').addEventListener('click', () => this.saveUnits());
+        document.getElementById('exportBtnSettings').addEventListener('click', () => this.exportData());
+        document.getElementById('importBtnSettings').addEventListener('click', () => {
+            document.getElementById('importFileSettings').click();
+        });
+        document.getElementById('importFileSettings').addEventListener('change', (e) => this.importData(e));
+        document.getElementById('resetBtnSettings').addEventListener('click', () => this.clearAllData());
 
         // Campo/Mare Logic
         document.getElementById('session-tipo').addEventListener('change', () => this.handleTipoSessioneChange());
@@ -2056,6 +2082,51 @@ class LongCastApp {
         } else {
             document.getElementById('bmi').value = '';
         }
+    }
+
+    // Settings Management
+    loadSettings() {
+        const savedSettings = localStorage.getItem('longcast_settings');
+        if (savedSettings) {
+            this.settings = JSON.parse(savedSettings);
+        }
+
+        // Apply language setting
+        const languageRadio = document.querySelector(`input[name="language"][value="${this.settings.language}"]`);
+        if (languageRadio) {
+            languageRadio.checked = true;
+        }
+
+        // Apply units settings
+        if (this.settings.units) {
+            document.getElementById('unitDistance').value = this.settings.units.distance;
+            document.getElementById('unitWeight').value = this.settings.units.weight;
+            document.getElementById('unitTemp').value = this.settings.units.temperature;
+            document.getElementById('unitWind').value = this.settings.units.wind;
+            document.getElementById('unitTime').value = this.settings.units.time;
+            document.getElementById('unitDate').value = this.settings.units.date;
+        }
+    }
+
+    changeLanguage(lang) {
+        this.settings.language = lang;
+        localStorage.setItem('longcast_settings', JSON.stringify(this.settings));
+        this.showToast(`Lingua cambiata in: ${lang.toUpperCase()}`, 'success');
+        // Note: Full i18n implementation would go here
+    }
+
+    saveUnits() {
+        this.settings.units = {
+            distance: document.getElementById('unitDistance').value,
+            weight: document.getElementById('unitWeight').value,
+            temperature: document.getElementById('unitTemp').value,
+            wind: document.getElementById('unitWind').value,
+            time: document.getElementById('unitTime').value,
+            date: document.getElementById('unitDate').value
+        };
+
+        localStorage.setItem('longcast_settings', JSON.stringify(this.settings));
+        this.showToast('Unità di misura salvate con successo!', 'success');
     }
 
     // Data Import/Export
