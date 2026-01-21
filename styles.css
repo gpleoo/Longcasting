@@ -483,6 +483,38 @@ body {
     transform: translateY(-2px);
 }
 
+.btn-danger-outline {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+.btn-danger-outline:hover {
+    background: var(--danger);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-delete-cast {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-delete-cast:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: white;
+    transform: scale(1.05);
+}
+
 .form-actions {
     display: flex;
     gap: 1rem;
@@ -640,6 +672,25 @@ body {
 
 .session-detail-header .section-title {
     margin-bottom: 0;
+}
+
+.session-detail-title-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .session-detail-title-group {
+        width: 100%;
+    }
+
+    .session-detail-title-group .section-title {
+        flex: 1;
+    }
 }
 
 /* Data Management */
@@ -817,8 +868,16 @@ body {
 .cast-detail-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
     margin-bottom: 0.75rem;
+}
+
+.cast-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .cast-number {

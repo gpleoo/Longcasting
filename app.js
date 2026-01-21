@@ -1269,8 +1269,44 @@ class LongCastApp {
             this.saveData();
             this.showToast('Sessione eliminata', 'success');
             this.updateDashboard();
-            this.filterHistory();
+            this.showSessionsList(); // Return to sessions list
         }
+    }
+
+    deleteCast(sessionId, castId) {
+        if (!confirm('Sei sicuro di voler eliminare questo lancio?')) {
+            return;
+        }
+
+        const session = this.sessions.find(s => s.id === sessionId);
+        if (!session) {
+            this.showToast('Sessione non trovata', 'error');
+            return;
+        }
+
+        // Remove the cast from the session
+        session.lanci = session.lanci.filter(l => l.id !== castId);
+
+        // Recalculate session statistics
+        if (session.lanci.length > 0) {
+            const distanze = session.lanci.map(l => l.distanza);
+            session.distanzaMedia = distanze.reduce((a, b) => a + b, 0) / distanze.length;
+            session.distanzaMassima = Math.max(...distanze);
+            session.distanzaMinima = Math.min(...distanze);
+        } else {
+            // If no more casts, delete the entire session
+            if (confirm('Non ci sono più lanci in questa sessione. Vuoi eliminare anche la sessione?')) {
+                this.deleteSession(sessionId);
+                return;
+            }
+        }
+
+        this.saveData();
+        this.showToast('Lancio eliminato', 'success');
+
+        // Refresh the session detail view
+        this.showSessionDetail(sessionId);
+        this.updateDashboard();
     }
 
     // Update Dashboard
@@ -1700,6 +1736,10 @@ class LongCastApp {
         // Update title
         document.getElementById('sessionDetailTitle').textContent = `Sessione del ${new Date(session.dataInizio).toLocaleDateString('it-IT')}`;
 
+        // Wire up delete session button
+        const deleteBtn = document.getElementById('deleteSessionBtn');
+        deleteBtn.onclick = () => this.deleteSession(sessionId);
+
         // Populate session info
         const infoContainer = document.getElementById('sessionDetailInfo');
         infoContainer.innerHTML = this.createSessionInfoHTML(session);
@@ -1710,7 +1750,7 @@ class LongCastApp {
             // Reverse the array to show most recent first
             const reversedLanci = [...session.lanci].reverse();
             castsContainer.innerHTML = reversedLanci.map((lancio, index) =>
-                this.createCastDetailHTML(lancio, index + 1)
+                this.createCastDetailHTML(lancio, index + 1, session.id)
             ).join('');
         } else {
             castsContainer.innerHTML = '<p class="no-data-text">Nessun lancio in questa sessione</p>';
@@ -1822,7 +1862,7 @@ class LongCastApp {
         `;
     }
 
-    createCastDetailHTML(lancio, numero) {
+    createCastDetailHTML(lancio, numero, sessionId) {
         const data = new Date(lancio.data);
         const formattedTime = data.toLocaleTimeString('it-IT', {
             hour: '2-digit',
@@ -1830,11 +1870,20 @@ class LongCastApp {
         });
 
         return `
-            <div class="cast-detail-item">
+            <div class="cast-detail-item" data-cast-id="${lancio.id}">
                 <div class="cast-detail-header">
-                    <span class="cast-number">#${numero}</span>
-                    <span class="cast-distance-large">${lancio.distanza.toFixed(1)}m</span>
-                    <span class="cast-time">${formattedTime}</span>
+                    <div class="cast-header-left">
+                        <span class="cast-number">#${numero}</span>
+                        <span class="cast-distance-large">${lancio.distanza.toFixed(1)}m</span>
+                        <span class="cast-time">${formattedTime}</span>
+                    </div>
+                    <button class="btn-delete-cast" onclick="app.deleteCast(${sessionId}, ${lancio.id})" title="Elimina lancio">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                    </button>
                 </div>
                 ${lancio.vento || lancio.direzioneVento || lancio.temperatura || lancio.umidita || lancio.note ? `
                 <div class="cast-detail-info">
