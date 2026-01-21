@@ -808,6 +808,12 @@ class LongCastApp {
 
     // Navigation
     navigate(section) {
+        // Close map if navigating away from storico section
+        if (section !== 'storico') {
+            document.getElementById('storicoMapContainer').style.display = 'none';
+            document.getElementById('historySessionsList').style.display = 'block';
+        }
+
         // Update sections
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById(section).classList.add('active');
@@ -1565,6 +1571,10 @@ class LongCastApp {
 
     // Filter History
     filterHistory() {
+        // Close map when filters are applied
+        document.getElementById('storicoMapContainer').style.display = 'none';
+        document.getElementById('historySessionsList').style.display = 'block';
+
         const luogoFilter = document.getElementById('filter-luogo').value;
         const periodoFilter = parseInt(document.getElementById('filter-periodo').value);
         const sortBy = document.getElementById('sort-by').value;
@@ -1643,6 +1653,11 @@ class LongCastApp {
     showSessionsList() {
         document.getElementById('sessionsList').style.display = 'block';
         document.getElementById('sessionDetail').style.display = 'none';
+
+        // Close map if it's open
+        document.getElementById('storicoMapContainer').style.display = 'none';
+        document.getElementById('historySessionsList').style.display = 'block';
+
         this.filterHistory(); // Refresh list
     }
 
@@ -2274,6 +2289,13 @@ class LongCastApp {
     // ============================================
 
     initMap(containerId) {
+        // Check if Leaflet is available
+        if (typeof L === 'undefined') {
+            console.error('Leaflet library not loaded');
+            this.showToast('Errore nel caricamento della mappa', 'error');
+            return null;
+        }
+
         // Remove existing map if any
         if (this.map) {
             this.map.remove();
@@ -2284,7 +2306,7 @@ class LongCastApp {
         const container = document.getElementById(containerId);
         if (!container) {
             console.error(`Map container ${containerId} not found`);
-            return;
+            return null;
         }
 
         // Initialize map with default center (Italy)
@@ -2350,6 +2372,13 @@ class LongCastApp {
         // Show map container
         document.getElementById('storicoMapContainer').style.display = 'block';
         document.getElementById('historySessionsList').style.display = 'none';
+
+        // Force Leaflet to recalculate map size after display change
+        setTimeout(() => {
+            if (this.map) {
+                this.map.invalidateSize();
+            }
+        }, 100);
     }
 
     closeMap() {
@@ -2453,20 +2482,37 @@ class LongCastApp {
     }
 
     createStartPopupHTML(cast, castNumber) {
-        const orario = new Date(cast.orario).toLocaleTimeString('it-IT', {
+        const orario = new Date(cast.data).toLocaleTimeString('it-IT', {
             hour: '2-digit',
             minute: '2-digit'
         });
 
         return `
             <div class="map-popup">
-                <h4>🟢 Punto Lancio #${castNumber}</h4>
-                <div class="popup-info">
-                    <p><strong>Orario:</strong> ${orario}</p>
-                    <p><strong>Distanza:</strong> ${cast.distanza.toFixed(1)}m</p>
-                    <p><strong>Precisione GPS:</strong> ±${cast.gps.accuracy.toFixed(1)}m</p>
-                    <p><strong>Qualità:</strong> ${cast.gps.quality}</p>
-                    ${cast.note ? `<p><strong>Note:</strong> ${this.escapeHtml(cast.note)}</p>` : ''}
+                <div class="map-popup-title">🟢 Punto Lancio #${castNumber}</div>
+                <div class="map-popup-info">
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Orario</span>
+                        <span class="map-popup-value">${orario}</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Distanza</span>
+                        <span class="map-popup-value highlight">${cast.distanza.toFixed(1)}m</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Precisione GPS</span>
+                        <span class="map-popup-value">±${cast.gps.accuracy.toFixed(1)}m</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Qualità</span>
+                        <span class="map-popup-value">${cast.gps.quality}</span>
+                    </div>
+                    ${cast.note ? `
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Note</span>
+                        <span class="map-popup-value">${this.escapeHtml(cast.note)}</span>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -2475,10 +2521,22 @@ class LongCastApp {
     createEndPopupHTML(cast, castNumber) {
         return `
             <div class="map-popup">
-                <h4>🔴 Caduta Piombo #${castNumber}</h4>
-                <div class="popup-info">
-                    <p><strong>Distanza:</strong> ${cast.distanza.toFixed(1)}m</p>
-                    <p><strong>Angolo:</strong> ${cast.gps.bearing ? cast.gps.bearing.toFixed(1) + '°' : 'N/A'}</p>
+                <div class="map-popup-title">🔴 Caduta Piombo #${castNumber}</div>
+                <div class="map-popup-info">
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Distanza</span>
+                        <span class="map-popup-value highlight">${cast.distanza.toFixed(1)}m</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Angolo</span>
+                        <span class="map-popup-value">${cast.gps.bearing ? cast.gps.bearing.toFixed(1) + '°' : 'N/A'}</span>
+                    </div>
+                    ${cast.tecnica ? `
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Tecnica</span>
+                        <span class="map-popup-value">${this.escapeHtml(cast.tecnica)}</span>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;

@@ -1650,6 +1650,25 @@ body {
     font-size: 1.1rem;
 }
 
+/* Distance label on map */
+.distance-label {
+    background: transparent !important;
+    border: none !important;
+}
+
+.distance-label-content {
+    background: var(--surface);
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+    white-space: nowrap;
+    text-align: center;
+}
+
 /* Mobile responsive for map */
 @media (max-width: 768px) {
     .map-container {
