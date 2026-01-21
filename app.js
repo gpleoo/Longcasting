@@ -883,6 +883,8 @@ class LongCastApp {
             this.loadProfile();
         } else if (section === 'nuovo-lancio') {
             this.checkActiveSession();
+        } else if (section === 'impostazioni') {
+            this.loadSettings();
         }
     }
 
@@ -2114,14 +2116,21 @@ class LongCastApp {
             languageRadio.checked = true;
         }
 
-        // Apply units settings
+        // Apply units settings - check if elements exist
         if (this.settings.units) {
-            document.getElementById('unitDistance').value = this.settings.units.distance;
-            document.getElementById('unitWeight').value = this.settings.units.weight;
-            document.getElementById('unitTemp').value = this.settings.units.temperature;
-            document.getElementById('unitWind').value = this.settings.units.wind;
-            document.getElementById('unitTime').value = this.settings.units.time;
-            document.getElementById('unitDate').value = this.settings.units.date;
+            const unitDistance = document.getElementById('unitDistance');
+            const unitWeight = document.getElementById('unitWeight');
+            const unitTemp = document.getElementById('unitTemp');
+            const unitWind = document.getElementById('unitWind');
+            const unitTime = document.getElementById('unitTime');
+            const unitDate = document.getElementById('unitDate');
+
+            if (unitDistance) unitDistance.value = this.settings.units.distance;
+            if (unitWeight) unitWeight.value = this.settings.units.weight;
+            if (unitTemp) unitTemp.value = this.settings.units.temperature;
+            if (unitWind) unitWind.value = this.settings.units.wind;
+            if (unitTime) unitTime.value = this.settings.units.time;
+            if (unitDate) unitDate.value = this.settings.units.date;
         }
     }
 
@@ -2133,13 +2142,25 @@ class LongCastApp {
     }
 
     saveUnits() {
+        const unitDistance = document.getElementById('unitDistance');
+        const unitWeight = document.getElementById('unitWeight');
+        const unitTemp = document.getElementById('unitTemp');
+        const unitWind = document.getElementById('unitWind');
+        const unitTime = document.getElementById('unitTime');
+        const unitDate = document.getElementById('unitDate');
+
+        if (!unitDistance || !unitWeight || !unitTemp || !unitWind || !unitTime || !unitDate) {
+            this.showToast('Errore: elementi non trovati', 'error');
+            return;
+        }
+
         this.settings.units = {
-            distance: document.getElementById('unitDistance').value,
-            weight: document.getElementById('unitWeight').value,
-            temperature: document.getElementById('unitTemp').value,
-            wind: document.getElementById('unitWind').value,
-            time: document.getElementById('unitTime').value,
-            date: document.getElementById('unitDate').value
+            distance: unitDistance.value,
+            weight: unitWeight.value,
+            temperature: unitTemp.value,
+            wind: unitWind.value,
+            time: unitTime.value,
+            date: unitDate.value
         };
 
         localStorage.setItem('longcast_settings', JSON.stringify(this.settings));
