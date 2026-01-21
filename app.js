@@ -158,14 +158,7 @@ class GPSTracker {
         this.pointsCollected++;
 
         // Update current position
-        const previousPosition = this.currentPosition;
         this.currentPosition = newPoint;
-
-        // Calculate incremental distance
-        if (previousPosition) {
-            const incrementalDistance = this.calculateDistance(previousPosition, newPoint);
-            this.totalDistance += incrementalDistance;
-        }
 
         // Update average accuracy
         this.updateAverageAccuracy();
@@ -214,6 +207,52 @@ class GPSTracker {
         return R * c; // Distance in meters
     }
 
+    // Calculate bearing (angle) between two GPS points
+    calculateBearing(point1, point2) {
+        const φ1 = point1.latitude * Math.PI / 180;
+        const φ2 = point2.latitude * Math.PI / 180;
+        const Δλ = (point2.longitude - point1.longitude) * Math.PI / 180;
+
+        const y = Math.sin(Δλ) * Math.cos(φ2);
+        const x = Math.cos(φ1) * Math.sin(φ2) -
+                  Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+        let θ = Math.atan2(y, x);
+
+        // Convert to degrees (0-360)
+        let bearing = (θ * 180 / Math.PI + 360) % 360;
+
+        return bearing; // 0° = North, 90° = East, 180° = South, 270° = West
+    }
+
+    // Calculate average position from multiple GPS points
+    getAveragePosition(points) {
+        if (!points || points.length === 0) return null;
+
+        const sum = points.reduce((acc, p) => ({
+            latitude: acc.latitude + p.latitude,
+            longitude: acc.longitude + p.longitude,
+            accuracy: acc.accuracy + p.accuracy
+        }), { latitude: 0, longitude: 0, accuracy: 0 });
+
+        return {
+            latitude: sum.latitude / points.length,
+            longitude: sum.longitude / points.length,
+            accuracy: sum.accuracy / points.length
+        };
+    }
+
+    // Get straight-line distance (real-time)
+    getStraightLineDistance() {
+        if (this.trackingPoints.length < 2) return 0;
+
+        const numPoints = Math.min(10, this.trackingPoints.length);
+        const startPoints = this.trackingPoints.slice(0, numPoints);
+        const startAvg = this.getAveragePosition(startPoints);
+
+        return this.calculateDistance(startAvg, this.currentPosition);
+    }
+
     // Apply smoothing to distance (moving average)
     getSmoothedDistance() {
         if (this.trackingPoints.length < 2) {
@@ -252,8 +291,7 @@ class GPSTracker {
     // Get current statistics
     getCurrentStats() {
         return {
-            distance: this.totalDistance,
-            smoothedDistance: this.getSmoothedDistance(),
+            distance: this.getStraightLineDistance(),  // ✅ Linea retta
             accuracy: this.averageAccuracy,
             points: this.pointsCollected,
             duration: this.getElapsedTime(),
@@ -263,20 +301,31 @@ class GPSTracker {
 
     // Calculate final statistics
     calculateFinalStats() {
-        const stats = this.getCurrentStats();
+        const minPoints = Math.min(10, Math.floor(this.trackingPoints.length / 2));
 
-        // Use smoothed distance for better accuracy
-        const finalDistance = stats.smoothedDistance > 0 ? stats.smoothedDistance : stats.distance;
+        // Calculate average START position (first N points)
+        const startPoints = this.trackingPoints.slice(0, minPoints);
+        const startAvg = this.getAveragePosition(startPoints);
+
+        // Calculate average END position (last N points)
+        const endPoints = this.trackingPoints.slice(-minPoints);
+        const endAvg = this.getAveragePosition(endPoints);
+
+        // Calculate straight-line distance
+        const straightLineDistance = this.calculateDistance(startAvg, endAvg);
+
+        // Calculate bearing (angle) of the cast
+        const bearing = this.calculateBearing(startAvg, endAvg);
 
         return {
-            distance: finalDistance,
-            accuracy: stats.accuracy,
-            points: stats.points,
-            duration: stats.duration,
-            quality: stats.quality,
-            rawDistance: stats.distance,
-            startPosition: this.startPosition,
-            endPosition: this.currentPosition,
+            distance: straightLineDistance,  // ✅ Distanza linea retta
+            startPosition: startAvg,         // ✅ Posizione START media
+            endPosition: endAvg,             // ✅ Posizione END media
+            bearing: bearing,                // ✅ Angolo del lancio
+            accuracy: this.averageAccuracy,
+            points: this.pointsCollected,
+            duration: this.getElapsedTime(),
+            quality: this.getQualityRating(),
             allPoints: this.trackingPoints
         };
     }
@@ -2031,9 +2080,8 @@ class LongCastApp {
         const qualityElement = document.getElementById('gpsQuality');
         qualityElement.style.color = this.getQualityColor(stats.quality);
 
-        // Update distance display
-        const distance = stats.smoothedDistance > 0 ? stats.smoothedDistance : stats.distance;
-        document.getElementById('gpsDistanceValue').textContent = distance.toFixed(1) + ' m';
+        // Update distance display (straight-line)
+        document.getElementById('gpsDistanceValue').textContent = stats.distance.toFixed(1) + ' m';
     }
 
     updateGPSTimer(seconds) {
@@ -2126,11 +2174,25 @@ class LongCastApp {
             note: note,
             gps: {
                 misurato: true,
+
+                // Posizioni per mappa
+                startPosition: {
+                    latitude: this.gpsResult.startPosition.latitude,
+                    longitude: this.gpsResult.startPosition.longitude
+                },
+                endPosition: {
+                    latitude: this.gpsResult.endPosition.latitude,
+                    longitude: this.gpsResult.endPosition.longitude
+                },
+
+                // Angolo del lancio
+                bearing: this.gpsResult.bearing,
+
+                // Statistiche GPS
                 accuracy: this.gpsResult.accuracy,
                 points: this.gpsResult.points,
                 duration: this.gpsResult.duration,
-                quality: this.gpsResult.quality,
-                rawDistance: this.gpsResult.rawDistance
+                quality: this.gpsResult.quality
             }
         };
 
