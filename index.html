@@ -26,6 +26,16 @@
     <!-- Description -->
     <meta name="description" content="App professionale per tracking lanci long casting con statistiche, storico sessioni e grafici di miglioramento">
 
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -504,6 +514,32 @@
                                     <option value="data-asc">Data (più vecchio)</option>
                                 </select>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Container -->
+                    <div id="storicoMapContainer" style="display: none; margin: 2rem 0;">
+                        <div class="map-header">
+                            <h3>🗺️ Mappa Lanci GPS</h3>
+                            <button id="closeMapBtn" class="btn btn-secondary">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                                Chiudi Mappa
+                            </button>
+                        </div>
+                        <div id="storicoMap" class="map-container"></div>
+                        <div class="map-legend">
+                            <span class="legend-item">
+                                <span class="legend-marker">🟢</span> Punto Lancio
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-marker">🔴</span> Caduta Piombo
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-line"></span> Traiettoria
+                            </span>
                         </div>
                     </div>
 

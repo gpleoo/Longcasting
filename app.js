@@ -158,14 +158,7 @@ class GPSTracker {
         this.pointsCollected++;
 
         // Update current position
-        const previousPosition = this.currentPosition;
         this.currentPosition = newPoint;
-
-        // Calculate incremental distance
-        if (previousPosition) {
-            const incrementalDistance = this.calculateDistance(previousPosition, newPoint);
-            this.totalDistance += incrementalDistance;
-        }
 
         // Update average accuracy
         this.updateAverageAccuracy();
@@ -214,6 +207,52 @@ class GPSTracker {
         return R * c; // Distance in meters
     }
 
+    // Calculate bearing (angle) between two GPS points
+    calculateBearing(point1, point2) {
+        const φ1 = point1.latitude * Math.PI / 180;
+        const φ2 = point2.latitude * Math.PI / 180;
+        const Δλ = (point2.longitude - point1.longitude) * Math.PI / 180;
+
+        const y = Math.sin(Δλ) * Math.cos(φ2);
+        const x = Math.cos(φ1) * Math.sin(φ2) -
+                  Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+        let θ = Math.atan2(y, x);
+
+        // Convert to degrees (0-360)
+        let bearing = (θ * 180 / Math.PI + 360) % 360;
+
+        return bearing; // 0° = North, 90° = East, 180° = South, 270° = West
+    }
+
+    // Calculate average position from multiple GPS points
+    getAveragePosition(points) {
+        if (!points || points.length === 0) return null;
+
+        const sum = points.reduce((acc, p) => ({
+            latitude: acc.latitude + p.latitude,
+            longitude: acc.longitude + p.longitude,
+            accuracy: acc.accuracy + p.accuracy
+        }), { latitude: 0, longitude: 0, accuracy: 0 });
+
+        return {
+            latitude: sum.latitude / points.length,
+            longitude: sum.longitude / points.length,
+            accuracy: sum.accuracy / points.length
+        };
+    }
+
+    // Get straight-line distance (real-time)
+    getStraightLineDistance() {
+        if (this.trackingPoints.length < 2) return 0;
+
+        const numPoints = Math.min(10, this.trackingPoints.length);
+        const startPoints = this.trackingPoints.slice(0, numPoints);
+        const startAvg = this.getAveragePosition(startPoints);
+
+        return this.calculateDistance(startAvg, this.currentPosition);
+    }
+
     // Apply smoothing to distance (moving average)
     getSmoothedDistance() {
         if (this.trackingPoints.length < 2) {
@@ -252,8 +291,7 @@ class GPSTracker {
     // Get current statistics
     getCurrentStats() {
         return {
-            distance: this.totalDistance,
-            smoothedDistance: this.getSmoothedDistance(),
+            distance: this.getStraightLineDistance(),  // ✅ Linea retta
             accuracy: this.averageAccuracy,
             points: this.pointsCollected,
             duration: this.getElapsedTime(),
@@ -263,20 +301,31 @@ class GPSTracker {
 
     // Calculate final statistics
     calculateFinalStats() {
-        const stats = this.getCurrentStats();
+        const minPoints = Math.min(10, Math.floor(this.trackingPoints.length / 2));
 
-        // Use smoothed distance for better accuracy
-        const finalDistance = stats.smoothedDistance > 0 ? stats.smoothedDistance : stats.distance;
+        // Calculate average START position (first N points)
+        const startPoints = this.trackingPoints.slice(0, minPoints);
+        const startAvg = this.getAveragePosition(startPoints);
+
+        // Calculate average END position (last N points)
+        const endPoints = this.trackingPoints.slice(-minPoints);
+        const endAvg = this.getAveragePosition(endPoints);
+
+        // Calculate straight-line distance
+        const straightLineDistance = this.calculateDistance(startAvg, endAvg);
+
+        // Calculate bearing (angle) of the cast
+        const bearing = this.calculateBearing(startAvg, endAvg);
 
         return {
-            distance: finalDistance,
-            accuracy: stats.accuracy,
-            points: stats.points,
-            duration: stats.duration,
-            quality: stats.quality,
-            rawDistance: stats.distance,
-            startPosition: this.startPosition,
-            endPosition: this.currentPosition,
+            distance: straightLineDistance,  // ✅ Distanza linea retta
+            startPosition: startAvg,         // ✅ Posizione START media
+            endPosition: endAvg,             // ✅ Posizione END media
+            bearing: bearing,                // ✅ Angolo del lancio
+            accuracy: this.averageAccuracy,
+            points: this.pointsCollected,
+            duration: this.getElapsedTime(),
+            quality: this.getQualityRating(),
             allPoints: this.trackingPoints
         };
     }
@@ -324,6 +373,12 @@ class LongCastApp {
         this.currentSession = null; // Active training session
         this.gpsTracker = new GPSTracker(); // GPS Tracker instance
         this.gpsResult = null; // Temporary GPS result storage
+
+        // Map management
+        this.map = null; // Leaflet map instance
+        this.mapMarkers = []; // Array of map markers
+        this.currentMapSession = null; // Session displayed on map
+
         this.suggestions = {
             tecniche: [],
             pesoPiombo: [],
@@ -746,10 +801,19 @@ class LongCastApp {
         // GPS Confirm Modal
         document.getElementById('gpsConfirmSave').addEventListener('click', () => this.saveGPSCast());
         document.getElementById('gpsConfirmCancel').addEventListener('click', () => this.cancelGPSCast());
+
+        // Map Controls
+        document.getElementById('closeMapBtn').addEventListener('click', () => this.closeMap());
     }
 
     // Navigation
     navigate(section) {
+        // Close map if navigating away from storico section
+        if (section !== 'storico') {
+            document.getElementById('storicoMapContainer').style.display = 'none';
+            document.getElementById('historySessionsList').style.display = 'block';
+        }
+
         // Update sections
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById(section).classList.add('active');
@@ -1426,6 +1490,9 @@ class LongCastApp {
         const mediaDistanza = session.distanzaMedia ? session.distanzaMedia.toFixed(1) : '--';
         const maxDistanza = session.distanzaMassima ? session.distanzaMassima.toFixed(1) : '--';
 
+        // Check if session has GPS casts
+        const hasGPSCasts = session.lanci && session.lanci.some(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
+
         return `
             <div class="session-card" onclick="app.showSessionDetail(${session.id})">
                 <div class="session-card-header">
@@ -1433,6 +1500,15 @@ class LongCastApp {
                         <div class="session-card-title">${this.escapeHtml(session.luogo || 'Sessione')}</div>
                         <div class="session-card-date">${formattedDate} • ${formattedTime}</div>
                     </div>
+                    ${hasGPSCasts ? `
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); app.showSessionOnMap(${session.id})" style="margin-left: auto;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Mappa
+                    </button>
+                    ` : ''}
                 </div>
                 <div class="session-card-stats">
                     <div class="session-card-stat">
@@ -1495,6 +1571,10 @@ class LongCastApp {
 
     // Filter History
     filterHistory() {
+        // Close map when filters are applied
+        document.getElementById('storicoMapContainer').style.display = 'none';
+        document.getElementById('historySessionsList').style.display = 'block';
+
         const luogoFilter = document.getElementById('filter-luogo').value;
         const periodoFilter = parseInt(document.getElementById('filter-periodo').value);
         const sortBy = document.getElementById('sort-by').value;
@@ -1573,6 +1653,11 @@ class LongCastApp {
     showSessionsList() {
         document.getElementById('sessionsList').style.display = 'block';
         document.getElementById('sessionDetail').style.display = 'none';
+
+        // Close map if it's open
+        document.getElementById('storicoMapContainer').style.display = 'none';
+        document.getElementById('historySessionsList').style.display = 'block';
+
         this.filterHistory(); // Refresh list
     }
 
@@ -2031,9 +2116,8 @@ class LongCastApp {
         const qualityElement = document.getElementById('gpsQuality');
         qualityElement.style.color = this.getQualityColor(stats.quality);
 
-        // Update distance display
-        const distance = stats.smoothedDistance > 0 ? stats.smoothedDistance : stats.distance;
-        document.getElementById('gpsDistanceValue').textContent = distance.toFixed(1) + ' m';
+        // Update distance display (straight-line)
+        document.getElementById('gpsDistanceValue').textContent = stats.distance.toFixed(1) + ' m';
     }
 
     updateGPSTimer(seconds) {
@@ -2126,11 +2210,25 @@ class LongCastApp {
             note: note,
             gps: {
                 misurato: true,
+
+                // Posizioni per mappa
+                startPosition: {
+                    latitude: this.gpsResult.startPosition.latitude,
+                    longitude: this.gpsResult.startPosition.longitude
+                },
+                endPosition: {
+                    latitude: this.gpsResult.endPosition.latitude,
+                    longitude: this.gpsResult.endPosition.longitude
+                },
+
+                // Angolo del lancio
+                bearing: this.gpsResult.bearing,
+
+                // Statistiche GPS
                 accuracy: this.gpsResult.accuracy,
                 points: this.gpsResult.points,
                 duration: this.gpsResult.duration,
-                quality: this.gpsResult.quality,
-                rawDistance: this.gpsResult.rawDistance
+                quality: this.gpsResult.quality
             }
         };
 
@@ -2184,6 +2282,313 @@ class LongCastApp {
 
         // Reset GPS tracker
         this.gpsTracker.reset();
+    }
+
+    // ============================================
+    // MAP METHODS
+    // ============================================
+
+    initMap(containerId) {
+        // Check if Leaflet is available
+        if (typeof L === 'undefined') {
+            console.error('Leaflet library not loaded');
+            this.showToast('Errore nel caricamento della mappa', 'error');
+            return null;
+        }
+
+        // Remove existing map if any
+        if (this.map) {
+            this.map.remove();
+            this.map = null;
+        }
+
+        // Create map instance
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Map container ${containerId} not found`);
+            return null;
+        }
+
+        // Initialize map with default center (Italy)
+        this.map = L.map(containerId).setView([41.9028, 12.4964], 13);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+            minZoom: 3
+        }).addTo(this.map);
+
+        // Add scale control
+        L.control.scale({ imperial: false, metric: true }).addTo(this.map);
+
+        return this.map;
+    }
+
+    clearMapMarkers() {
+        // Remove all markers from map
+        this.mapMarkers.forEach(marker => {
+            if (this.map) {
+                this.map.removeLayer(marker);
+            }
+        });
+        this.mapMarkers = [];
+    }
+
+    showSessionOnMap(sessionId) {
+        const session = this.sessions.find(s => s.id === sessionId);
+        if (!session) {
+            console.error('Session not found:', sessionId);
+            return;
+        }
+
+        // Initialize map if not already done
+        if (!this.map) {
+            this.initMap('storicoMap');
+        }
+
+        // Clear previous markers
+        this.clearMapMarkers();
+
+        // Filter GPS casts
+        const gpsCasts = session.lanci.filter(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
+
+        if (gpsCasts.length === 0) {
+            this.showToast('Nessun lancio GPS in questa sessione', 'warning');
+            return;
+        }
+
+        // Add markers for each GPS cast
+        gpsCasts.forEach((cast, index) => {
+            this.addCastMarkersToMap(cast, index + 1, session);
+        });
+
+        // Fit map to show all markers
+        this.fitMapToMarkers();
+
+        // Update session reference
+        this.currentMapSession = sessionId;
+
+        // Show map container
+        document.getElementById('storicoMapContainer').style.display = 'block';
+        document.getElementById('historySessionsList').style.display = 'none';
+
+        // Force Leaflet to recalculate map size after display change
+        setTimeout(() => {
+            if (this.map) {
+                this.map.invalidateSize();
+            }
+        }, 100);
+    }
+
+    closeMap() {
+        // Hide map container
+        document.getElementById('storicoMapContainer').style.display = 'none';
+        document.getElementById('historySessionsList').style.display = 'block';
+
+        // Clear markers
+        if (this.map) {
+            this.clearMapMarkers();
+        }
+
+        this.currentMapSession = null;
+    }
+
+    addCastMarkersToMap(cast, castNumber, session) {
+        if (!cast.gps || !cast.gps.startPosition || !cast.gps.endPosition) return;
+
+        const { startPosition, endPosition, bearing } = cast.gps;
+
+        // Create custom icon for start marker (green)
+        const startIcon = L.divIcon({
+            className: 'custom-marker-start',
+            html: '<div class="marker-pin marker-start">🟢</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30]
+        });
+
+        // Create custom icon for end marker (red)
+        const endIcon = L.divIcon({
+            className: 'custom-marker-end',
+            html: '<div class="marker-pin marker-end">🔴</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30]
+        });
+
+        // Add start marker
+        const startMarker = L.marker(
+            [startPosition.latitude, startPosition.longitude],
+            { icon: startIcon }
+        ).bindPopup(this.createStartPopupHTML(cast, castNumber));
+
+        // Add end marker
+        const endMarker = L.marker(
+            [endPosition.latitude, endPosition.longitude],
+            { icon: endIcon }
+        ).bindPopup(this.createEndPopupHTML(cast, castNumber));
+
+        // Add line between start and end
+        const castLine = L.polyline([
+            [startPosition.latitude, startPosition.longitude],
+            [endPosition.latitude, endPosition.longitude]
+        ], {
+            color: '#00D9FF',
+            weight: 3,
+            opacity: 0.8
+        });
+
+        // Add distance label at midpoint
+        const midLat = (startPosition.latitude + endPosition.latitude) / 2;
+        const midLon = (startPosition.longitude + endPosition.longitude) / 2;
+
+        const distanceLabel = L.marker([midLat, midLon], {
+            icon: L.divIcon({
+                className: 'distance-label',
+                html: `<div class="distance-label-content">${cast.distanza.toFixed(1)}m</div>`,
+                iconSize: [80, 30]
+            })
+        });
+
+        // Add all to map and store references
+        startMarker.addTo(this.map);
+        endMarker.addTo(this.map);
+        castLine.addTo(this.map);
+        distanceLabel.addTo(this.map);
+
+        this.mapMarkers.push(startMarker, endMarker, castLine, distanceLabel);
+
+        // Add reference line if session has direzioneRiferimento
+        if (session.direzioneRiferimento && session.direzioneRiferimento.impostata) {
+            this.addReferenceLineToMap(session.direzioneRiferimento, cast);
+        }
+    }
+
+    addReferenceLineToMap(direzioneRif, cast) {
+        // Draw ideal reference line (yellow dashed)
+        const refLine = L.polyline([
+            [direzioneRif.puntoPartenza.latitude, direzioneRif.puntoPartenza.longitude],
+            [direzioneRif.puntoArrivo.latitude, direzioneRif.puntoArrivo.longitude]
+        ], {
+            color: '#FFD700',
+            weight: 2,
+            opacity: 0.7,
+            dashArray: '10, 10'
+        });
+
+        refLine.addTo(this.map);
+        this.mapMarkers.push(refLine);
+    }
+
+    createStartPopupHTML(cast, castNumber) {
+        const orario = new Date(cast.data).toLocaleTimeString('it-IT', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        return `
+            <div class="map-popup">
+                <div class="map-popup-title">🟢 Punto Lancio #${castNumber}</div>
+                <div class="map-popup-info">
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Orario</span>
+                        <span class="map-popup-value">${orario}</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Distanza</span>
+                        <span class="map-popup-value highlight">${cast.distanza.toFixed(1)}m</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Precisione GPS</span>
+                        <span class="map-popup-value">±${cast.gps.accuracy.toFixed(1)}m</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Qualità</span>
+                        <span class="map-popup-value">${cast.gps.quality}</span>
+                    </div>
+                    ${cast.note ? `
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Note</span>
+                        <span class="map-popup-value">${this.escapeHtml(cast.note)}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    createEndPopupHTML(cast, castNumber) {
+        return `
+            <div class="map-popup">
+                <div class="map-popup-title">🔴 Caduta Piombo #${castNumber}</div>
+                <div class="map-popup-info">
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Distanza</span>
+                        <span class="map-popup-value highlight">${cast.distanza.toFixed(1)}m</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Angolo</span>
+                        <span class="map-popup-value">${cast.gps.bearing ? cast.gps.bearing.toFixed(1) + '°' : 'N/A'}</span>
+                    </div>
+                    ${cast.tecnica ? `
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Tecnica</span>
+                        <span class="map-popup-value">${this.escapeHtml(cast.tecnica)}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    fitMapToMarkers() {
+        if (!this.map || this.mapMarkers.length === 0) return;
+
+        // Get bounds of all markers
+        const latLngs = [];
+        this.mapMarkers.forEach(marker => {
+            if (marker instanceof L.Marker) {
+                latLngs.push(marker.getLatLng());
+            } else if (marker instanceof L.Polyline) {
+                latLngs.push(...marker.getLatLngs());
+            }
+        });
+
+        if (latLngs.length > 0) {
+            const bounds = L.latLngBounds(latLngs);
+            this.map.fitBounds(bounds, { padding: [50, 50] });
+        }
+    }
+
+    calculateDeviationAnalysis(cast, direzioneRiferimento) {
+        if (!cast.gps || !cast.gps.bearing || !direzioneRiferimento || !direzioneRiferimento.impostata) {
+            return null;
+        }
+
+        const castBearing = cast.gps.bearing;
+        const refBearing = direzioneRiferimento.angoloDirezione;
+
+        // Calculate angular difference (-180 to +180)
+        let diff = castBearing - refBearing;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+
+        // Determine direction
+        const direzione = diff > 0 ? 'destra' : diff < 0 ? 'sinistra' : 'perfetto';
+
+        // Calculate cross-track distance (lateral deviation)
+        const distanza = cast.distanza;
+        const diffRad = Math.abs(diff) * Math.PI / 180;
+        const distanzaLaterale = distanza * Math.sin(diffRad);
+
+        return {
+            angoloEffettivo: castBearing,
+            angoloRiferimento: refBearing,
+            differenzaAngolare: diff,
+            direzioneDeviazione: direzione,
+            distanzaLaterale: distanzaLaterale
+        };
     }
 }
 
