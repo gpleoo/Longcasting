@@ -763,7 +763,12 @@ class LongCastApp {
     setupEventListeners() {
         // Navigation
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.navigate(e.target.dataset.section));
+            btn.addEventListener('click', (e) => {
+                const section = e.currentTarget.dataset.section;
+                if (section) {
+                    this.navigate(section);
+                }
+            });
         });
 
         // Session Forms
@@ -849,13 +854,25 @@ class LongCastApp {
             document.getElementById('historySessionsList').style.display = 'block';
         }
 
-        // Update sections
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(section).classList.add('active');
+        // Update sections - hide all first
+        document.querySelectorAll('.section').forEach(s => {
+            s.classList.remove('active');
+            s.style.display = 'none';
+        });
+
+        // Show selected section
+        const selectedSection = document.getElementById(section);
+        if (selectedSection) {
+            selectedSection.classList.add('active');
+            selectedSection.style.display = 'block';
+        }
 
         // Update nav buttons
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`[data-section="${section}"]`).classList.add('active');
+        const navBtn = document.querySelector(`[data-section="${section}"]`);
+        if (navBtn) {
+            navBtn.classList.add('active');
+        }
 
         // Refresh data based on section
         if (section === 'dashboard') {

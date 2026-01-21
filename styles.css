@@ -102,25 +102,33 @@ body {
     box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
 }
 
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 /* Main Container */
 .main-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
-}
-
-.container {
-    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Sections */
 .section {
     display: none;
     animation: fadeIn 0.4s ease;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .section.active {
-    display: block;
+    display: block !important;
 }
 
 @keyframes fadeIn {
@@ -1329,6 +1337,7 @@ body {
     .header .container {
         flex-direction: column;
         padding: 1rem;
+        gap: 0.75rem;
     }
 
     .logo h1 {
@@ -1338,17 +1347,32 @@ body {
     .nav {
         width: 100%;
         justify-content: center;
+        gap: 0.4rem;
     }
 
     .nav-btn {
-        flex: 1;
+        flex: 1 1 auto;
         min-width: 0;
-        padding: 0.6rem 0.8rem;
-        font-size: 0.85rem;
+        padding: 0.6rem 0.5rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .main-container {
         padding: 1rem;
+        padding-top: 1.5rem;
+    }
+
+    .container {
+        padding: 0 1rem;
+    }
+
+    .settings-card,
+    .partner-category {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
     }
 
     .section-title {
@@ -1418,12 +1442,18 @@ body {
     }
 
     .logo h1 {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
+    }
+
+    .nav {
+        gap: 0.3rem;
     }
 
     .nav-btn {
-        font-size: 0.75rem;
-        padding: 0.5rem 0.6rem;
+        font-size: 0.7rem;
+        padding: 0.5rem 0.3rem;
+        flex: 1 1 calc(33.333% - 0.3rem);
+        max-width: calc(33.333% - 0.3rem);
     }
 
     .stat-icon {
@@ -1433,6 +1463,41 @@ body {
 
     .section-title {
         font-size: 1.25rem;
+    }
+
+    .main-container {
+        padding: 0.75rem;
+    }
+
+    .container {
+        padding: 0 0.75rem;
+    }
+
+    .settings-card,
+    .partner-category {
+        padding: 1rem;
+    }
+
+    .partner-card {
+        padding: 1rem;
+    }
+
+    .form-card {
+        padding: 1.25rem;
+    }
+
+    .form-row {
+        gap: 0.75rem;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.65rem 1.2rem;
+    }
+
+    .btn-small {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
     }
 }
 
