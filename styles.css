@@ -2025,6 +2025,43 @@ body {
     font-weight: 700;
 }
 
+/* Map fullscreen styles */
+#storicoMapContainer.fullscreen {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999;
+    background: var(--background);
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+#storicoMapContainer.fullscreen .map-container {
+    height: calc(100vh - 80px - 60px) !important; /* Subtract header and legend */
+    width: 100% !important;
+}
+
+#storicoMapContainer.fullscreen .map-header {
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+    background: var(--background);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#storicoMapContainer.fullscreen .map-legend {
+    position: sticky;
+    bottom: 0;
+    z-index: 10000;
+    background: var(--background);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
 .map-container {
     width: 100%;
     height: 600px;

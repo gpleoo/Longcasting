@@ -2619,6 +2619,9 @@ class LongCastApp {
             minDistanza = session.distanzaMinima || Math.min(...distanze);
         }
 
+        // Check if session has GPS casts
+        const hasGPSCasts = session.lanci && session.lanci.some(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
+
         return `
             <div class="session-header">
                 <h3>📍 ${this.escapeHtml(session.luogo || 'N/A')}</h3>
@@ -2636,6 +2639,15 @@ class LongCastApp {
                         </svg>
                         Lanci: <strong>${numLanci}</strong>
                     </span>
+                    ${hasGPSCasts ? `
+                    <button class="btn btn-primary btn-small" onclick="app.showSessionOnMap(${session.id}); app.showSessionsList();" style="margin-left: auto;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Mostra Mappa GPS
+                    </button>
+                    ` : ''}
                 </div>
             </div>
 
@@ -3364,7 +3376,7 @@ class LongCastApp {
         // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 19,
+            maxZoom: 22, // Increased for detailed zoom up to ~10 meters
             minZoom: 3
         }).addTo(this.map);
 
@@ -3402,8 +3414,12 @@ class LongCastApp {
         // Filter GPS casts
         const gpsCasts = session.lanci.filter(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
 
+        console.log('GPS Casts found:', gpsCasts.length, 'out of', session.lanci.length, 'total casts');
+        console.log('Sample GPS cast:', gpsCasts[0]);
+
         if (gpsCasts.length === 0) {
             this.showToast('Nessun lancio GPS in questa sessione', 'warning');
+            console.log('All casts:', session.lanci.map(c => ({ id: c.id, hasGps: !!c.gps, misurato: c.gps?.misurato, hasStart: !!c.gps?.startPosition })));
             return;
         }
 
@@ -3418,9 +3434,14 @@ class LongCastApp {
         // Update session reference
         this.currentMapSession = sessionId;
 
-        // Show map container
-        document.getElementById('storicoMapContainer').style.display = 'block';
+        // Show map container in fullscreen mode
+        const mapContainer = document.getElementById('storicoMapContainer');
+        mapContainer.style.display = 'block';
+        mapContainer.classList.add('fullscreen');
         document.getElementById('historySessionsList').style.display = 'none';
+
+        // Hide body overflow to prevent scrolling
+        document.body.style.overflow = 'hidden';
 
         // Force Leaflet to recalculate map size after display change
         setTimeout(() => {
@@ -3431,9 +3452,14 @@ class LongCastApp {
     }
 
     closeMap() {
-        // Hide map container
-        document.getElementById('storicoMapContainer').style.display = 'none';
+        // Hide map container and remove fullscreen mode
+        const mapContainer = document.getElementById('storicoMapContainer');
+        mapContainer.style.display = 'none';
+        mapContainer.classList.remove('fullscreen');
         document.getElementById('historySessionsList').style.display = 'block';
+
+        // Restore body overflow
+        document.body.style.overflow = '';
 
         // Clear markers
         if (this.map) {
