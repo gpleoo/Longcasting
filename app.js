@@ -2195,9 +2195,6 @@ class LongCastApp {
             return;
         }
 
-        // Navigate to history section to access map
-        this.showSection('storico');
-
         // Initialize map if needed
         if (!this.map) {
             this.map = L.map('storicoMap').setView([0, 0], 13);
@@ -2332,6 +2329,7 @@ class LongCastApp {
     // Close Field Direction Setup
     closeFieldDirectionSetup() {
         const mapContainer = document.getElementById('storicoMapContainer');
+        mapContainer.style.display = 'none';
         mapContainer.classList.remove('fullscreen');
         document.body.style.overflow = '';
 
@@ -2345,7 +2343,7 @@ class LongCastApp {
         this.clearMapMarkers();
 
         // Navigate back to session view
-        this.showSection('sessione');
+        this.navigate('nuovo-lancio');
     }
 
     // Delete Session (from history)
