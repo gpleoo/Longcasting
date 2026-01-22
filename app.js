@@ -1724,7 +1724,8 @@ class LongCastApp {
         const umidita = formData.get('session-umidita');
         const note = formData.get('session-note');
         const metriPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-metri-per-giro')) : null;
-        const enableFieldDirection = document.getElementById('enable-field-direction').checked;
+        const enableFieldDirectionCheckbox = document.getElementById('enable-field-direction');
+        const enableFieldDirection = enableFieldDirectionCheckbox ? enableFieldDirectionCheckbox.checked : false;
 
         // Check if user wants to setup field direction with GPS
         if (enableFieldDirection) {
@@ -2248,92 +2249,116 @@ class LongCastApp {
             return;
         }
 
-        // Initialize map if needed
-        if (!this.map) {
-            this.map = L.map('storicoMap').setView([0, 0], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 22,
-                minZoom: 3
+        try {
+            // Check if Leaflet is loaded
+            if (typeof L === 'undefined') {
+                throw new Error('Leaflet non caricato');
+            }
+
+            // Initialize map if needed
+            if (!this.map) {
+                this.map = L.map('storicoMap').setView([0, 0], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 22,
+                    minZoom: 3
+                }).addTo(this.map);
+            }
+
+            // Show map in fullscreen
+            const mapContainer = document.getElementById('storicoMapContainer');
+            mapContainer.style.display = 'block';
+            mapContainer.classList.add('fullscreen');
+            document.body.style.overflow = 'hidden';
+
+            // Hide sessions list
+            document.getElementById('historySessionsList').style.display = 'none';
+
+            // Show field direction panel
+            document.getElementById('fieldDirectionPanel').style.display = 'block';
+
+            // Update map title
+            document.querySelector('.map-header h3').textContent = '🗺️ Imposta Direzione Campo';
+
+            // Center map on pivot point
+            const lat = this.currentSession.puntoPerno.latitude;
+            const lng = this.currentSession.puntoPerno.longitude;
+            this.map.setView([lat, lng], 18);
+
+            // Force map resize
+            setTimeout(() => {
+                if (this.map) {
+                    this.map.invalidateSize();
+                }
+            }, 300);
+
+            // Clear any existing markers
+            this.clearMapMarkers();
+
+            // Add pivot point marker
+            const pivotMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: #00FF00; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>',
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11]
+                })
             }).addTo(this.map);
+            pivotMarker.bindPopup('📍 Punto di Lancio (Perno Campo)');
+            this.mapMarkers.push(pivotMarker);
+
+            // Draw initial field at 0° (North)
+            this.updateFieldDirection(0);
+        } catch (error) {
+            console.error('Errore apertura mappa:', error);
+            this.showToast('Errore apertura mappa: ' + error.message, 'error');
+
+            // Fallback: start session without field direction
+            this.showSessionActive();
         }
-
-        // Show map in fullscreen
-        const mapContainer = document.getElementById('storicoMapContainer');
-        mapContainer.style.display = 'block';
-        mapContainer.classList.add('fullscreen');
-        document.body.style.overflow = 'hidden';
-
-        // Hide sessions list
-        document.getElementById('historySessionsList').style.display = 'none';
-
-        // Show field direction panel
-        document.getElementById('fieldDirectionPanel').style.display = 'block';
-
-        // Update map title
-        document.querySelector('.map-header h3').textContent = '🗺️ Imposta Direzione Campo';
-
-        // Center map on pivot point
-        const lat = this.currentSession.puntoPerno.latitude;
-        const lng = this.currentSession.puntoPerno.longitude;
-        this.map.setView([lat, lng], 18);
-
-        // Force map resize
-        setTimeout(() => {
-            this.map.invalidateSize();
-        }, 100);
-
-        // Clear any existing markers
-        this.clearMapMarkers();
-
-        // Add pivot point marker
-        const pivotMarker = L.marker([lat, lng], {
-            icon: L.divIcon({
-                className: 'custom-marker',
-                html: '<div style="background: #00FF00; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>',
-                iconSize: [22, 22],
-                iconAnchor: [11, 11]
-            })
-        }).addTo(this.map);
-        pivotMarker.bindPopup('📍 Punto di Lancio (Perno Campo)');
-        this.mapMarkers.push(pivotMarker);
-
-        // Draw initial field at 0° (North)
-        this.updateFieldDirection(0);
     }
 
     // Update Field Direction on Map
     updateFieldDirection(angle) {
         if (!this.currentSession || !this.currentSession.puntoPerno || !this.map) return;
 
-        // Update current session direction (temporary until confirmed)
-        this.currentSession.direzioneCampo = angle;
+        try {
+            // Update current session direction (temporary until confirmed)
+            this.currentSession.direzioneCampo = angle;
 
-        // Clear previous field lines (keep pivot marker)
-        const pivotMarker = this.mapMarkers[0]; // Save pivot marker
-        this.clearMapMarkers();
-        if (pivotMarker) {
-            this.mapMarkers.push(pivotMarker);
-            pivotMarker.addTo(this.map);
+            // Clear previous field lines (keep pivot marker)
+            const pivotMarker = this.mapMarkers[0]; // Save pivot marker
+            this.clearMapMarkers();
+            if (pivotMarker) {
+                this.mapMarkers.push(pivotMarker);
+                pivotMarker.addTo(this.map);
+            }
+
+            // Draw casting field with new direction
+            const lat = this.currentSession.puntoPerno.latitude;
+            const lng = this.currentSession.puntoPerno.longitude;
+            this.drawCastingField(lat, lng, angle);
+
+            // Update UI displays
+            const directionDisplay = document.getElementById('fieldDirectionDisplay');
+            const directionSlider = document.getElementById('fieldDirectionSlider');
+            const directionCardinal = document.getElementById('fieldDirectionCardinal');
+
+            if (directionDisplay) directionDisplay.textContent = angle + '°';
+            if (directionSlider) directionSlider.value = angle;
+
+            // Update cardinal direction text
+            const cardinalDirection = this.getCardinalDirection(angle);
+            if (directionCardinal) directionCardinal.textContent = cardinalDirection;
+
+            // Update slider background gradient
+            if (directionSlider) {
+                const percentage = (angle / 359) * 100;
+                directionSlider.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, var(--border) ${percentage}%)`;
+            }
+        } catch (error) {
+            console.error('Errore aggiornamento direzione:', error);
         }
-
-        // Draw casting field with new direction
-        const lat = this.currentSession.puntoPerno.latitude;
-        const lng = this.currentSession.puntoPerno.longitude;
-        this.drawCastingField(lat, lng, angle);
-
-        // Update UI displays
-        document.getElementById('fieldDirectionDisplay').textContent = angle + '°';
-        document.getElementById('fieldDirectionSlider').value = angle;
-
-        // Update cardinal direction text
-        const cardinalDirection = this.getCardinalDirection(angle);
-        document.getElementById('fieldDirectionCardinal').textContent = cardinalDirection;
-
-        // Update slider background gradient
-        const slider = document.getElementById('fieldDirectionSlider');
-        const percentage = (angle / 359) * 100;
-        slider.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, var(--border) ${percentage}%)`;
     }
 
     // Get Cardinal Direction from angle
