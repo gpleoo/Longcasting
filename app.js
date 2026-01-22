@@ -1724,79 +1724,124 @@ class LongCastApp {
         const umidita = formData.get('session-umidita');
         const note = formData.get('session-note');
         const metriPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-metri-per-giro')) : null;
+        const enableFieldDirection = document.getElementById('enable-field-direction').checked;
 
-        // Acquire GPS position for field pivot point
-        if (!navigator.geolocation) {
-            this.showToast('Geolocalizzazione non supportata dal browser', 'error');
-            return;
-        }
-
-        this.showToast('Acquisizione posizione GPS...', 'info');
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                // Create session with pivot point
-                this.currentSession = {
-                    id: Date.now(),
-                    tipo: tipo,
-                    dataInizio: formData.get('session-data'),
-                    luogo: luogo,
-                    pesoPiombo: pesoPiombo,
-                    tecnica: tecnica,
-                    cannaModello: cannaModello,
-                    cannaLunghezza: cannaLunghezza,
-                    cannaGrammatura: cannaGrammatura,
-                    mulinello: mulinello,
-                    metriPerGiro: metriPerGiro,
-                    filo: filo,
-                    vento: vento,
-                    direzioneVento: direzioneVento,
-                    temperatura: temperatura,
-                    umidita: umidita,
-                    note: note,
-                    puntoPerno: {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    },
-                    direzioneCampo: 0, // Initial direction (North), will be set by user
-                    lanci: []
-                };
-
-                // Save suggestions
-                this.addSuggestion('pesoPiombo', pesoPiombo);
-                this.addSuggestion('tecniche', tecnica);
-                this.addSuggestion('cannaModello', cannaModello);
-                this.addSuggestion('vento', vento);
-                this.addSuggestion('direzioneVento', direzioneVento);
-                this.addSuggestion('luoghi', luogo);
-                this.addSuggestion('grammatura', cannaGrammatura);
-                this.addSuggestion('mulinello', mulinello);
-                this.addSuggestion('filo', filo);
-                this.addSuggestion('lunghezzaCanna', cannaLunghezza);
-                this.addSuggestion('temperatura', temperatura);
-                this.addSuggestion('umidita', umidita);
-                this.addSuggestion('note', note);
-
-                this.saveSession();
-
-                // Reset form
-                document.getElementById('startSessionForm').reset();
-                this.setDefaultDateTime();
-
-                // Open map in field direction setup mode
-                this.showToast('Posizione acquisita! Imposta la direzione del campo sulla mappa.', 'success');
-                this.openFieldDirectionSetup();
-            },
-            (error) => {
-                console.error('GPS Error:', error);
-                this.showToast('Errore acquisizione GPS: ' + error.message, 'error');
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
+        // Check if user wants to setup field direction with GPS
+        if (enableFieldDirection) {
+            // GPS Mode: Acquire position and setup field direction
+            if (!navigator.geolocation) {
+                this.showToast('Geolocalizzazione non supportata dal browser', 'error');
+                return;
             }
-        );
+
+            this.showToast('Acquisizione posizione GPS...', 'info');
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Create session with pivot point
+                    this.currentSession = {
+                        id: Date.now(),
+                        tipo: tipo,
+                        dataInizio: formData.get('session-data'),
+                        luogo: luogo,
+                        pesoPiombo: pesoPiombo,
+                        tecnica: tecnica,
+                        cannaModello: cannaModello,
+                        cannaLunghezza: cannaLunghezza,
+                        cannaGrammatura: cannaGrammatura,
+                        mulinello: mulinello,
+                        metriPerGiro: metriPerGiro,
+                        filo: filo,
+                        vento: vento,
+                        direzioneVento: direzioneVento,
+                        temperatura: temperatura,
+                        umidita: umidita,
+                        note: note,
+                        puntoPerno: {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        },
+                        direzioneCampo: 0, // Initial direction (North), will be set by user
+                        lanci: []
+                    };
+
+                    this.saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note);
+                    this.saveSession();
+
+                    // Reset form
+                    document.getElementById('startSessionForm').reset();
+                    this.setDefaultDateTime();
+
+                    // Open map in field direction setup mode
+                    this.showToast('Posizione acquisita! Imposta la direzione del campo sulla mappa.', 'success');
+                    this.openFieldDirectionSetup();
+                },
+                (error) => {
+                    console.error('GPS Error:', error);
+                    this.showToast('Errore acquisizione GPS: ' + error.message + '. Sessione avviata senza direzione campo.', 'warning');
+
+                    // Start session anyway without GPS
+                    this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            // Normal Mode: Start session without GPS
+            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+        }
+    }
+
+    startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro) {
+        // Create session without pivot point
+        this.currentSession = {
+            id: Date.now(),
+            tipo: tipo,
+            dataInizio: formData.get('session-data'),
+            luogo: luogo,
+            pesoPiombo: pesoPiombo,
+            tecnica: tecnica,
+            cannaModello: cannaModello,
+            cannaLunghezza: cannaLunghezza,
+            cannaGrammatura: cannaGrammatura,
+            mulinello: mulinello,
+            metriPerGiro: metriPerGiro,
+            filo: filo,
+            vento: vento,
+            direzioneVento: direzioneVento,
+            temperatura: temperatura,
+            umidita: umidita,
+            note: note,
+            lanci: []
+        };
+
+        this.saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note);
+        this.saveSession();
+        this.showSessionActive();
+        this.showToast('Sessione di allenamento iniziata!', 'success');
+
+        // Reset form
+        document.getElementById('startSessionForm').reset();
+        this.setDefaultDateTime();
+    }
+
+    saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note) {
+        this.addSuggestion('pesoPiombo', pesoPiombo);
+        this.addSuggestion('tecniche', tecnica);
+        this.addSuggestion('cannaModello', cannaModello);
+        this.addSuggestion('vento', vento);
+        this.addSuggestion('direzioneVento', direzioneVento);
+        this.addSuggestion('luoghi', luogo);
+        this.addSuggestion('grammatura', cannaGrammatura);
+        this.addSuggestion('mulinello', mulinello);
+        this.addSuggestion('filo', filo);
+        this.addSuggestion('lunghezzaCanna', cannaLunghezza);
+        this.addSuggestion('temperatura', temperatura);
+        this.addSuggestion('umidita', umidita);
+        this.addSuggestion('note', note);
     }
 
     updateSessionUI() {
@@ -1868,9 +1913,13 @@ class LongCastApp {
         document.getElementById('cast-temperatura').value = this.currentSession.temperatura || '';
         document.getElementById('cast-umidita').value = this.currentSession.umidita || '';
 
-        // Update current direction display
-        if (this.currentSession.direzioneCampo !== undefined) {
+        // Show/hide change direction card based on pivot point
+        const changeDirectionCard = document.getElementById('changeDirectionCard');
+        if (this.currentSession.puntoPerno && this.currentSession.direzioneCampo !== undefined) {
+            changeDirectionCard.style.display = 'block';
             document.getElementById('currentDirection').textContent = this.currentSession.direzioneCampo + '°';
+        } else {
+            changeDirectionCard.style.display = 'none';
         }
 
         // Update session casts list
