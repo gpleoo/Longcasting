@@ -51,12 +51,12 @@
                 <h1>Longcasting Pro</h1>
             </div>
             <nav class="nav">
-                <button class="nav-btn active" data-section="dashboard">Dashboard</button>
-                <button class="nav-btn" data-section="nuovo-lancio">Sessione Allenamento</button>
-                <button class="nav-btn" data-section="storico">Storico</button>
-                <button class="nav-btn" data-section="partner">🤝 Partner</button>
-                <button class="nav-btn" data-section="impostazioni">⚙️ Impostazioni</button>
-                <button class="nav-btn" data-section="profilo">Profilo</button>
+                <button class="nav-btn active" data-section="dashboard" data-i18n="nav.dashboard">Dashboard</button>
+                <button class="nav-btn" data-section="nuovo-lancio" data-i18n="nav.session">Sessione Allenamento</button>
+                <button class="nav-btn" data-section="storico" data-i18n="nav.history">Storico</button>
+                <button class="nav-btn" data-section="partner" data-i18n="nav.partners">🤝 Partner</button>
+                <button class="nav-btn" data-section="impostazioni" data-i18n="nav.settings">⚙️ Impostazioni</button>
+                <button class="nav-btn" data-section="profilo" data-i18n="nav.profile">Profilo</button>
             </nav>
         </div>
     </header>
@@ -66,7 +66,7 @@
         <!-- Dashboard Section -->
         <section id="dashboard" class="section active" style="display: block;">
             <div class="container">
-                <h2 class="section-title">Dashboard</h2>
+                <h2 class="section-title" data-i18n="dashboard.title">Dashboard</h2>
 
                 <!-- Stats Cards -->
                 <div class="stats-grid">
@@ -77,7 +77,7 @@
                             </svg>
                         </div>
                         <div class="stat-info">
-                            <p class="stat-label">Distanza Media</p>
+                            <p class="stat-label" data-i18n="dashboard.avgDistance">Distanza Media</p>
                             <p class="stat-value" id="stat-media">-- m</p>
                         </div>
                     </div>
@@ -89,7 +89,7 @@
                             </svg>
                         </div>
                         <div class="stat-info">
-                            <p class="stat-label">Record Personale</p>
+                            <p class="stat-label" data-i18n="dashboard.personalRecord">Record Personale</p>
                             <p class="stat-value" id="stat-record">-- m</p>
                         </div>
                     </div>
@@ -102,7 +102,7 @@
                             </svg>
                         </div>
                         <div class="stat-info">
-                            <p class="stat-label">Totale Lanci</p>
+                            <p class="stat-label" data-i18n="dashboard.totalCasts">Totale Lanci</p>
                             <p class="stat-value" id="stat-totale">0</p>
                         </div>
                     </div>
@@ -115,7 +115,7 @@
                             </svg>
                         </div>
                         <div class="stat-info">
-                            <p class="stat-label">Miglioramento 30gg</p>
+                            <p class="stat-label" data-i18n="dashboard.improvement30d">Miglioramento 30gg</p>
                             <p class="stat-value" id="stat-miglioramento">-- %</p>
                         </div>
                     </div>
@@ -123,22 +123,22 @@
 
                 <!-- Chart -->
                 <div class="chart-container">
-                    <h3>Andamento Distanze</h3>
+                    <h3 data-i18n="dashboard.distanceTrend">Andamento Distanze</h3>
                     <canvas id="chartCanvas"></canvas>
                     <div id="noDataMessage" class="no-data">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5">
                             <path d="M3 3v18h18"/>
                             <path d="M7 12h10"/>
                         </svg>
-                        <p>Nessun dato disponibile. Aggiungi il tuo primo lancio!</p>
+                        <p data-i18n="dashboard.noData">Nessun dato disponibile. Aggiungi il tuo primo lancio!</p>
                     </div>
                 </div>
 
                 <!-- Recent Casts -->
                 <div class="recent-casts">
-                    <h3>Ultimi Lanci</h3>
+                    <h3 data-i18n="dashboard.recentCasts">Ultimi Lanci</h3>
                     <div id="recentCastsList" class="casts-list">
-                        <p class="no-data-text">Nessun lancio registrato</p>
+                        <p class="no-data-text" data-i18n="dashboard.noCasts">Nessun lancio registrato</p>
                     </div>
                 </div>
             </div>
@@ -147,133 +147,133 @@
         <!-- Sessione Allenamento Section -->
         <section id="nuovo-lancio" class="section" style="display: none;">
             <div class="container">
-                <h2 class="section-title">Sessione Allenamento</h2>
+                <h2 class="section-title" data-i18n="session.title">Sessione Allenamento</h2>
 
                 <!-- Session Not Started -->
                 <div id="sessionNotStarted">
                     <form id="startSessionForm" class="form-card">
                         <div class="form-section">
-                            <h3 class="form-section-title">Dati della Sessione</h3>
+                            <h3 class="form-section-title" data-i18n="session.sessionData">Dati della Sessione</h3>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-data">Data Inizio Sessione *</label>
+                                    <label for="session-data" data-i18n="session.startDate">Data Inizio Sessione *</label>
                                     <input type="datetime-local" id="session-data" name="session-data" required>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="session-tipo">Tipo Sessione *</label>
+                                    <label for="session-tipo" data-i18n="session.sessionType">Tipo Sessione *</label>
                                     <select id="session-tipo" name="session-tipo" required>
-                                        <option value="campo">📍 Campo (metri)</option>
-                                        <option value="mare">🌊 Mare (giri mulinello)</option>
+                                        <option value="campo" data-i18n="session.typeField">📍 Campo (metri)</option>
+                                        <option value="mare" data-i18n="session.typeSea">🌊 Mare (giri mulinello)</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-luogo">Luogo *</label>
-                                    <input type="text" id="session-luogo" name="session-luogo" required list="luogo-list" placeholder="es. Campo gara, Spiaggia...">
+                                    <label for="session-luogo" data-i18n="session.location">Luogo *</label>
+                                    <input type="text" id="session-luogo" name="session-luogo" required list="luogo-list" data-i18n-placeholder="session.locationPlaceholder" placeholder="es. Campo gara, Spiaggia...">
                                     <datalist id="luogo-list"></datalist>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-peso-piombo">Peso Piombo *</label>
-                                    <input type="text" id="session-peso-piombo" name="session-peso-piombo" required list="peso-piombo-list" placeholder="es. Ogiva 150g, Guardiano 175g">
+                                    <label for="session-peso-piombo" data-i18n="session.leadWeight">Peso Piombo *</label>
+                                    <input type="text" id="session-peso-piombo" name="session-peso-piombo" required list="peso-piombo-list" data-i18n-placeholder="session.leadWeightPlaceholder" placeholder="es. Ogiva 150g, Guardiano 175g">
                                     <datalist id="peso-piombo-list"></datalist>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="session-tecnica">Tecnica di Lancio *</label>
-                                    <input type="text" id="session-tecnica" name="session-tecnica" required list="tecnica-list" placeholder="es. Overhead, Pendulum, Ground Cast">
+                                    <label for="session-tecnica" data-i18n="session.technique">Tecnica di Lancio *</label>
+                                    <input type="text" id="session-tecnica" name="session-tecnica" required list="tecnica-list" data-i18n-placeholder="session.techniquePlaceholder" placeholder="es. Overhead, Pendulum, Ground Cast">
                                     <datalist id="tecnica-list"></datalist>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-section">
-                            <h3 class="form-section-title">Attrezzatura</h3>
+                            <h3 class="form-section-title" data-i18n="session.equipment">Attrezzatura</h3>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-canna-modello">Modello/Marca Canna</label>
-                                    <input type="text" id="session-canna-modello" name="session-canna-modello" list="canna-modello-list" placeholder="es. Shimano Nexave, Zziplex">
+                                    <label for="session-canna-modello" data-i18n="session.rodModel">Modello/Marca Canna</label>
+                                    <input type="text" id="session-canna-modello" name="session-canna-modello" list="canna-modello-list" data-i18n-placeholder="session.rodModelPlaceholder" placeholder="es. Shimano Nexave, Zziplex">
                                     <datalist id="canna-modello-list"></datalist>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="session-canna-lunghezza">Lunghezza Canna (metri)</label>
-                                    <input type="text" id="session-canna-lunghezza" name="session-canna-lunghezza" list="lunghezza-canna-list" placeholder="es. 4.2">
+                                    <label for="session-canna-lunghezza" data-i18n="session.rodLength">Lunghezza Canna (metri)</label>
+                                    <input type="text" id="session-canna-lunghezza" name="session-canna-lunghezza" list="lunghezza-canna-list" data-i18n-placeholder="session.rodLengthPlaceholder" placeholder="es. 4.2">
                                     <datalist id="lunghezza-canna-list"></datalist>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-canna-grammatura">Grammatura Canna (gr)</label>
-                                    <input type="text" id="session-canna-grammatura" name="session-canna-grammatura" list="grammatura-list" placeholder="es. 100-200">
+                                    <label for="session-canna-grammatura" data-i18n="session.rodCastingWeight">Grammatura Canna (gr)</label>
+                                    <input type="text" id="session-canna-grammatura" name="session-canna-grammatura" list="grammatura-list" data-i18n-placeholder="session.rodCastingWeightPlaceholder" placeholder="es. 100-200">
                                     <datalist id="grammatura-list"></datalist>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="session-mulinello">Mulinello</label>
-                                    <input type="text" id="session-mulinello" name="session-mulinello" list="mulinello-list" placeholder="es. Shimano 8000">
+                                    <label for="session-mulinello" data-i18n="session.reel">Mulinello</label>
+                                    <input type="text" id="session-mulinello" name="session-mulinello" list="mulinello-list" data-i18n-placeholder="session.reelPlaceholder" placeholder="es. Shimano 8000">
                                     <datalist id="mulinello-list"></datalist>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-filo">Filo/Shock Leader</label>
-                                    <input type="text" id="session-filo" name="session-filo" list="filo-list" placeholder="es. 0.28mm + SL 0.60mm">
+                                    <label for="session-filo" data-i18n="session.line">Filo/Shock Leader</label>
+                                    <input type="text" id="session-filo" name="session-filo" list="filo-list" data-i18n-placeholder="session.linePlaceholder" placeholder="es. 0.28mm + SL 0.60mm">
                                     <datalist id="filo-list"></datalist>
                                 </div>
 
                                 <div class="form-group" id="metri-per-giro-group" style="display: none;">
-                                    <label for="session-metri-per-giro">Metri per Giro Mulinello</label>
-                                    <input type="number" id="session-metri-per-giro" name="session-metri-per-giro" step="0.01" placeholder="es. 0.82">
-                                    <small style="color: var(--text-muted); font-size: 0.75rem;">Auto-compilato in base al mulinello</small>
+                                    <label for="session-metri-per-giro" data-i18n="session.metersPerTurn">Metri per Giro Mulinello</label>
+                                    <input type="number" id="session-metri-per-giro" name="session-metri-per-giro" step="0.01" data-i18n-placeholder="session.metersPerTurnPlaceholder" placeholder="es. 0.82">
+                                    <small style="color: var(--text-muted); font-size: 0.75rem;" data-i18n="session.autoFilled">Auto-compilato in base al mulinello</small>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-section">
-                            <h3 class="form-section-title">Condizioni Meteo Iniziali</h3>
+                            <h3 class="form-section-title" data-i18n="session.initialWeather">Condizioni Meteo Iniziali</h3>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-vento">Vento</label>
-                                    <input type="text" id="session-vento" name="session-vento" list="vento-list" placeholder="es. Calmo, Brezza 10 km/h, Forte 25 km/h">
+                                    <label for="session-vento" data-i18n="session.wind">Vento</label>
+                                    <input type="text" id="session-vento" name="session-vento" list="vento-list" data-i18n-placeholder="session.windPlaceholder" placeholder="es. Calmo, Brezza 10 km/h, Forte 25 km/h">
                                     <datalist id="vento-list"></datalist>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="session-direzione-vento">Direzione Vento</label>
-                                    <input type="text" id="session-direzione-vento" name="session-direzione-vento" list="direzione-vento-list" placeholder="es. A favore, Contrario, Laterale DX">
+                                    <label for="session-direzione-vento" data-i18n="session.windDirection">Direzione Vento</label>
+                                    <input type="text" id="session-direzione-vento" name="session-direzione-vento" list="direzione-vento-list" data-i18n-placeholder="session.windDirectionPlaceholder" placeholder="es. A favore, Contrario, Laterale DX">
                                     <datalist id="direzione-vento-list"></datalist>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-temperatura">Temperatura (°C)</label>
-                                    <input type="text" id="session-temperatura" name="session-temperatura" list="temperatura-list" placeholder="es. 18.5">
+                                    <label for="session-temperatura" data-i18n="session.temperature">Temperatura (°C)</label>
+                                    <input type="text" id="session-temperatura" name="session-temperatura" list="temperatura-list" data-i18n-placeholder="session.temperaturePlaceholder" placeholder="es. 18.5">
                                     <datalist id="temperatura-list"></datalist>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="session-umidita">Umidità (%)</label>
-                                    <input type="text" id="session-umidita" name="session-umidita" list="umidita-list" placeholder="es. 65">
+                                    <label for="session-umidita" data-i18n="session.humidity">Umidità (%)</label>
+                                    <input type="text" id="session-umidita" name="session-umidita" list="umidita-list" data-i18n-placeholder="session.humidityPlaceholder" placeholder="es. 65">
                                     <datalist id="umidita-list"></datalist>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="session-note">Note Sessione</label>
-                                    <input type="text" id="session-note" name="session-note" list="note-list" placeholder="Annotazioni generali...">
+                                    <label for="session-note" data-i18n="session.notes">Note Sessione</label>
+                                    <input type="text" id="session-note" name="session-note" list="note-list" data-i18n-placeholder="session.notesPlaceholder" placeholder="Annotazioni generali...">
                                     <datalist id="note-list"></datalist>
                                 </div>
                             </div>
@@ -284,7 +284,7 @@
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M5 12h14M12 5l7 7-7 7"/>
                                 </svg>
-                                Inizia Sessione di Allenamento
+                                <span data-i18n="session.startSession">Inizia Sessione di Allenamento</span>
                             </button>
                         </div>
                     </form>
@@ -295,20 +295,20 @@
                     <!-- Session Info Card -->
                     <div class="session-info-card">
                         <div class="session-header">
-                            <h3>📍 Sessione in Corso</h3>
+                            <h3 data-i18n="session.sessionInProgress">📍 Sessione in Corso</h3>
                             <div class="session-stats">
                                 <span class="session-stat">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="12" r="10"/>
                                         <path d="M12 6v6l4 2"/>
                                     </svg>
-                                    Iniziata: <strong id="sessionStartTime">--:--</strong>
+                                    <span data-i18n="session.started">Iniziata:</span> <strong id="sessionStartTime">--:--</strong>
                                 </span>
                                 <span class="session-stat">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                                     </svg>
-                                    Lanci: <strong id="sessionCastCount">0</strong>
+                                    <span data-i18n="session.casts">Lanci:</span> <strong id="sessionCastCount">0</strong>
                                 </span>
                                 <span class="session-stat">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -328,8 +328,8 @@
                     <!-- GPS Distance Measurement -->
                     <div class="gps-measurement-card">
                         <div class="gps-header">
-                            <h3 class="form-section-title">📍 Misurazione GPS Distanza</h3>
-                            <p class="gps-subtitle">Misura la distanza camminando dal punto di lancio al piombo</p>
+                            <h3 class="form-section-title" data-i18n="session.gpsMeasurement">📍 Misurazione GPS Distanza</h3>
+                            <p class="gps-subtitle" data-i18n="session.gpsMeasurementDesc">Misura la distanza camminando dal punto di lancio al piombo</p>
                         </div>
 
                         <!-- GPS Status -->
@@ -374,13 +374,13 @@
                                     <circle cx="12" cy="12" r="10"/>
                                     <path d="M12 6v6l4 2"/>
                                 </svg>
-                                START Misurazione GPS
+                                <span data-i18n="session.gpsStart">START Misurazione GPS</span>
                             </button>
                             <button type="button" id="gpsStopBtn" class="btn btn-gps-stop" style="display: none;">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="6" y="6" width="12" height="12" rx="2"/>
                                 </svg>
-                                STOP e Salva Lancio
+                                <span data-i18n="session.gpsStop">STOP e Salva Lancio</span>
                             </button>
                         </div>
 
@@ -399,14 +399,14 @@
                     <!-- Add Cast Form -->
                     <form id="addCastForm" class="form-card">
                         <div class="form-section">
-                            <h3 class="form-section-title">✍️ Inserimento Manuale Distanza</h3>
+                            <h3 class="form-section-title" data-i18n="session.manualEntry">✍️ Inserimento Manuale Distanza</h3>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="cast-distanza" id="cast-distanza-label">Distanza (metri) *</label>
-                                    <input type="number" id="cast-distanza" name="cast-distanza" required min="0" step="0.1" placeholder="es. 125.5" autofocus>
+                                    <label for="cast-distanza" id="cast-distanza-label" data-i18n="session.distance">Distanza (metri) *</label>
+                                    <input type="number" id="cast-distanza" name="cast-distanza" required min="0" step="0.1" data-i18n-placeholder="session.distancePlaceholder" placeholder="es. 125.5" autofocus>
                                     <small id="cast-distanza-calc" style="color: var(--primary-color); font-size: 0.75rem; display: none; margin-top: 0.25rem;">
-                                        Distanza calcolata: <strong id="cast-distanza-calc-value">-- m</strong>
+                                        <span data-i18n="session.calculatedDistance">Distanza calcolata:</span> <strong id="cast-distanza-calc-value">-- m</strong>
                                     </small>
                                 </div>
                             </div>
@@ -417,45 +417,45 @@
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M12 5v14M5 12h14"/>
                                     </svg>
-                                    Aggiungi Lancio Manuale
+                                    <span data-i18n="session.addManualCast">Aggiungi Lancio Manuale</span>
                                 </button>
                             </div>
 
                             <div class="form-row" style="margin-top: 1.5rem;">
                                 <div class="form-group">
-                                    <label for="cast-note">Note (opzionale)</label>
-                                    <input type="text" id="cast-note" name="cast-note" placeholder="Sensazioni su questo lancio...">
+                                    <label for="cast-note" data-i18n="session.castNotes">Note (opzionale)</label>
+                                    <input type="text" id="cast-note" name="cast-note" data-i18n-placeholder="session.castNotesPlaceholder" placeholder="Sensazioni su questo lancio...">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-section weather-confirm-section">
                             <div class="weather-header">
-                                <h3 class="form-section-title">Conferma Condizioni Meteo</h3>
-                                <p class="weather-subtitle">Le condizioni sono cambiate? Aggiorna i dati qui sotto</p>
+                                <h3 class="form-section-title" data-i18n="session.confirmWeather">Conferma Condizioni Meteo</h3>
+                                <p class="weather-subtitle" data-i18n="session.confirmWeatherDesc">Le condizioni sono cambiate? Aggiorna i dati qui sotto</p>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="cast-vento">Vento</label>
-                                    <input type="text" id="cast-vento" name="cast-vento" list="vento-list" placeholder="es. Calmo, Brezza 10 km/h">
+                                    <label for="cast-vento" data-i18n="session.wind">Vento</label>
+                                    <input type="text" id="cast-vento" name="cast-vento" list="vento-list" data-i18n-placeholder="session.windPlaceholder" placeholder="es. Calmo, Brezza 10 km/h">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="cast-direzione-vento">Direzione Vento</label>
-                                    <input type="text" id="cast-direzione-vento" name="cast-direzione-vento" list="direzione-vento-list" placeholder="es. A favore, Contrario">
+                                    <label for="cast-direzione-vento" data-i18n="session.windDirection">Direzione Vento</label>
+                                    <input type="text" id="cast-direzione-vento" name="cast-direzione-vento" list="direzione-vento-list" data-i18n-placeholder="session.windDirectionPlaceholder" placeholder="es. A favore, Contrario">
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="cast-temperatura">Temperatura (°C)</label>
-                                    <input type="text" id="cast-temperatura" name="cast-temperatura" list="temperatura-list" placeholder="es. 18.5">
+                                    <label for="cast-temperatura" data-i18n="session.temperature">Temperatura (°C)</label>
+                                    <input type="text" id="cast-temperatura" name="cast-temperatura" list="temperatura-list" data-i18n-placeholder="session.temperaturePlaceholder" placeholder="es. 18.5">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="cast-umidita">Umidità (%)</label>
-                                    <input type="text" id="cast-umidita" name="cast-umidita" list="umidita-list" placeholder="es. 65">
+                                    <label for="cast-umidita" data-i18n="session.humidity">Umidità (%)</label>
+                                    <input type="text" id="cast-umidita" name="cast-umidita" list="umidita-list" data-i18n-placeholder="session.humidityPlaceholder" placeholder="es. 65">
                                 </div>
                             </div>
                         </div>
@@ -463,9 +463,9 @@
 
                     <!-- Session Casts List -->
                     <div class="session-casts">
-                        <h3>Lanci della Sessione</h3>
+                        <h3 data-i18n="session.sessionCasts">Lanci della Sessione</h3>
                         <div id="sessionCastsList" class="casts-list">
-                            <p class="no-data-text">Nessun lancio ancora registrato in questa sessione</p>
+                            <p class="no-data-text" data-i18n="session.noCastsYet">Nessun lancio ancora registrato in questa sessione</p>
                         </div>
                     </div>
 
@@ -477,7 +477,7 @@
                                 <line x1="9" y1="9" x2="15" y2="15"/>
                                 <line x1="15" y1="9" x2="9" y2="15"/>
                             </svg>
-                            Termina Sessione di Allenamento
+                            <span data-i18n="session.endSession">Termina Sessione di Allenamento</span>
                         </button>
                     </div>
                 </div>
@@ -488,32 +488,32 @@
         <section id="storico" class="section" style="display: none;">
             <div class="container">
                 <div id="sessionsList">
-                    <h2 class="section-title">Storico Sessioni</h2>
+                    <h2 class="section-title" data-i18n="history.title">Storico Sessioni</h2>
 
                     <!-- Filters -->
                     <div class="filters-card">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="filter-luogo">Filtra per Luogo</label>
-                                <input type="text" id="filter-luogo" list="luogo-list" placeholder="Tutti i luoghi">
+                                <label for="filter-luogo" data-i18n="history.filterLocation">Filtra per Luogo</label>
+                                <input type="text" id="filter-luogo" list="luogo-list" data-i18n-placeholder="history.allLocations" placeholder="Tutti i luoghi">
                             </div>
 
                             <div class="form-group">
-                                <label for="filter-periodo">Periodo</label>
+                                <label for="filter-periodo" data-i18n="history.period">Periodo</label>
                                 <select id="filter-periodo">
-                                    <option value="tutti">Tutti</option>
-                                    <option value="7">Ultimi 7 giorni</option>
-                                    <option value="30">Ultimi 30 giorni</option>
-                                    <option value="90">Ultimi 3 mesi</option>
-                                    <option value="365">Ultimo anno</option>
+                                    <option value="tutti" data-i18n="history.all">Tutti</option>
+                                    <option value="7" data-i18n="history.last7days">Ultimi 7 giorni</option>
+                                    <option value="30" data-i18n="history.last30days">Ultimi 30 giorni</option>
+                                    <option value="90" data-i18n="history.last3months">Ultimi 3 mesi</option>
+                                    <option value="365" data-i18n="history.lastYear">Ultimo anno</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
-                                <label for="sort-by">Ordina per</label>
+                                <label for="sort-by" data-i18n="history.sortBy">Ordina per</label>
                                 <select id="sort-by">
-                                    <option value="data-desc">Data (più recente)</option>
-                                    <option value="data-asc">Data (più vecchio)</option>
+                                    <option value="data-desc" data-i18n="history.dateNewest">Data (più recente)</option>
+                                    <option value="data-asc" data-i18n="history.dateOldest">Data (più vecchio)</option>
                                 </select>
                             </div>
                         </div>
@@ -547,7 +547,7 @@
 
                     <!-- Sessions List -->
                     <div id="historySessionsList" class="history-list">
-                        <p class="no-data-text">Nessuna sessione trovata</p>
+                        <p class="no-data-text" data-i18n="history.noSessions">Nessuna sessione trovata</p>
                     </div>
 
                     <!-- Pagination Controls -->
@@ -556,11 +556,13 @@
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M15 18l-6-6 6-6"/>
                             </svg>
-                            Precedente
+                            <span data-i18n="history.previous">Precedente</span>
                         </button>
-                        <span id="pageInfo" class="page-info">Pagina 1 di 1</span>
+                        <span id="pageInfo" class="page-info">
+                            <span data-i18n="history.page">Pagina</span> <span id="currentPageNum">1</span> <span data-i18n="history.of">di</span> <span id="totalPagesNum">1</span>
+                        </span>
                         <button id="nextPage" class="btn btn-pagination">
-                            Successiva
+                            <span data-i18n="history.next">Successiva</span>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M9 18l6-6-6-6"/>
                             </svg>
@@ -575,17 +577,17 @@
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M19 12H5M12 19l-7-7 7-7"/>
                             </svg>
-                            Torna alle Sessioni
+                            <span data-i18n="history.backToSessions">Torna alle Sessioni</span>
                         </button>
                         <div class="session-detail-title-group">
-                            <h2 class="section-title" id="sessionDetailTitle">Dettaglio Sessione</h2>
-                            <button id="deleteSessionBtn" class="btn btn-danger-outline" title="Elimina sessione">
+                            <h2 class="section-title" id="sessionDetailTitle" data-i18n="history.sessionDetail">Dettaglio Sessione</h2>
+                            <button id="deleteSessionBtn" class="btn btn-danger-outline" data-i18n-title="history.deleteSession" title="Elimina sessione">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                                     <line x1="10" y1="11" x2="10" y2="17"/>
                                     <line x1="14" y1="11" x2="14" y2="17"/>
                                 </svg>
-                                Elimina Sessione
+                                <span data-i18n="history.deleteSession">Elimina Sessione</span>
                             </button>
                         </div>
                     </div>
@@ -597,7 +599,7 @@
 
                     <!-- Session Casts -->
                     <div class="session-casts">
-                        <h3>Lanci della Sessione</h3>
+                        <h3 data-i18n="history.sessionCasts">Lanci della Sessione</h3>
                         <div id="sessionDetailCastsList" class="casts-list">
                             <!-- Populated by JS -->
                         </div>
@@ -609,14 +611,14 @@
         <!-- Partner Section -->
         <section id="partner" class="section" style="display: none;">
             <div class="container">
-                <h2 class="section-title">🤝 Partner & Sponsor</h2>
-                <p class="section-subtitle">Scopri i nostri partner ufficiali e gli sponsor che supportano la community del longcasting</p>
+                <h2 class="section-title" data-i18n="partners.title">🤝 Partner & Sponsor</h2>
+                <p class="section-subtitle" data-i18n="partners.subtitle">Scopri i nostri partner ufficiali e gli sponsor che supportano la community del longcasting</p>
 
                 <!-- Negozi di Pesca -->
                 <details class="partner-category" open>
                     <summary class="partner-category-header">
                         <span class="partner-category-icon">🎣</span>
-                        <span class="partner-category-title">Negozi di Pesca</span>
+                        <span class="partner-category-title" data-i18n="partners.shops">Negozi di Pesca</span>
                     </summary>
 
                     <div class="partner-grid">
@@ -683,7 +685,7 @@
                 <details class="partner-category">
                     <summary class="partner-category-header">
                         <span class="partner-category-icon">🏛️</span>
-                        <span class="partner-category-title">Associazioni</span>
+                        <span class="partner-category-title" data-i18n="partners.associations">Associazioni</span>
                     </summary>
 
                     <div class="partner-grid">
@@ -743,7 +745,7 @@
                 <details class="partner-category">
                     <summary class="partner-category-header">
                         <span class="partner-category-icon">🎓</span>
-                        <span class="partner-category-title">Maestri di Lancio e Pesca</span>
+                        <span class="partner-category-title" data-i18n="partners.coaches">Maestri di Lancio e Pesca</span>
                     </summary>
 
                     <div class="partner-grid">
@@ -802,10 +804,10 @@
 
                 <!-- CTA for Partners -->
                 <div class="partner-cta">
-                    <h3>Diventa Partner</h3>
-                    <p>Sei un'azienda, un'associazione o un istruttore? Unisciti alla nostra rete di partner ufficiali!</p>
+                    <h3 data-i18n="partners.becomePartner">Diventa Partner</h3>
+                    <p data-i18n="partners.becomePartnerDesc">Sei un'azienda, un'associazione o un istruttore? Unisciti alla nostra rete di partner ufficiali!</p>
                     <a href="mailto:partner@longcastingpro.it" class="btn btn-primary">
-                        Contattaci
+                        <span data-i18n="partners.contactUs">Contattaci</span>
                     </a>
                 </div>
             </div>
@@ -814,12 +816,12 @@
         <!-- Impostazioni Section -->
         <section id="impostazioni" class="section" style="display: none;">
             <div class="container">
-                <h2 class="section-title">⚙️ Impostazioni</h2>
+                <h2 class="section-title" data-i18n="settings.title">⚙️ Impostazioni</h2>
 
                 <!-- Language Selection -->
                 <div class="settings-card">
-                    <h3 class="settings-section-title">🌍 Lingua / Language</h3>
-                    <p class="settings-description">Seleziona la lingua dell'applicazione</p>
+                    <h3 class="settings-section-title" data-i18n="settings.language">🌍 Lingua / Language</h3>
+                    <p class="settings-description" data-i18n="settings.languageDesc">Seleziona la lingua dell'applicazione</p>
 
                     <div class="language-selector">
                         <label class="language-option">
@@ -847,8 +849,8 @@
 
                 <!-- Units of Measure -->
                 <div class="settings-card">
-                    <h3 class="settings-section-title">📏 Unità di Misura</h3>
-                    <p class="settings-description">Personalizza le unità di misura utilizzate nell'app</p>
+                    <h3 class="settings-section-title" data-i18n="settings.units">📏 Unità di Misura</h3>
+                    <p class="settings-description" data-i18n="settings.unitsDesc">Personalizza le unità di misura utilizzate nell'app</p>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -909,13 +911,13 @@
                         </div>
                     </div>
 
-                    <button id="saveUnitsBtn" class="btn btn-primary">Salva Unità di Misura</button>
+                    <button id="saveUnitsBtn" class="btn btn-primary" data-i18n="settings.saveUnits">Salva Unità di Misura</button>
                 </div>
 
                 <!-- Backup & Cloud -->
                 <div class="settings-card">
-                    <h3 class="settings-section-title">☁️ Backup & Cloud</h3>
-                    <p class="settings-description">Gestisci i tuoi dati e il backup su cloud</p>
+                    <h3 class="settings-section-title" data-i18n="settings.backup">☁️ Backup & Cloud</h3>
+                    <p class="settings-description" data-i18n="settings.backupDesc">Gestisci i tuoi dati e il backup su cloud</p>
 
                     <div class="backup-options">
                         <button id="exportBtnSettings" class="btn btn-secondary">
@@ -924,7 +926,7 @@
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Esporta Dati (JSON)
+                            <span data-i18n="settings.exportData">Esporta Dati (JSON)</span>
                         </button>
 
                         <button id="importBtnSettings" class="btn btn-secondary">
@@ -933,7 +935,7 @@
                                 <polyline points="17 8 12 3 7 8"/>
                                 <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            Importa Dati (JSON)
+                            <span data-i18n="settings.importData">Importa Dati (JSON)</span>
                         </button>
                         <input type="file" id="importFileSettings" accept=".json" style="display: none;">
 
@@ -942,20 +944,20 @@
                                 <polyline points="3 6 5 6 21 6"/>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                             </svg>
-                            Cancella Tutti i Dati
+                            <span data-i18n="settings.deleteAllData">Cancella Tutti i Dati</span>
                         </button>
                     </div>
 
                     <div class="cloud-sync-info">
-                        <p><strong>📱 Sincronizzazione Cloud</strong></p>
-                        <p class="text-muted">Funzionalità di sincronizzazione cloud disponibile nella versione premium</p>
+                        <p><strong data-i18n="settings.cloudSync">📱 Sincronizzazione Cloud</strong></p>
+                        <p class="text-muted" data-i18n="settings.cloudSyncDesc">Funzionalità di sincronizzazione cloud disponibile nella versione premium</p>
                     </div>
                 </div>
 
                 <!-- Install App -->
                 <div class="settings-card">
-                    <h3 class="settings-section-title">📱 Installa Applicazione</h3>
-                    <p class="settings-description">Installa Longcasting Pro sul tuo dispositivo per un'esperienza ottimale</p>
+                    <h3 class="settings-section-title" data-i18n="settings.installApp">📱 Installa Applicazione</h3>
+                    <p class="settings-description" data-i18n="settings.installAppDesc">Installa Longcasting Pro sul tuo dispositivo per un'esperienza ottimale</p>
 
                     <div class="install-instructions">
                         <details class="install-details">
@@ -994,11 +996,11 @@
 
                 <!-- About -->
                 <div class="settings-card">
-                    <h3 class="settings-section-title">ℹ️ Informazioni</h3>
+                    <h3 class="settings-section-title" data-i18n="settings.about">ℹ️ Informazioni</h3>
                     <div class="about-info">
                         <p><strong>Longcasting Pro</strong></p>
-                        <p class="text-muted">Versione 1.0.0</p>
-                        <p class="text-muted">© 2026 Longcasting Pro. Tutti i diritti riservati.</p>
+                        <p class="text-muted" data-i18n="settings.version">Versione 1.0.0</p>
+                        <p class="text-muted" data-i18n="settings.copyright">© 2026 Longcasting Pro. Tutti i diritti riservati.</p>
                     </div>
                 </div>
             </div>
@@ -1007,88 +1009,88 @@
         <!-- Profilo Section -->
         <section id="profilo" class="section" style="display: none;">
             <div class="container">
-                <h2 class="section-title">Profilo Atleta</h2>
+                <h2 class="section-title" data-i18n="profile.title">Profilo Atleta</h2>
 
                 <form id="profileForm" class="form-card">
                     <div class="form-section">
-                        <h3 class="form-section-title">Dati Personali</h3>
+                        <h3 class="form-section-title" data-i18n="profile.personalData">Dati Personali</h3>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="nome">Nome *</label>
-                                <input type="text" id="nome" name="nome" required placeholder="Il tuo nome">
+                                <label for="nome" data-i18n="profile.firstName">Nome *</label>
+                                <input type="text" id="nome" name="nome" required data-i18n-placeholder="profile.firstNamePlaceholder" placeholder="Il tuo nome">
                             </div>
 
                             <div class="form-group">
-                                <label for="cognome">Cognome *</label>
-                                <input type="text" id="cognome" name="cognome" required placeholder="Il tuo cognome">
+                                <label for="cognome" data-i18n="profile.lastName">Cognome *</label>
+                                <input type="text" id="cognome" name="cognome" required data-i18n-placeholder="profile.lastNamePlaceholder" placeholder="Il tuo cognome">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="eta">Età *</label>
-                                <input type="number" id="eta" name="eta" required min="1" max="120" placeholder="es. 35">
+                                <label for="eta" data-i18n="profile.age">Età *</label>
+                                <input type="number" id="eta" name="eta" required min="1" max="120" data-i18n-placeholder="profile.agePlaceholder" placeholder="es. 35">
                             </div>
 
                             <div class="form-group">
-                                <label for="sesso">Sesso *</label>
+                                <label for="sesso" data-i18n="profile.gender">Sesso *</label>
                                 <select id="sesso" name="sesso" required>
-                                    <option value="">Seleziona</option>
-                                    <option value="M">Maschio</option>
-                                    <option value="F">Femmina</option>
-                                    <option value="Altro">Altro</option>
+                                    <option value="" data-i18n="common.select">Seleziona</option>
+                                    <option value="M" data-i18n="profile.male">Maschio</option>
+                                    <option value="F" data-i18n="profile.female">Femmina</option>
+                                    <option value="Altro" data-i18n="profile.other">Altro</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-section">
-                        <h3 class="form-section-title">Dati Fisici</h3>
+                        <h3 class="form-section-title" data-i18n="profile.physicalData">Dati Fisici</h3>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="altezza">Altezza (cm) *</label>
-                                <input type="number" id="altezza" name="altezza" required min="100" max="250" placeholder="es. 175">
+                                <label for="altezza" data-i18n="profile.height">Altezza (cm) *</label>
+                                <input type="number" id="altezza" name="altezza" required min="100" max="250" data-i18n-placeholder="profile.heightPlaceholder" placeholder="es. 175">
                             </div>
 
                             <div class="form-group">
-                                <label for="peso">Peso (kg) *</label>
-                                <input type="number" id="peso" name="peso" required min="30" max="300" step="0.1" placeholder="es. 75.5">
+                                <label for="peso" data-i18n="profile.weight">Peso (kg) *</label>
+                                <input type="number" id="peso" name="peso" required min="30" max="300" step="0.1" data-i18n-placeholder="profile.weightPlaceholder" placeholder="es. 75.5">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="bmi">BMI (calcolato automaticamente)</label>
+                                <label for="bmi" data-i18n="profile.bmi">BMI (calcolato automaticamente)</label>
                                 <input type="text" id="bmi" name="bmi" readonly placeholder="--">
                             </div>
 
                             <div class="form-group">
-                                <label for="livello">Livello di Esperienza</label>
+                                <label for="livello" data-i18n="profile.experience">Livello di Esperienza</label>
                                 <select id="livello" name="livello">
-                                    <option value="">Seleziona</option>
-                                    <option value="principiante">Principiante</option>
-                                    <option value="intermedio">Intermedio</option>
-                                    <option value="avanzato">Avanzato</option>
-                                    <option value="professionista">Professionista</option>
+                                    <option value="" data-i18n="common.select">Seleziona</option>
+                                    <option value="principiante" data-i18n="profile.beginner">Principiante</option>
+                                    <option value="intermedio" data-i18n="profile.intermediate">Intermedio</option>
+                                    <option value="avanzato" data-i18n="profile.advanced">Avanzato</option>
+                                    <option value="professionista" data-i18n="profile.professional">Professionista</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-section">
-                        <h3 class="form-section-title">Preferenze</h3>
+                        <h3 class="form-section-title" data-i18n="profile.preferences">Preferenze</h3>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="obiettivo">Obiettivo di Distanza (m)</label>
-                                <input type="number" id="obiettivo" name="obiettivo" min="0" step="0.1" placeholder="es. 150">
+                                <label for="obiettivo" data-i18n="profile.distanceGoal">Obiettivo di Distanza (m)</label>
+                                <input type="number" id="obiettivo" name="obiettivo" min="0" step="0.1" data-i18n-placeholder="profile.distanceGoalPlaceholder" placeholder="es. 150">
                             </div>
 
                             <div class="form-group">
-                                <label for="campo-allenamento">Campo di Allenamento</label>
-                                <input type="text" id="campo-allenamento" name="campo-allenamento" placeholder="es. Campo Gara XYZ">
+                                <label for="campo-allenamento" data-i18n="profile.trainingField">Campo di Allenamento</label>
+                                <input type="text" id="campo-allenamento" name="campo-allenamento" data-i18n-placeholder="profile.trainingFieldPlaceholder" placeholder="es. Campo Gara XYZ">
                             </div>
                         </div>
                     </div>
@@ -1100,14 +1102,14 @@
                                 <polyline points="17 21 17 13 7 13 7 21"/>
                                 <polyline points="7 3 7 8 15 8"/>
                             </svg>
-                            Salva Profilo
+                            <span data-i18n="profile.saveProfile">Salva Profilo</span>
                         </button>
                     </div>
                 </form>
 
                 <!-- Export/Import Data -->
                 <div class="data-management">
-                    <h3>Gestione Dati</h3>
+                    <h3 data-i18n="profile.dataManagement">Gestione Dati</h3>
                     <div class="data-actions">
                         <button id="exportBtn" class="btn btn-secondary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1115,7 +1117,7 @@
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Esporta Dati
+                            <span data-i18n="profile.exportData">Esporta Dati</span>
                         </button>
                         <button id="importBtn" class="btn btn-secondary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1123,7 +1125,7 @@
                                 <polyline points="17 8 12 3 7 8"/>
                                 <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            Importa Dati
+                            <span data-i18n="profile.importData">Importa Dati</span>
                         </button>
                         <input type="file" id="importFile" accept=".json" style="display: none;">
                         <button id="clearDataBtn" class="btn btn-danger">
@@ -1131,7 +1133,7 @@
                                 <polyline points="3 6 5 6 21 6"/>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                             </svg>
-                            Elimina Tutti i Dati
+                            <span data-i18n="profile.deleteAllData">Elimina Tutti i Dati</span>
                         </button>
                     </div>
                 </div>

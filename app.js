@@ -413,6 +413,686 @@ class LongCastApp {
             note: []
         };
 
+        // Internationalization (i18n) - Translations
+        this.translations = {
+            it: {
+                // Navigation
+                'nav.dashboard': 'Dashboard',
+                'nav.session': 'Sessione Allenamento',
+                'nav.history': 'Storico',
+                'nav.partners': '🤝 Partner',
+                'nav.settings': '⚙️ Impostazioni',
+                'nav.profile': 'Profilo',
+
+                // Dashboard
+                'dashboard.title': 'Dashboard',
+                'dashboard.totalSessions': 'Sessioni Totali',
+                'dashboard.totalCasts': 'Lanci Totali',
+                'dashboard.avgDistance': 'Distanza Media',
+                'dashboard.personalRecord': 'Record Personale',
+                'dashboard.maxDistance': 'Distanza Massima',
+                'dashboard.improvement30d': 'Miglioramento 30gg',
+                'dashboard.distanceTrend': 'Andamento Distanze',
+                'dashboard.recentSessions': 'Ultime Sessioni',
+                'dashboard.recentCasts': 'Ultimi Lanci',
+                'dashboard.noData': 'Nessun dato disponibile. Aggiungi il tuo primo lancio!',
+                'dashboard.noCasts': 'Nessun lancio registrato',
+                'dashboard.viewAll': 'Vedi Tutto',
+
+                // Session
+                'session.title': 'Sessione Allenamento',
+                'session.notStarted': 'Nessuna Sessione Attiva',
+                'session.startNew': 'Inizia una nuova sessione di allenamento per registrare i tuoi lanci',
+                'session.sessionData': 'Dati della Sessione',
+                'session.startDate': 'Data Inizio Sessione *',
+                'session.sessionType': 'Tipo Sessione *',
+                'session.typeField': '📍 Campo (metri)',
+                'session.typeSea': '🌊 Mare (giri mulinello)',
+                'session.location': 'Luogo *',
+                'session.locationPlaceholder': 'es. Campo gara, Spiaggia...',
+                'session.leadWeight': 'Peso Piombo *',
+                'session.leadWeightPlaceholder': 'es. Ogiva 150g, Guardiano 175g',
+                'session.technique': 'Tecnica di Lancio *',
+                'session.techniquePlaceholder': 'es. Overhead, Pendulum, Ground Cast',
+                'session.equipment': 'Attrezzatura',
+                'session.rodModel': 'Modello/Marca Canna',
+                'session.rodModelPlaceholder': 'es. Shimano Nexave, Zziplex',
+                'session.rodLength': 'Lunghezza Canna (metri)',
+                'session.rodLengthPlaceholder': 'es. 4.2',
+                'session.rodCastingWeight': 'Grammatura Canna (gr)',
+                'session.rodCastingWeightPlaceholder': 'es. 100-200',
+                'session.reel': 'Mulinello',
+                'session.reelPlaceholder': 'es. Shimano 8000',
+                'session.line': 'Filo/Shock Leader',
+                'session.linePlaceholder': 'es. 0.28mm + SL 0.60mm',
+                'session.metersPerTurn': 'Metri per Giro Mulinello',
+                'session.metersPerTurnPlaceholder': 'es. 0.82',
+                'session.autoFilled': 'Auto-compilato in base al mulinello',
+                'session.initialWeather': 'Condizioni Meteo Iniziali',
+                'session.wind': 'Vento',
+                'session.windPlaceholder': 'es. Calmo, Brezza 10 km/h',
+                'session.windDirection': 'Direzione Vento',
+                'session.windDirectionPlaceholder': 'es. A favore, Contrario',
+                'session.temperature': 'Temperatura (°C)',
+                'session.temperaturePlaceholder': 'es. 18.5',
+                'session.humidity': 'Umidità (%)',
+                'session.humidityPlaceholder': 'es. 65',
+                'session.notes': 'Note Sessione',
+                'session.notesPlaceholder': 'Annotazioni generali...',
+                'session.startSession': 'Inizia Sessione di Allenamento',
+                'session.sessionInProgress': '📍 Sessione in Corso',
+                'session.started': 'Iniziata:',
+                'session.casts': 'Lanci:',
+                'session.gpsMeasurement': '📍 Misurazione GPS Distanza',
+                'session.gpsMeasurementDesc': 'Misura la distanza camminando dal punto di lancio al piombo',
+                'session.gpsStart': 'START Misurazione GPS',
+                'session.gpsStop': 'STOP e Salva Lancio',
+                'session.manualEntry': '✍️ Inserimento Manuale Distanza',
+                'session.distance': 'Distanza (metri) *',
+                'session.distancePlaceholder': 'es. 125.5',
+                'session.calculatedDistance': 'Distanza calcolata:',
+                'session.addManualCast': 'Aggiungi Lancio Manuale',
+                'session.castNotes': 'Note (opzionale)',
+                'session.castNotesPlaceholder': 'Sensazioni su questo lancio...',
+                'session.confirmWeather': 'Conferma Condizioni Meteo',
+                'session.confirmWeatherDesc': 'Le condizioni sono cambiate? Aggiorna i dati qui sotto',
+                'session.sessionCasts': 'Lanci della Sessione',
+                'session.noCastsYet': 'Nessun lancio ancora registrato in questa sessione',
+                'session.endSession': 'Termina Sessione di Allenamento',
+                'session.start': 'Inizia Sessione',
+                'session.active': 'Sessione Attiva',
+                'session.type': 'Tipo Sessione',
+                'session.field': 'Campo',
+                'session.sea': 'Mare',
+                'session.end': 'Termina Sessione',
+                'session.addCast': 'Aggiungi Lancio',
+
+                // History
+                'history.title': 'Storico Sessioni',
+                'history.filterLocation': 'Filtra per Luogo',
+                'history.allLocations': 'Tutti i luoghi',
+                'history.period': 'Periodo',
+                'history.all': 'Tutti',
+                'history.last7days': 'Ultimi 7 giorni',
+                'history.last30days': 'Ultimi 30 giorni',
+                'history.last3months': 'Ultimi 3 mesi',
+                'history.lastYear': 'Ultimo anno',
+                'history.week': 'Ultima settimana',
+                'history.month': 'Ultimo mese',
+                'history.months3': 'Ultimi 3 mesi',
+                'history.sortBy': 'Ordina per',
+                'history.dateNewest': 'Data (più recente)',
+                'history.dateOldest': 'Data (più vecchio)',
+                'history.dateDesc': 'Data (più recente)',
+                'history.dateAsc': 'Data (meno recente)',
+                'history.noSessions': 'Nessuna sessione trovata',
+                'history.previous': 'Precedente',
+                'history.next': 'Successiva',
+                'history.page': 'Pagina',
+                'history.of': 'di',
+                'history.backToSessions': 'Torna alle Sessioni',
+                'history.sessionDetail': 'Dettaglio Sessione',
+                'history.sessionCasts': 'Lanci della Sessione',
+                'history.deleteSession': 'Elimina Sessione',
+                'history.backToList': 'Torna alle Sessioni',
+
+                // Partners
+                'partners.title': '🤝 Partner & Sponsor',
+                'partners.subtitle': 'Scopri i nostri partner ufficiali e gli sponsor che supportano la community del longcasting',
+                'partners.shops': 'Negozi di Pesca',
+                'partners.associations': 'Associazioni',
+                'partners.coaches': 'Maestri di Lancio e Pesca',
+                'partners.website': 'Sito Web',
+                'partners.call': 'Chiama',
+                'partners.email': 'Email',
+                'partners.becomePartner': 'Diventa Partner',
+                'partners.becomePartnerDesc': 'Sei un\'azienda, un\'associazione o un istruttore? Unisciti alla nostra rete di partner ufficiali!',
+                'partners.contactUs': 'Contattaci',
+                'partners.become': 'Diventa Partner',
+                'partners.becomeText': 'Sei un\'azienda, un\'associazione o un istruttore? Unisciti alla nostra rete di partner ufficiali!',
+                'partners.contact': 'Contattaci',
+
+                // Settings
+                'settings.title': '⚙️ Impostazioni',
+                'settings.language': '🌍 Lingua / Language',
+                'settings.languageDesc': 'Seleziona la lingua dell\'applicazione',
+                'settings.units': '📏 Unità di Misura',
+                'settings.unitsDesc': 'Personalizza le unità di misura utilizzate nell\'app',
+                'settings.distance': 'Distanza',
+                'settings.weight': 'Peso',
+                'settings.temperature': 'Temperatura',
+                'settings.wind': 'Velocità Vento',
+                'settings.timeFormat': 'Formato Ora',
+                'settings.dateFormat': 'Formato Data',
+                'settings.saveUnits': 'Salva Unità di Misura',
+                'settings.backup': '☁️ Backup & Cloud',
+                'settings.backupDesc': 'Gestisci i tuoi dati e il backup su cloud',
+                'settings.exportData': 'Esporta Dati (JSON)',
+                'settings.importData': 'Importa Dati (JSON)',
+                'settings.deleteAllData': 'Cancella Tutti i Dati',
+                'settings.export': 'Esporta Dati (JSON)',
+                'settings.import': 'Importa Dati (JSON)',
+                'settings.deleteAll': 'Cancella Tutti i Dati',
+                'settings.cloudSync': '📱 Sincronizzazione Cloud',
+                'settings.cloudSyncDesc': 'Funzionalità di sincronizzazione cloud disponibile nella versione premium',
+                'settings.cloudPremium': 'Funzionalità di sincronizzazione cloud disponibile nella versione premium',
+                'settings.installApp': '📱 Installa Applicazione',
+                'settings.installAppDesc': 'Installa Longcasting Pro sul tuo dispositivo per un\'esperienza ottimale',
+                'settings.install': 'Installa Applicazione',
+                'settings.installDesc': 'Installa Longcasting Pro sul tuo dispositivo per un\'esperienza ottimale',
+                'settings.about': 'ℹ️ Informazioni',
+                'settings.version': 'Versione 1.0.0',
+                'settings.copyright': '© 2026 Longcasting Pro. Tutti i diritti riservati.',
+
+                // Profile
+                'profile.title': 'Profilo Atleta',
+                'profile.personalData': 'Dati Personali',
+                'profile.firstName': 'Nome *',
+                'profile.firstNamePlaceholder': 'Il tuo nome',
+                'profile.lastName': 'Cognome *',
+                'profile.lastNamePlaceholder': 'Il tuo cognome',
+                'profile.age': 'Età *',
+                'profile.agePlaceholder': 'es. 35',
+                'profile.gender': 'Sesso *',
+                'profile.male': 'Maschio',
+                'profile.female': 'Femmina',
+                'profile.other': 'Altro',
+                'profile.physicalData': 'Dati Fisici',
+                'profile.height': 'Altezza (cm) *',
+                'profile.heightPlaceholder': 'es. 175',
+                'profile.weight': 'Peso (kg) *',
+                'profile.weightPlaceholder': 'es. 75.5',
+                'profile.bmi': 'BMI (calcolato automaticamente)',
+                'profile.experience': 'Livello di Esperienza',
+                'profile.beginner': 'Principiante',
+                'profile.intermediate': 'Intermedio',
+                'profile.advanced': 'Avanzato',
+                'profile.professional': 'Professionista',
+                'profile.preferences': 'Preferenze',
+                'profile.distanceGoal': 'Obiettivo di Distanza (m)',
+                'profile.distanceGoalPlaceholder': 'es. 150',
+                'profile.trainingField': 'Campo di Allenamento',
+                'profile.trainingFieldPlaceholder': 'es. Campo Gara XYZ',
+                'profile.saveProfile': 'Salva Profilo',
+                'profile.dataManagement': 'Gestione Dati',
+                'profile.exportData': 'Esporta Dati',
+                'profile.importData': 'Importa Dati',
+                'profile.deleteAllData': 'Elimina Tutti i Dati',
+                'profile.personal': 'Informazioni Personali',
+                'profile.name': 'Nome',
+                'profile.surname': 'Cognome',
+                'profile.physical': 'Dati Fisici',
+                'profile.save': 'Salva Profilo',
+
+                // Common
+                'common.save': 'Salva',
+                'common.cancel': 'Annulla',
+                'common.delete': 'Elimina',
+                'common.edit': 'Modifica',
+                'common.close': 'Chiudi',
+                'common.confirm': 'Conferma',
+                'common.search': 'Cerca',
+                'common.select': 'Seleziona',
+                'common.loading': 'Caricamento...',
+                'common.error': 'Errore',
+                'common.success': 'Successo',
+                'common.warning': 'Attenzione'
+            },
+            en: {
+                // Navigation
+                'nav.dashboard': 'Dashboard',
+                'nav.session': 'Training Session',
+                'nav.history': 'History',
+                'nav.partners': '🤝 Partners',
+                'nav.settings': '⚙️ Settings',
+                'nav.profile': 'Profile',
+
+                // Dashboard
+                'dashboard.title': 'Dashboard',
+                'dashboard.totalSessions': 'Total Sessions',
+                'dashboard.totalCasts': 'Total Casts',
+                'dashboard.avgDistance': 'Average Distance',
+                'dashboard.personalRecord': 'Personal Record',
+                'dashboard.maxDistance': 'Max Distance',
+                'dashboard.improvement30d': '30d Improvement',
+                'dashboard.distanceTrend': 'Distance Trend',
+                'dashboard.recentSessions': 'Recent Sessions',
+                'dashboard.recentCasts': 'Recent Casts',
+                'dashboard.noData': 'No data available. Add your first cast!',
+                'dashboard.noCasts': 'No casts recorded',
+                'dashboard.viewAll': 'View All',
+
+                // Session
+                'session.title': 'Training Session',
+                'session.notStarted': 'No Active Session',
+                'session.startNew': 'Start a new training session to record your casts',
+                'session.sessionData': 'Session Data',
+                'session.startDate': 'Session Start Date *',
+                'session.sessionType': 'Session Type *',
+                'session.typeField': '📍 Field (meters)',
+                'session.typeSea': '🌊 Sea (reel turns)',
+                'session.location': 'Location *',
+                'session.locationPlaceholder': 'e.g. Competition field, Beach...',
+                'session.leadWeight': 'Lead Weight *',
+                'session.leadWeightPlaceholder': 'e.g. Ogive 150g, Guardian 175g',
+                'session.technique': 'Casting Technique *',
+                'session.techniquePlaceholder': 'e.g. Overhead, Pendulum, Ground Cast',
+                'session.equipment': 'Equipment',
+                'session.rodModel': 'Rod Model/Brand',
+                'session.rodModelPlaceholder': 'e.g. Shimano Nexave, Zziplex',
+                'session.rodLength': 'Rod Length (meters)',
+                'session.rodLengthPlaceholder': 'e.g. 4.2',
+                'session.rodCastingWeight': 'Rod Casting Weight (gr)',
+                'session.rodCastingWeightPlaceholder': 'e.g. 100-200',
+                'session.reel': 'Reel',
+                'session.reelPlaceholder': 'e.g. Shimano 8000',
+                'session.line': 'Line/Shock Leader',
+                'session.linePlaceholder': 'e.g. 0.28mm + SL 0.60mm',
+                'session.metersPerTurn': 'Meters per Reel Turn',
+                'session.metersPerTurnPlaceholder': 'e.g. 0.82',
+                'session.autoFilled': 'Auto-filled based on reel',
+                'session.initialWeather': 'Initial Weather Conditions',
+                'session.wind': 'Wind',
+                'session.windPlaceholder': 'e.g. Calm, Breeze 10 km/h',
+                'session.windDirection': 'Wind Direction',
+                'session.windDirectionPlaceholder': 'e.g. Favorable, Against, Side R',
+                'session.temperature': 'Temperature (°C)',
+                'session.temperaturePlaceholder': 'e.g. 18.5',
+                'session.humidity': 'Humidity (%)',
+                'session.humidityPlaceholder': 'e.g. 65',
+                'session.notes': 'Session Notes',
+                'session.notesPlaceholder': 'General notes...',
+                'session.startSession': 'Start Training Session',
+                'session.sessionInProgress': '📍 Session in Progress',
+                'session.started': 'Started:',
+                'session.casts': 'Casts:',
+                'session.gpsMeasurement': '📍 GPS Distance Measurement',
+                'session.gpsMeasurementDesc': 'Measure distance by walking from casting point to lead',
+                'session.gpsStart': 'START GPS Measurement',
+                'session.gpsStop': 'STOP and Save Cast',
+                'session.manualEntry': '✍️ Manual Distance Entry',
+                'session.distance': 'Distance (meters) *',
+                'session.distancePlaceholder': 'e.g. 125.5',
+                'session.calculatedDistance': 'Calculated distance:',
+                'session.addManualCast': 'Add Manual Cast',
+                'session.castNotes': 'Notes (optional)',
+                'session.castNotesPlaceholder': 'Feelings about this cast...',
+                'session.confirmWeather': 'Confirm Weather Conditions',
+                'session.confirmWeatherDesc': 'Have conditions changed? Update data below',
+                'session.sessionCasts': 'Session Casts',
+                'session.noCastsYet': 'No casts recorded yet in this session',
+                'session.endSession': 'End Training Session',
+                'session.start': 'Start Session',
+                'session.active': 'Active Session',
+                'session.type': 'Session Type',
+                'session.field': 'Field',
+                'session.sea': 'Sea',
+                'session.end': 'End Session',
+                'session.addCast': 'Add Cast',
+
+                // History
+                'history.title': 'Session History',
+                'history.filterLocation': 'Filter by Location',
+                'history.allLocations': 'All locations',
+                'history.period': 'Period',
+                'history.all': 'All',
+                'history.last7days': 'Last 7 days',
+                'history.last30days': 'Last 30 days',
+                'history.last3months': 'Last 3 months',
+                'history.lastYear': 'Last year',
+                'history.week': 'Last week',
+                'history.month': 'Last month',
+                'history.months3': 'Last 3 months',
+                'history.sortBy': 'Sort by',
+                'history.dateNewest': 'Date (newest)',
+                'history.dateOldest': 'Date (oldest)',
+                'history.dateDesc': 'Date (newest)',
+                'history.dateAsc': 'Date (oldest)',
+                'history.noSessions': 'No sessions found',
+                'history.previous': 'Previous',
+                'history.next': 'Next',
+                'history.page': 'Page',
+                'history.of': 'of',
+                'history.backToSessions': 'Back to Sessions',
+                'history.sessionDetail': 'Session Detail',
+                'history.sessionCasts': 'Session Casts',
+                'history.deleteSession': 'Delete Session',
+                'history.backToList': 'Back to Sessions',
+
+                // Partners
+                'partners.title': '🤝 Partners & Sponsors',
+                'partners.subtitle': 'Discover our official partners and sponsors supporting the longcasting community',
+                'partners.shops': 'Fishing Shops',
+                'partners.associations': 'Associations',
+                'partners.coaches': 'Casting Coaches',
+                'partners.website': 'Website',
+                'partners.call': 'Call',
+                'partners.email': 'Email',
+                'partners.becomePartner': 'Become a Partner',
+                'partners.becomePartnerDesc': 'Are you a company, association or instructor? Join our official partner network!',
+                'partners.contactUs': 'Contact Us',
+                'partners.become': 'Become a Partner',
+                'partners.becomeText': 'Are you a company, association or instructor? Join our official partner network!',
+                'partners.contact': 'Contact Us',
+
+                // Settings
+                'settings.title': '⚙️ Settings',
+                'settings.language': '🌍 Language / Idioma',
+                'settings.languageDesc': 'Select application language',
+                'settings.units': '📏 Units of Measure',
+                'settings.unitsDesc': 'Customize the units of measure used in the app',
+                'settings.distance': 'Distance',
+                'settings.weight': 'Weight',
+                'settings.temperature': 'Temperature',
+                'settings.wind': 'Wind Speed',
+                'settings.timeFormat': 'Time Format',
+                'settings.dateFormat': 'Date Format',
+                'settings.saveUnits': 'Save Units of Measure',
+                'settings.backup': '☁️ Backup & Cloud',
+                'settings.backupDesc': 'Manage your data and cloud backup',
+                'settings.exportData': 'Export Data (JSON)',
+                'settings.importData': 'Import Data (JSON)',
+                'settings.deleteAllData': 'Delete All Data',
+                'settings.export': 'Export Data (JSON)',
+                'settings.import': 'Import Data (JSON)',
+                'settings.deleteAll': 'Delete All Data',
+                'settings.cloudSync': '📱 Cloud Sync',
+                'settings.cloudSyncDesc': 'Cloud synchronization feature available in premium version',
+                'settings.cloudPremium': 'Cloud synchronization feature available in premium version',
+                'settings.installApp': '📱 Install Application',
+                'settings.installAppDesc': 'Install Longcasting Pro on your device for an optimal experience',
+                'settings.install': 'Install Application',
+                'settings.installDesc': 'Install Longcasting Pro on your device for an optimal experience',
+                'settings.about': 'ℹ️ About',
+                'settings.version': 'Version 1.0.0',
+                'settings.copyright': '© 2026 Longcasting Pro. All rights reserved.',
+
+                // Profile
+                'profile.title': 'Athlete Profile',
+                'profile.personalData': 'Personal Data',
+                'profile.firstName': 'First Name *',
+                'profile.firstNamePlaceholder': 'Your first name',
+                'profile.lastName': 'Last Name *',
+                'profile.lastNamePlaceholder': 'Your last name',
+                'profile.age': 'Age *',
+                'profile.agePlaceholder': 'e.g. 35',
+                'profile.gender': 'Gender *',
+                'profile.male': 'Male',
+                'profile.female': 'Female',
+                'profile.other': 'Other',
+                'profile.physicalData': 'Physical Data',
+                'profile.height': 'Height (cm) *',
+                'profile.heightPlaceholder': 'e.g. 175',
+                'profile.weight': 'Weight (kg) *',
+                'profile.weightPlaceholder': 'e.g. 75.5',
+                'profile.bmi': 'BMI (auto-calculated)',
+                'profile.experience': 'Experience Level',
+                'profile.beginner': 'Beginner',
+                'profile.intermediate': 'Intermediate',
+                'profile.advanced': 'Advanced',
+                'profile.professional': 'Professional',
+                'profile.preferences': 'Preferences',
+                'profile.distanceGoal': 'Distance Goal (m)',
+                'profile.distanceGoalPlaceholder': 'e.g. 150',
+                'profile.trainingField': 'Training Field',
+                'profile.trainingFieldPlaceholder': 'e.g. XYZ Competition Field',
+                'profile.saveProfile': 'Save Profile',
+                'profile.dataManagement': 'Data Management',
+                'profile.exportData': 'Export Data',
+                'profile.importData': 'Import Data',
+                'profile.deleteAllData': 'Delete All Data',
+                'profile.personal': 'Personal Information',
+                'profile.name': 'First Name',
+                'profile.surname': 'Last Name',
+                'profile.physical': 'Physical Data',
+                'profile.save': 'Save Profile',
+
+                // Common
+                'common.save': 'Save',
+                'common.cancel': 'Cancel',
+                'common.delete': 'Delete',
+                'common.edit': 'Edit',
+                'common.close': 'Close',
+                'common.confirm': 'Confirm',
+                'common.search': 'Search',
+                'common.select': 'Select',
+                'common.loading': 'Loading...',
+                'common.error': 'Error',
+                'common.success': 'Success',
+                'common.warning': 'Warning'
+            },
+            es: {
+                // Navigation
+                'nav.dashboard': 'Panel',
+                'nav.session': 'Sesión de Entrenamiento',
+                'nav.history': 'Historial',
+                'nav.partners': '🤝 Socios',
+                'nav.settings': '⚙️ Configuración',
+                'nav.profile': 'Perfil',
+
+                // Dashboard
+                'dashboard.title': 'Panel',
+                'dashboard.totalSessions': 'Sesiones Totales',
+                'dashboard.totalCasts': 'Lanzamientos Totales',
+                'dashboard.avgDistance': 'Distancia Media',
+                'dashboard.maxDistance': 'Distancia Máxima',
+                'dashboard.recentSessions': 'Sesiones Recientes',
+                'dashboard.noData': '¡No hay datos disponibles. Comienza tu primera sesión de entrenamiento!',
+                'dashboard.viewAll': 'Ver Todo',
+
+                // Session
+                'session.title': 'Sesión de Entrenamiento',
+                'session.notStarted': 'Sin Sesión Activa',
+                'session.startNew': 'Inicia una nueva sesión de entrenamiento para registrar tus lanzamientos',
+                'session.start': 'Iniciar Sesión',
+                'session.active': 'Sesión Activa',
+                'session.location': 'Ubicación',
+                'session.type': 'Tipo de Sesión',
+                'session.field': 'Campo',
+                'session.sea': 'Mar',
+                'session.end': 'Finalizar Sesión',
+                'session.addCast': 'Añadir Lanzamiento',
+
+                // History
+                'history.title': 'Historial de Sesiones',
+                'history.filterLocation': 'Filtrar por Ubicación',
+                'history.allLocations': 'Todas las ubicaciones',
+                'history.period': 'Período',
+                'history.all': 'Todos',
+                'history.week': 'Última semana',
+                'history.month': 'Último mes',
+                'history.months3': 'Últimos 3 meses',
+                'history.sortBy': 'Ordenar por',
+                'history.dateDesc': 'Fecha (más reciente)',
+                'history.dateAsc': 'Fecha (más antigua)',
+                'history.noSessions': 'No se encontraron sesiones',
+                'history.previous': 'Anterior',
+                'history.next': 'Siguiente',
+                'history.deleteSession': 'Eliminar Sesión',
+                'history.backToList': 'Volver a Sesiones',
+
+                // Partners
+                'partners.title': 'Socios y Patrocinadores',
+                'partners.subtitle': 'Descubre nuestros socios oficiales y patrocinadores que apoyan la comunidad de longcasting',
+                'partners.shops': 'Tiendas de Pesca',
+                'partners.associations': 'Asociaciones',
+                'partners.coaches': 'Instructores de Lanzamiento',
+                'partners.website': 'Sitio Web',
+                'partners.call': 'Llamar',
+                'partners.email': 'Email',
+                'partners.become': 'Conviértete en Socio',
+                'partners.becomeText': '¿Eres una empresa, asociación o instructor? ¡Únete a nuestra red oficial de socios!',
+                'partners.contact': 'Contáctanos',
+
+                // Settings
+                'settings.title': 'Configuración',
+                'settings.language': 'Idioma / Language',
+                'settings.languageDesc': 'Seleccionar idioma de la aplicación',
+                'settings.units': 'Unidades de Medida',
+                'settings.unitsDesc': 'Personaliza las unidades de medida utilizadas en la app',
+                'settings.distance': 'Distancia',
+                'settings.weight': 'Peso',
+                'settings.temperature': 'Temperatura',
+                'settings.wind': 'Velocidad del Viento',
+                'settings.timeFormat': 'Formato de Hora',
+                'settings.dateFormat': 'Formato de Fecha',
+                'settings.saveUnits': 'Guardar Unidades',
+                'settings.backup': 'Copia de Seguridad y Nube',
+                'settings.backupDesc': 'Gestiona tus datos y copia de seguridad en la nube',
+                'settings.export': 'Exportar Datos (JSON)',
+                'settings.import': 'Importar Datos (JSON)',
+                'settings.deleteAll': 'Eliminar Todos los Datos',
+                'settings.cloudSync': 'Sincronización en la Nube',
+                'settings.cloudPremium': 'Función de sincronización en la nube disponible en la versión premium',
+                'settings.install': 'Instalar Aplicación',
+                'settings.installDesc': 'Instala Longcasting Pro en tu dispositivo para una experiencia óptima',
+
+                // Profile
+                'profile.title': 'Perfil del Atleta',
+                'profile.personal': 'Información Personal',
+                'profile.name': 'Nombre',
+                'profile.surname': 'Apellido',
+                'profile.age': 'Edad',
+                'profile.gender': 'Género',
+                'profile.male': 'Masculino',
+                'profile.female': 'Femenino',
+                'profile.other': 'Otro',
+                'profile.physical': 'Datos Físicos',
+                'profile.height': 'Altura (cm)',
+                'profile.weight': 'Peso (kg)',
+                'profile.bmi': 'IMC',
+                'profile.save': 'Guardar Perfil',
+
+                // Common
+                'common.save': 'Guardar',
+                'common.cancel': 'Cancelar',
+                'common.delete': 'Eliminar',
+                'common.edit': 'Editar',
+                'common.close': 'Cerrar',
+                'common.confirm': 'Confirmar',
+                'common.search': 'Buscar',
+                'common.loading': 'Cargando...',
+                'common.error': 'Error',
+                'common.success': 'Éxito',
+                'common.warning': 'Advertencia'
+            },
+            fr: {
+                // Navigation
+                'nav.dashboard': 'Tableau de Bord',
+                'nav.session': 'Session d\'Entraînement',
+                'nav.history': 'Historique',
+                'nav.partners': '🤝 Partenaires',
+                'nav.settings': '⚙️ Paramètres',
+                'nav.profile': 'Profil',
+
+                // Dashboard
+                'dashboard.title': 'Tableau de Bord',
+                'dashboard.totalSessions': 'Sessions Totales',
+                'dashboard.totalCasts': 'Lancers Totaux',
+                'dashboard.avgDistance': 'Distance Moyenne',
+                'dashboard.maxDistance': 'Distance Maximale',
+                'dashboard.recentSessions': 'Sessions Récentes',
+                'dashboard.noData': 'Aucune donnée disponible. Commencez votre première session d\'entraînement!',
+                'dashboard.viewAll': 'Voir Tout',
+
+                // Session
+                'session.title': 'Session d\'Entraînement',
+                'session.notStarted': 'Aucune Session Active',
+                'session.startNew': 'Démarrez une nouvelle session d\'entraînement pour enregistrer vos lancers',
+                'session.start': 'Démarrer Session',
+                'session.active': 'Session Active',
+                'session.location': 'Lieu',
+                'session.type': 'Type de Session',
+                'session.field': 'Terrain',
+                'session.sea': 'Mer',
+                'session.end': 'Terminer Session',
+                'session.addCast': 'Ajouter Lancer',
+
+                // History
+                'history.title': 'Historique des Sessions',
+                'history.filterLocation': 'Filtrer par Lieu',
+                'history.allLocations': 'Tous les lieux',
+                'history.period': 'Période',
+                'history.all': 'Tous',
+                'history.week': 'Dernière semaine',
+                'history.month': 'Dernier mois',
+                'history.months3': 'Derniers 3 mois',
+                'history.sortBy': 'Trier par',
+                'history.dateDesc': 'Date (plus récent)',
+                'history.dateAsc': 'Date (plus ancien)',
+                'history.noSessions': 'Aucune session trouvée',
+                'history.previous': 'Précédent',
+                'history.next': 'Suivant',
+                'history.deleteSession': 'Supprimer Session',
+                'history.backToList': 'Retour aux Sessions',
+
+                // Partners
+                'partners.title': 'Partenaires & Sponsors',
+                'partners.subtitle': 'Découvrez nos partenaires officiels et sponsors qui soutiennent la communauté du longcasting',
+                'partners.shops': 'Magasins de Pêche',
+                'partners.associations': 'Associations',
+                'partners.coaches': 'Instructeurs de Lancer',
+                'partners.website': 'Site Web',
+                'partners.call': 'Appeler',
+                'partners.email': 'Email',
+                'partners.become': 'Devenir Partenaire',
+                'partners.becomeText': 'Êtes-vous une entreprise, une association ou un instructeur? Rejoignez notre réseau de partenaires officiels!',
+                'partners.contact': 'Nous Contacter',
+
+                // Settings
+                'settings.title': 'Paramètres',
+                'settings.language': 'Langue / Language',
+                'settings.languageDesc': 'Sélectionner la langue de l\'application',
+                'settings.units': 'Unités de Mesure',
+                'settings.unitsDesc': 'Personnalisez les unités de mesure utilisées dans l\'app',
+                'settings.distance': 'Distance',
+                'settings.weight': 'Poids',
+                'settings.temperature': 'Température',
+                'settings.wind': 'Vitesse du Vent',
+                'settings.timeFormat': 'Format d\'Heure',
+                'settings.dateFormat': 'Format de Date',
+                'settings.saveUnits': 'Enregistrer Unités',
+                'settings.backup': 'Sauvegarde & Cloud',
+                'settings.backupDesc': 'Gérez vos données et sauvegarde cloud',
+                'settings.export': 'Exporter Données (JSON)',
+                'settings.import': 'Importer Données (JSON)',
+                'settings.deleteAll': 'Supprimer Toutes les Données',
+                'settings.cloudSync': 'Synchronisation Cloud',
+                'settings.cloudPremium': 'Fonction de synchronisation cloud disponible dans la version premium',
+                'settings.install': 'Installer Application',
+                'settings.installDesc': 'Installez Longcasting Pro sur votre appareil pour une expérience optimale',
+
+                // Profile
+                'profile.title': 'Profil Athlète',
+                'profile.personal': 'Informations Personnelles',
+                'profile.name': 'Prénom',
+                'profile.surname': 'Nom',
+                'profile.age': 'Âge',
+                'profile.gender': 'Genre',
+                'profile.male': 'Masculin',
+                'profile.female': 'Féminin',
+                'profile.other': 'Autre',
+                'profile.physical': 'Données Physiques',
+                'profile.height': 'Taille (cm)',
+                'profile.weight': 'Poids (kg)',
+                'profile.bmi': 'IMC',
+                'profile.save': 'Enregistrer Profil',
+
+                // Common
+                'common.save': 'Enregistrer',
+                'common.cancel': 'Annuler',
+                'common.delete': 'Supprimer',
+                'common.edit': 'Modifier',
+                'common.close': 'Fermer',
+                'common.confirm': 'Confirmer',
+                'common.search': 'Rechercher',
+                'common.loading': 'Chargement...',
+                'common.error': 'Erreur',
+                'common.success': 'Succès',
+                'common.warning': 'Attention'
+            }
+        };
+
         // Database mulinelli con metri per giro (predefiniti)
         this.mulinelliDB = {
             'Shimano 8000': 0.82,
@@ -443,6 +1123,7 @@ class LongCastApp {
         this.updateDashboard();
         this.loadProfile();
         this.loadSettings();
+        this.applyTranslations();
         this.setDefaultDateTime();
         this.checkActiveSession();
     }
@@ -1938,6 +2619,9 @@ class LongCastApp {
             minDistanza = session.distanzaMinima || Math.min(...distanze);
         }
 
+        // Check if session has GPS casts
+        const hasGPSCasts = session.lanci && session.lanci.some(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
+
         return `
             <div class="session-header">
                 <h3>📍 ${this.escapeHtml(session.luogo || 'N/A')}</h3>
@@ -1955,6 +2639,15 @@ class LongCastApp {
                         </svg>
                         Lanci: <strong>${numLanci}</strong>
                     </span>
+                    ${hasGPSCasts ? `
+                    <button class="btn btn-primary btn-small" onclick="app.showSessionOnMap(${session.id}); app.showSessionsList();" style="margin-left: auto;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Mostra Mappa GPS
+                    </button>
+                    ` : ''}
                 </div>
             </div>
 
@@ -2134,11 +2827,49 @@ class LongCastApp {
         }
     }
 
+    // Translate a key
+    t(key) {
+        const lang = this.settings.language;
+        return this.translations[lang]?.[key] || this.translations['it']?.[key] || key;
+    }
+
+    // Apply translations to all elements with data-i18n attribute
+    applyTranslations() {
+        // Translate text content with data-i18n
+        document.querySelectorAll('[data-i18n]').forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            const translation = this.t(key);
+
+            // Check if it's a placeholder, value, or text content
+            if (element.hasAttribute('placeholder')) {
+                element.placeholder = translation;
+            } else if (element.tagName === 'INPUT' && element.type === 'submit') {
+                element.value = translation;
+            } else {
+                element.textContent = translation;
+            }
+        });
+
+        // Translate placeholders with data-i18n-placeholder
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+            const key = element.getAttribute('data-i18n-placeholder');
+            const translation = this.t(key);
+            element.placeholder = translation;
+        });
+
+        // Translate title attributes with data-i18n-title
+        document.querySelectorAll('[data-i18n-title]').forEach(element => {
+            const key = element.getAttribute('data-i18n-title');
+            const translation = this.t(key);
+            element.title = translation;
+        });
+    }
+
     changeLanguage(lang) {
         this.settings.language = lang;
         localStorage.setItem('longcast_settings', JSON.stringify(this.settings));
-        this.showToast(`Lingua cambiata in: ${lang.toUpperCase()}`, 'success');
-        // Note: Full i18n implementation would go here
+        this.applyTranslations();
+        this.showToast(`${this.t('settings.language')}: ${lang.toUpperCase()}`, 'success');
     }
 
     saveUnits() {
@@ -2645,7 +3376,7 @@ class LongCastApp {
         // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 19,
+            maxZoom: 22, // Increased for detailed zoom up to ~10 meters
             minZoom: 3
         }).addTo(this.map);
 
@@ -2683,8 +3414,12 @@ class LongCastApp {
         // Filter GPS casts
         const gpsCasts = session.lanci.filter(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
 
+        console.log('GPS Casts found:', gpsCasts.length, 'out of', session.lanci.length, 'total casts');
+        console.log('Sample GPS cast:', gpsCasts[0]);
+
         if (gpsCasts.length === 0) {
             this.showToast('Nessun lancio GPS in questa sessione', 'warning');
+            console.log('All casts:', session.lanci.map(c => ({ id: c.id, hasGps: !!c.gps, misurato: c.gps?.misurato, hasStart: !!c.gps?.startPosition })));
             return;
         }
 
@@ -2699,9 +3434,14 @@ class LongCastApp {
         // Update session reference
         this.currentMapSession = sessionId;
 
-        // Show map container
-        document.getElementById('storicoMapContainer').style.display = 'block';
+        // Show map container in fullscreen mode
+        const mapContainer = document.getElementById('storicoMapContainer');
+        mapContainer.style.display = 'block';
+        mapContainer.classList.add('fullscreen');
         document.getElementById('historySessionsList').style.display = 'none';
+
+        // Hide body overflow to prevent scrolling
+        document.body.style.overflow = 'hidden';
 
         // Force Leaflet to recalculate map size after display change
         setTimeout(() => {
@@ -2712,9 +3452,14 @@ class LongCastApp {
     }
 
     closeMap() {
-        // Hide map container
-        document.getElementById('storicoMapContainer').style.display = 'none';
+        // Hide map container and remove fullscreen mode
+        const mapContainer = document.getElementById('storicoMapContainer');
+        mapContainer.style.display = 'none';
+        mapContainer.classList.remove('fullscreen');
         document.getElementById('historySessionsList').style.display = 'block';
+
+        // Restore body overflow
+        document.body.style.overflow = '';
 
         // Clear markers
         if (this.map) {
