@@ -1124,6 +1124,9 @@ class LongCastApp {
     }
 
     init() {
+        // Ensure body overflow is reset on app load
+        document.body.style.overflow = '';
+
         // Check if localStorage is available
         this.checkStorageAvailability();
         this.loadData();
@@ -1525,14 +1528,6 @@ class LongCastApp {
         // Session Detail
         document.getElementById('backToSessions').addEventListener('click', () => this.showSessionsList());
 
-        // Data Management
-        document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
-        document.getElementById('importBtn').addEventListener('click', () => {
-            document.getElementById('importFile').click();
-        });
-        document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
-        document.getElementById('clearDataBtn').addEventListener('click', () => this.clearAllData());
-
         // Settings
         document.querySelectorAll('input[name="language"]').forEach(radio => {
             radio.addEventListener('change', (e) => this.changeLanguage(e.target.value));
@@ -1567,8 +1562,17 @@ class LongCastApp {
     navigate(section) {
         // Close map if navigating away from storico section
         if (section !== 'storico') {
-            document.getElementById('storicoMapContainer').style.display = 'none';
+            const mapContainer = document.getElementById('storicoMapContainer');
+            mapContainer.style.display = 'none';
+            mapContainer.classList.remove('fullscreen');
             document.getElementById('historySessionsList').style.display = 'block';
+            document.getElementById('fieldDirectionPanel').style.display = 'none';
+            document.body.style.overflow = '';
+
+            // Clear map markers if map exists
+            if (this.map) {
+                this.clearMapMarkers();
+            }
         }
 
         // Update sections - hide all first
