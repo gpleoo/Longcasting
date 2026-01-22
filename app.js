@@ -1484,6 +1484,25 @@ class LongCastApp {
             this.changeFieldDirection();
         });
 
+        // Field Direction Setup - Slider
+        document.getElementById('fieldDirectionSlider').addEventListener('input', (e) => {
+            const angle = parseInt(e.target.value);
+            this.updateFieldDirection(angle);
+        });
+
+        // Field Direction Setup - Quick Direction Buttons
+        document.querySelectorAll('.quick-direction-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const direction = parseInt(e.target.dataset.direction);
+                this.updateFieldDirection(direction);
+            });
+        });
+
+        // Field Direction Setup - Confirm Button
+        document.getElementById('confirmFieldDirectionBtn').addEventListener('click', () => {
+            this.confirmFieldDirection();
+        });
+
         // Profile Form
         document.getElementById('profileForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1701,52 +1720,79 @@ class LongCastApp {
         const umidita = formData.get('session-umidita');
         const note = formData.get('session-note');
         const metriPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-metri-per-giro')) : null;
-        const direzioneCampo = parseInt(formData.get('session-direzione-campo')) || 0;
 
-        this.currentSession = {
-            id: Date.now(),
-            tipo: tipo,
-            dataInizio: formData.get('session-data'),
-            luogo: luogo,
-            pesoPiombo: pesoPiombo,
-            tecnica: tecnica,
-            cannaModello: cannaModello,
-            cannaLunghezza: cannaLunghezza,
-            cannaGrammatura: cannaGrammatura,
-            mulinello: mulinello,
-            metriPerGiro: metriPerGiro,
-            filo: filo,
-            vento: vento,
-            direzioneVento: direzioneVento,
-            temperatura: temperatura,
-            umidita: umidita,
-            note: note,
-            direzioneCampo: direzioneCampo, // Direzione campo in gradi (0-359)
-            lanci: []
-        };
+        // Acquire GPS position for field pivot point
+        if (!navigator.geolocation) {
+            this.showToast('Geolocalizzazione non supportata dal browser', 'error');
+            return;
+        }
 
-        // Save suggestions
-        this.addSuggestion('pesoPiombo', pesoPiombo);
-        this.addSuggestion('tecniche', tecnica);
-        this.addSuggestion('cannaModello', cannaModello);
-        this.addSuggestion('vento', vento);
-        this.addSuggestion('direzioneVento', direzioneVento);
-        this.addSuggestion('luoghi', luogo);
-        this.addSuggestion('grammatura', cannaGrammatura);
-        this.addSuggestion('mulinello', mulinello);
-        this.addSuggestion('filo', filo);
-        this.addSuggestion('lunghezzaCanna', cannaLunghezza);
-        this.addSuggestion('temperatura', temperatura);
-        this.addSuggestion('umidita', umidita);
-        this.addSuggestion('note', note);
+        this.showToast('Acquisizione posizione GPS...', 'info');
 
-        this.saveSession();
-        this.showSessionActive();
-        this.showToast('Sessione di allenamento iniziata!', 'success');
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                // Create session with pivot point
+                this.currentSession = {
+                    id: Date.now(),
+                    tipo: tipo,
+                    dataInizio: formData.get('session-data'),
+                    luogo: luogo,
+                    pesoPiombo: pesoPiombo,
+                    tecnica: tecnica,
+                    cannaModello: cannaModello,
+                    cannaLunghezza: cannaLunghezza,
+                    cannaGrammatura: cannaGrammatura,
+                    mulinello: mulinello,
+                    metriPerGiro: metriPerGiro,
+                    filo: filo,
+                    vento: vento,
+                    direzioneVento: direzioneVento,
+                    temperatura: temperatura,
+                    umidita: umidita,
+                    note: note,
+                    puntoPerno: {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    },
+                    direzioneCampo: 0, // Initial direction (North), will be set by user
+                    lanci: []
+                };
 
-        // Reset form
-        document.getElementById('startSessionForm').reset();
-        this.setDefaultDateTime();
+                // Save suggestions
+                this.addSuggestion('pesoPiombo', pesoPiombo);
+                this.addSuggestion('tecniche', tecnica);
+                this.addSuggestion('cannaModello', cannaModello);
+                this.addSuggestion('vento', vento);
+                this.addSuggestion('direzioneVento', direzioneVento);
+                this.addSuggestion('luoghi', luogo);
+                this.addSuggestion('grammatura', cannaGrammatura);
+                this.addSuggestion('mulinello', mulinello);
+                this.addSuggestion('filo', filo);
+                this.addSuggestion('lunghezzaCanna', cannaLunghezza);
+                this.addSuggestion('temperatura', temperatura);
+                this.addSuggestion('umidita', umidita);
+                this.addSuggestion('note', note);
+
+                this.saveSession();
+
+                // Reset form
+                document.getElementById('startSessionForm').reset();
+                this.setDefaultDateTime();
+
+                // Open map in field direction setup mode
+                this.showToast('Posizione acquisita! Imposta la direzione del campo sulla mappa.', 'success');
+                this.openFieldDirectionSetup();
+            },
+            (error) => {
+                console.error('GPS Error:', error);
+                this.showToast('Errore acquisizione GPS: ' + error.message, 'error');
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
     }
 
     updateSessionUI() {
@@ -2140,6 +2186,166 @@ class LongCastApp {
         document.getElementById('new-direction').value = '';
 
         this.showToast(`Direzione campo aggiornata: ${newDirection}°`, 'success');
+    }
+
+    // Open Field Direction Setup Mode
+    openFieldDirectionSetup() {
+        if (!this.currentSession || !this.currentSession.puntoPerno) {
+            this.showToast('Errore: dati sessione non validi', 'error');
+            return;
+        }
+
+        // Navigate to history section to access map
+        this.showSection('storico');
+
+        // Initialize map if needed
+        if (!this.map) {
+            this.map = L.map('storicoMap').setView([0, 0], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 22,
+                minZoom: 3
+            }).addTo(this.map);
+        }
+
+        // Show map in fullscreen
+        const mapContainer = document.getElementById('storicoMapContainer');
+        mapContainer.style.display = 'block';
+        mapContainer.classList.add('fullscreen');
+        document.body.style.overflow = 'hidden';
+
+        // Hide sessions list
+        document.getElementById('historySessionsList').style.display = 'none';
+
+        // Show field direction panel
+        document.getElementById('fieldDirectionPanel').style.display = 'block';
+
+        // Update map title
+        document.querySelector('.map-header h3').textContent = '🗺️ Imposta Direzione Campo';
+
+        // Center map on pivot point
+        const lat = this.currentSession.puntoPerno.latitude;
+        const lng = this.currentSession.puntoPerno.longitude;
+        this.map.setView([lat, lng], 18);
+
+        // Force map resize
+        setTimeout(() => {
+            this.map.invalidateSize();
+        }, 100);
+
+        // Clear any existing markers
+        this.clearMapMarkers();
+
+        // Add pivot point marker
+        const pivotMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="background: #00FF00; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            })
+        }).addTo(this.map);
+        pivotMarker.bindPopup('📍 Punto di Lancio (Perno Campo)');
+        this.mapMarkers.push(pivotMarker);
+
+        // Draw initial field at 0° (North)
+        this.updateFieldDirection(0);
+    }
+
+    // Update Field Direction on Map
+    updateFieldDirection(angle) {
+        if (!this.currentSession || !this.currentSession.puntoPerno || !this.map) return;
+
+        // Update current session direction (temporary until confirmed)
+        this.currentSession.direzioneCampo = angle;
+
+        // Clear previous field lines (keep pivot marker)
+        const pivotMarker = this.mapMarkers[0]; // Save pivot marker
+        this.clearMapMarkers();
+        if (pivotMarker) {
+            this.mapMarkers.push(pivotMarker);
+            pivotMarker.addTo(this.map);
+        }
+
+        // Draw casting field with new direction
+        const lat = this.currentSession.puntoPerno.latitude;
+        const lng = this.currentSession.puntoPerno.longitude;
+        this.drawCastingField(lat, lng, angle);
+
+        // Update UI displays
+        document.getElementById('fieldDirectionDisplay').textContent = angle + '°';
+        document.getElementById('fieldDirectionSlider').value = angle;
+
+        // Update cardinal direction text
+        const cardinalDirection = this.getCardinalDirection(angle);
+        document.getElementById('fieldDirectionCardinal').textContent = cardinalDirection;
+
+        // Update slider background gradient
+        const slider = document.getElementById('fieldDirectionSlider');
+        const percentage = (angle / 359) * 100;
+        slider.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, var(--border) ${percentage}%)`;
+    }
+
+    // Get Cardinal Direction from angle
+    getCardinalDirection(angle) {
+        const directions = [
+            { name: 'Nord', min: 0, max: 22.5 },
+            { name: 'Nord-Est', min: 22.5, max: 67.5 },
+            { name: 'Est', min: 67.5, max: 112.5 },
+            { name: 'Sud-Est', min: 112.5, max: 157.5 },
+            { name: 'Sud', min: 157.5, max: 202.5 },
+            { name: 'Sud-Ovest', min: 202.5, max: 247.5 },
+            { name: 'Ovest', min: 247.5, max: 292.5 },
+            { name: 'Nord-Ovest', min: 292.5, max: 337.5 },
+            { name: 'Nord', min: 337.5, max: 360 }
+        ];
+
+        for (const dir of directions) {
+            if (angle >= dir.min && angle < dir.max) {
+                return dir.name;
+            }
+        }
+        return 'Nord';
+    }
+
+    // Confirm Field Direction and Start Session
+    confirmFieldDirection() {
+        if (!this.currentSession) {
+            this.showToast('Errore: nessuna sessione attiva', 'error');
+            return;
+        }
+
+        const direction = this.currentSession.direzioneCampo;
+
+        // Save session with confirmed direction
+        this.saveSession();
+
+        // Close map and field direction panel
+        this.closeFieldDirectionSetup();
+
+        // Show session active view
+        this.showSessionActive();
+
+        this.showToast(`Sessione avviata! Direzione campo: ${direction}° (${this.getCardinalDirection(direction)})`, 'success');
+    }
+
+    // Close Field Direction Setup
+    closeFieldDirectionSetup() {
+        const mapContainer = document.getElementById('storicoMapContainer');
+        mapContainer.classList.remove('fullscreen');
+        document.body.style.overflow = '';
+
+        // Hide field direction panel
+        document.getElementById('fieldDirectionPanel').style.display = 'none';
+
+        // Restore map title
+        document.querySelector('.map-header h3').textContent = '🗺️ Mappa Lanci GPS';
+
+        // Clear map markers
+        this.clearMapMarkers();
+
+        // Navigate back to session view
+        this.showSection('sessione');
     }
 
     // Delete Session (from history)
@@ -3281,6 +3487,37 @@ class LongCastApp {
 
         const note = document.getElementById('gpsResultNote').value.trim();
 
+        // Determine start position: use puntoPerno if available, otherwise use GPS start
+        let startPosition, endPosition, bearing, distance;
+
+        if (this.currentSession.puntoPerno) {
+            // Use session pivot point as start position
+            startPosition = {
+                latitude: this.currentSession.puntoPerno.latitude,
+                longitude: this.currentSession.puntoPerno.longitude
+            };
+            endPosition = {
+                latitude: this.gpsResult.endPosition.latitude,
+                longitude: this.gpsResult.endPosition.longitude
+            };
+
+            // Recalculate distance and bearing from pivot point to end position
+            distance = this.gpsTracker.calculateDistance(startPosition, endPosition);
+            bearing = this.gpsTracker.calculateBearing(startPosition, endPosition);
+        } else {
+            // Fallback to original GPS start position (for backward compatibility)
+            startPosition = {
+                latitude: this.gpsResult.startPosition.latitude,
+                longitude: this.gpsResult.startPosition.longitude
+            };
+            endPosition = {
+                latitude: this.gpsResult.endPosition.latitude,
+                longitude: this.gpsResult.endPosition.longitude
+            };
+            distance = this.gpsResult.distance;
+            bearing = this.gpsResult.bearing;
+        }
+
         // Calculate final distance based on session type
         let distanzaFinale;
         let giri = null;
@@ -3289,15 +3526,15 @@ class LongCastApp {
             // Mare: calcola giri dal GPS
             const metriPerGiro = this.currentSession.metriPerGiro;
             if (metriPerGiro && metriPerGiro > 0) {
-                giri = this.gpsResult.distance / metriPerGiro;
-                distanzaFinale = this.gpsResult.distance;
+                giri = distance / metriPerGiro;
+                distanzaFinale = distance;
             } else {
                 this.showToast('Errore: metri per giro non configurati', 'error');
                 return;
             }
         } else {
             // Campo: usa distanza GPS diretta
-            distanzaFinale = this.gpsResult.distance;
+            distanzaFinale = distance;
         }
 
         // Get weather data
@@ -3314,8 +3551,8 @@ class LongCastApp {
 
         // Calcola deviazione angolare rispetto alla direzione campo
         let angoloDiDeviazione = null;
-        if (this.currentSession.direzioneCampo !== undefined && this.gpsResult.bearing !== undefined) {
-            angoloDiDeviazione = this.calculateCastDeviation(this.gpsResult.bearing, this.currentSession.direzioneCampo);
+        if (this.currentSession.direzioneCampo !== undefined && bearing !== undefined) {
+            angoloDiDeviazione = this.calculateCastDeviation(bearing, this.currentSession.direzioneCampo);
         }
 
         // Create cast object with GPS metadata
@@ -3328,17 +3565,11 @@ class LongCastApp {
                 misurato: true,
 
                 // Posizioni per mappa
-                startPosition: {
-                    latitude: this.gpsResult.startPosition.latitude,
-                    longitude: this.gpsResult.startPosition.longitude
-                },
-                endPosition: {
-                    latitude: this.gpsResult.endPosition.latitude,
-                    longitude: this.gpsResult.endPosition.longitude
-                },
+                startPosition: startPosition,
+                endPosition: endPosition,
 
                 // Angolo del lancio
-                bearing: this.gpsResult.bearing,
+                bearing: bearing,
 
                 // Angolo di deviazione rispetto alla direzione campo ideale
                 angoloDiDeviazione: angoloDiDeviazione,
@@ -3361,10 +3592,7 @@ class LongCastApp {
         // Hide modal
         this.hideGPSConfirmModal();
 
-        // Clear GPS result
-        this.gpsResult = null;
-
-        // Show success message
+        // Show success message (before clearing gpsResult)
         let toastMessage;
         if (this.currentSession.tipo === 'mare') {
             toastMessage = `📍 GPS: ${distanzaFinale.toFixed(1)}m (${giri.toFixed(0)} giri) - ${this.gpsResult.quality}`;
@@ -3372,6 +3600,9 @@ class LongCastApp {
             toastMessage = `📍 GPS: ${distanzaFinale.toFixed(1)}m - ${this.gpsResult.quality}`;
         }
         this.showToast(toastMessage, 'success');
+
+        // Clear GPS result
+        this.gpsResult = null;
     }
 
     cancelGPSCast() {
@@ -3481,11 +3712,38 @@ class LongCastApp {
             return;
         }
 
+        // Draw pivot point marker if session has it
+        if (session.puntoPerno) {
+            const pivotIcon = L.divIcon({
+                className: 'custom-marker-pivot',
+                html: '<div style="background: #00FF00; width: 20px; height: 20px; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 15px rgba(0,255,0,0.6);"></div>',
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            const pivotMarker = L.marker(
+                [session.puntoPerno.latitude, session.puntoPerno.longitude],
+                { icon: pivotIcon }
+            ).bindPopup('<strong>📍 Punto di Lancio (Perno Campo)</strong><br>Tutti i lanci partono da qui');
+
+            pivotMarker.addTo(this.map);
+            this.mapMarkers.push(pivotMarker);
+        }
+
         // Disegna il campo da longcasting se la sessione ha direzione campo
         if (session.direzioneCampo !== undefined && gpsCasts.length > 0) {
-            const firstCast = gpsCasts[0];
-            const centerLat = firstCast.gps.startPosition.latitude;
-            const centerLng = firstCast.gps.startPosition.longitude;
+            let centerLat, centerLng;
+
+            // Use pivot point if available, otherwise use first cast start position
+            if (session.puntoPerno) {
+                centerLat = session.puntoPerno.latitude;
+                centerLng = session.puntoPerno.longitude;
+            } else {
+                const firstCast = gpsCasts[0];
+                centerLat = firstCast.gps.startPosition.latitude;
+                centerLng = firstCast.gps.startPosition.longitude;
+            }
+
             this.drawCastingField(centerLat, centerLng, session.direzioneCampo);
         }
 
@@ -3524,6 +3782,12 @@ class LongCastApp {
         mapContainer.classList.remove('fullscreen');
         document.getElementById('historySessionsList').style.display = 'block';
 
+        // Hide field direction panel if visible
+        document.getElementById('fieldDirectionPanel').style.display = 'none';
+
+        // Restore map title
+        document.querySelector('.map-header h3').textContent = '🗺️ Mappa Lanci GPS';
+
         // Restore body overflow
         document.body.style.overflow = '';
 
@@ -3540,14 +3804,27 @@ class LongCastApp {
 
         const { startPosition, endPosition, bearing } = cast.gps;
 
-        // Create custom icon for start marker (green)
-        const startIcon = L.divIcon({
-            className: 'custom-marker-start',
-            html: '<div class="marker-pin marker-start">🟢</div>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 30],
-            popupAnchor: [0, -30]
-        });
+        // Only show individual start markers if session doesn't have pivot point
+        // (with pivot point, all casts start from the same point shown as green pivot marker)
+        if (!session.puntoPerno) {
+            // Create custom icon for start marker (green)
+            const startIcon = L.divIcon({
+                className: 'custom-marker-start',
+                html: '<div class="marker-pin marker-start">🟢</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 30],
+                popupAnchor: [0, -30]
+            });
+
+            // Add start marker
+            const startMarker = L.marker(
+                [startPosition.latitude, startPosition.longitude],
+                { icon: startIcon }
+            ).bindPopup(this.createStartPopupHTML(cast, castNumber));
+
+            startMarker.addTo(this.map);
+            this.mapMarkers.push(startMarker);
+        }
 
         // Create custom icon for end marker (red)
         const endIcon = L.divIcon({
@@ -3557,12 +3834,6 @@ class LongCastApp {
             iconAnchor: [15, 30],
             popupAnchor: [0, -30]
         });
-
-        // Add start marker
-        const startMarker = L.marker(
-            [startPosition.latitude, startPosition.longitude],
-            { icon: startIcon }
-        ).bindPopup(this.createStartPopupHTML(cast, castNumber));
 
         // Add end marker
         const endMarker = L.marker(
@@ -3593,12 +3864,11 @@ class LongCastApp {
         });
 
         // Add all to map and store references
-        startMarker.addTo(this.map);
         endMarker.addTo(this.map);
         castLine.addTo(this.map);
         distanceLabel.addTo(this.map);
 
-        this.mapMarkers.push(startMarker, endMarker, castLine, distanceLabel);
+        this.mapMarkers.push(endMarker, castLine, distanceLabel);
 
         // Add reference line if session has direzioneRiferimento
         if (session.direzioneRiferimento && session.direzioneRiferimento.impostata) {
