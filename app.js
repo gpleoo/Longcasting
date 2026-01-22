@@ -1482,23 +1482,15 @@ class LongCastApp {
             this.endSession();
         });
 
-        // Change Field Direction
-        document.getElementById('changeDirectionBtn').addEventListener('click', () => {
-            this.changeFieldDirection();
+        // Open Field Direction Setup (from session active view)
+        document.getElementById('openFieldDirectionBtn').addEventListener('click', () => {
+            this.openFieldDirectionSetup();
         });
 
         // Field Direction Setup - Slider
         document.getElementById('fieldDirectionSlider').addEventListener('input', (e) => {
             const angle = parseInt(e.target.value);
             this.updateFieldDirection(angle);
-        });
-
-        // Field Direction Setup - Quick Direction Buttons
-        document.querySelectorAll('.quick-direction-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const direction = parseInt(e.target.dataset.direction);
-                this.updateFieldDirection(direction);
-            });
         });
 
         // Field Direction Setup - Confirm Button
@@ -1724,76 +1716,69 @@ class LongCastApp {
         const umidita = formData.get('session-umidita');
         const note = formData.get('session-note');
         const metriPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-metri-per-giro')) : null;
-        const enableFieldDirectionCheckbox = document.getElementById('enable-field-direction');
-        const enableFieldDirection = enableFieldDirectionCheckbox ? enableFieldDirectionCheckbox.checked : false;
 
-        // Check if user wants to setup field direction with GPS
-        if (enableFieldDirection) {
-            // GPS Mode: Acquire position and setup field direction
-            if (!navigator.geolocation) {
-                this.showToast('Geolocalizzazione non supportata dal browser', 'error');
-                return;
-            }
-
-            this.showToast('Acquisizione posizione GPS...', 'info');
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    // Create session with pivot point
-                    this.currentSession = {
-                        id: Date.now(),
-                        tipo: tipo,
-                        dataInizio: formData.get('session-data'),
-                        luogo: luogo,
-                        pesoPiombo: pesoPiombo,
-                        tecnica: tecnica,
-                        cannaModello: cannaModello,
-                        cannaLunghezza: cannaLunghezza,
-                        cannaGrammatura: cannaGrammatura,
-                        mulinello: mulinello,
-                        metriPerGiro: metriPerGiro,
-                        filo: filo,
-                        vento: vento,
-                        direzioneVento: direzioneVento,
-                        temperatura: temperatura,
-                        umidita: umidita,
-                        note: note,
-                        puntoPerno: {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        },
-                        direzioneCampo: 0, // Initial direction (North), will be set by user
-                        lanci: []
-                    };
-
-                    this.saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note);
-                    this.saveSession();
-
-                    // Reset form
-                    document.getElementById('startSessionForm').reset();
-                    this.setDefaultDateTime();
-
-                    // Open map in field direction setup mode
-                    this.showToast('Posizione acquisita! Imposta la direzione del campo sulla mappa.', 'success');
-                    this.openFieldDirectionSetup();
-                },
-                (error) => {
-                    console.error('GPS Error:', error);
-                    this.showToast('Errore acquisizione GPS: ' + error.message + '. Sessione avviata senza direzione campo.', 'warning');
-
-                    // Start session anyway without GPS
-                    this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
-            );
-        } else {
-            // Normal Mode: Start session without GPS
+        // Always acquire GPS position for field pivot point
+        if (!navigator.geolocation) {
+            this.showToast('Geolocalizzazione non supportata. Sessione avviata senza punto perno.', 'warning');
             this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+            return;
         }
+
+        this.showToast('Acquisizione posizione GPS...', 'info');
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                // Create session with pivot point
+                this.currentSession = {
+                    id: Date.now(),
+                    tipo: tipo,
+                    dataInizio: formData.get('session-data'),
+                    luogo: luogo,
+                    pesoPiombo: pesoPiombo,
+                    tecnica: tecnica,
+                    cannaModello: cannaModello,
+                    cannaLunghezza: cannaLunghezza,
+                    cannaGrammatura: cannaGrammatura,
+                    mulinello: mulinello,
+                    metriPerGiro: metriPerGiro,
+                    filo: filo,
+                    vento: vento,
+                    direzioneVento: direzioneVento,
+                    temperatura: temperatura,
+                    umidita: umidita,
+                    note: note,
+                    puntoPerno: {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    },
+                    direzioneCampo: null, // Not set yet, user will set it from map button
+                    lanci: []
+                };
+
+                this.saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note);
+                this.saveSession();
+
+                // Reset form
+                document.getElementById('startSessionForm').reset();
+                this.setDefaultDateTime();
+
+                // Start session - user will set direction later from button
+                this.showSessionActive();
+                this.showToast('Sessione avviata! Punto perno GPS acquisito.', 'success');
+            },
+            (error) => {
+                console.error('GPS Error:', error);
+                this.showToast('Errore GPS: ' + error.message + '. Sessione avviata senza punto perno.', 'warning');
+
+                // Start session anyway without GPS
+                this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
     }
 
     startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro) {
@@ -1914,13 +1899,20 @@ class LongCastApp {
         document.getElementById('cast-temperatura').value = this.currentSession.temperatura || '';
         document.getElementById('cast-umidita').value = this.currentSession.umidita || '';
 
-        // Show/hide change direction card based on pivot point
-        const changeDirectionCard = document.getElementById('changeDirectionCard');
-        if (this.currentSession.puntoPerno && this.currentSession.direzioneCampo !== undefined) {
-            changeDirectionCard.style.display = 'block';
-            document.getElementById('currentDirection').textContent = this.currentSession.direzioneCampo + '°';
-        } else {
-            changeDirectionCard.style.display = 'none';
+        // Update field direction display
+        const currentFieldDirectionEl = document.getElementById('currentFieldDirection');
+        if (currentFieldDirectionEl) {
+            if (this.currentSession.direzioneCampo !== null && this.currentSession.direzioneCampo !== undefined) {
+                const cardinal = this.getCardinalDirection(this.currentSession.direzioneCampo);
+                currentFieldDirectionEl.textContent = `Direzione impostata: ${this.currentSession.direzioneCampo}° (${cardinal})`;
+                currentFieldDirectionEl.style.color = 'var(--primary)';
+            } else if (this.currentSession.puntoPerno) {
+                currentFieldDirectionEl.textContent = 'Direzione non ancora impostata - Clicca il pulsante sopra';
+                currentFieldDirectionEl.style.color = 'var(--text-muted)';
+            } else {
+                currentFieldDirectionEl.textContent = 'GPS non disponibile per questa sessione';
+                currentFieldDirectionEl.style.color = 'var(--text-muted)';
+            }
         }
 
         // Update session casts list
@@ -2218,30 +2210,6 @@ class LongCastApp {
     }
 
     // Change Field Direction during active session
-    changeFieldDirection() {
-        if (!this.currentSession) {
-            this.showToast('Errore: nessuna sessione attiva', 'error');
-            return;
-        }
-
-        const newDirection = parseInt(document.getElementById('new-direction').value);
-
-        if (isNaN(newDirection) || newDirection < 0 || newDirection > 359) {
-            this.showToast('Inserisci una direzione valida (0-359°)', 'warning');
-            return;
-        }
-
-        // Update session direction
-        this.currentSession.direzioneCampo = newDirection;
-        this.saveSession();
-
-        // Update UI
-        document.getElementById('currentDirection').textContent = newDirection + '°';
-        document.getElementById('new-direction').value = '';
-
-        this.showToast(`Direzione campo aggiornata: ${newDirection}°`, 'success');
-    }
-
     // Open Field Direction Setup Mode
     openFieldDirectionSetup() {
         if (!this.currentSession || !this.currentSession.puntoPerno) {
@@ -2307,8 +2275,11 @@ class LongCastApp {
             pivotMarker.bindPopup('📍 Punto di Lancio (Perno Campo)');
             this.mapMarkers.push(pivotMarker);
 
-            // Draw initial field at 0° (North)
-            this.updateFieldDirection(0);
+            // Draw initial field (use existing direction or default to 0° North)
+            const initialDirection = this.currentSession.direzioneCampo !== null && this.currentSession.direzioneCampo !== undefined
+                ? this.currentSession.direzioneCampo
+                : 0;
+            this.updateFieldDirection(initialDirection);
         } catch (error) {
             console.error('Errore apertura mappa:', error);
             this.showToast('Errore apertura mappa: ' + error.message, 'error');
@@ -2392,16 +2363,21 @@ class LongCastApp {
 
         const direction = this.currentSession.direzioneCampo;
 
+        if (direction === null || direction === undefined) {
+            this.showToast('Errore: direzione non impostata', 'error');
+            return;
+        }
+
         // Save session with confirmed direction
         this.saveSession();
 
         // Close map and field direction panel
         this.closeFieldDirectionSetup();
 
-        // Show session active view
-        this.showSessionActive();
+        // Refresh session UI to show updated direction
+        this.updateSessionUI();
 
-        this.showToast(`Sessione avviata! Direzione campo: ${direction}° (${this.getCardinalDirection(direction)})`, 'success');
+        this.showToast(`Direzione campo confermata: ${direction}° (${this.getCardinalDirection(direction)})`, 'success');
     }
 
     // Close Field Direction Setup
