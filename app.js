@@ -450,6 +450,9 @@ class LongCastApp {
                 'session.typeSea': '🌊 Mare (giri mulinello)',
                 'session.location': 'Luogo *',
                 'session.locationPlaceholder': 'es. Campo gara, Spiaggia...',
+                'session.castingDirection': 'Direzione Campo (gradi) *',
+                'session.castingDirectionPlaceholder': '0-359° (0=Nord, 90=Est)',
+                'session.castingDirectionHelper': '0°=Nord, 90°=Est, 180°=Sud, 270°=Ovest',
                 'session.leadWeight': 'Peso Piombo *',
                 'session.leadWeightPlaceholder': 'es. Ogiva 150g, Guardiano 175g',
                 'session.technique': 'Tecnica di Lancio *',
@@ -673,6 +676,9 @@ class LongCastApp {
                 'session.typeSea': '🌊 Sea (reel turns)',
                 'session.location': 'Location *',
                 'session.locationPlaceholder': 'e.g. Competition field, Beach...',
+                'session.castingDirection': 'Field Direction (degrees) *',
+                'session.castingDirectionPlaceholder': '0-359° (0=North, 90=East)',
+                'session.castingDirectionHelper': '0°=North, 90°=East, 180°=South, 270°=West',
                 'session.leadWeight': 'Lead Weight *',
                 'session.leadWeightPlaceholder': 'e.g. Ogive 150g, Guardian 175g',
                 'session.technique': 'Casting Technique *',
@@ -887,6 +893,9 @@ class LongCastApp {
                 'session.start': 'Iniciar Sesión',
                 'session.active': 'Sesión Activa',
                 'session.location': 'Ubicación',
+                'session.castingDirection': 'Dirección del Campo (grados) *',
+                'session.castingDirectionPlaceholder': '0-359° (0=Norte, 90=Este)',
+                'session.castingDirectionHelper': '0°=Norte, 90°=Este, 180°=Sur, 270°=Oeste',
                 'session.type': 'Tipo de Sesión',
                 'session.field': 'Campo',
                 'session.sea': 'Mar',
@@ -1002,6 +1011,9 @@ class LongCastApp {
                 'session.start': 'Démarrer Session',
                 'session.active': 'Session Active',
                 'session.location': 'Lieu',
+                'session.castingDirection': 'Direction du Terrain (degrés) *',
+                'session.castingDirectionPlaceholder': '0-359° (0=Nord, 90=Est)',
+                'session.castingDirectionHelper': '0°=Nord, 90°=Est, 180°=Sud, 270°=Ouest',
                 'session.type': 'Type de Session',
                 'session.field': 'Terrain',
                 'session.sea': 'Mer',
@@ -1467,6 +1479,11 @@ class LongCastApp {
             this.endSession();
         });
 
+        // Change Field Direction
+        document.getElementById('changeDirectionBtn').addEventListener('click', () => {
+            this.changeFieldDirection();
+        });
+
         // Profile Form
         document.getElementById('profileForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1684,6 +1701,7 @@ class LongCastApp {
         const umidita = formData.get('session-umidita');
         const note = formData.get('session-note');
         const metriPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-metri-per-giro')) : null;
+        const direzioneCampo = parseInt(formData.get('session-direzione-campo')) || 0;
 
         this.currentSession = {
             id: Date.now(),
@@ -1703,6 +1721,7 @@ class LongCastApp {
             temperatura: temperatura,
             umidita: umidita,
             note: note,
+            direzioneCampo: direzioneCampo, // Direzione campo in gradi (0-359)
             lanci: []
         };
 
@@ -1798,6 +1817,11 @@ class LongCastApp {
         document.getElementById('cast-direzione-vento').value = this.currentSession.direzioneVento || '';
         document.getElementById('cast-temperatura').value = this.currentSession.temperatura || '';
         document.getElementById('cast-umidita').value = this.currentSession.umidita || '';
+
+        // Update current direction display
+        if (this.currentSession.direzioneCampo !== undefined) {
+            document.getElementById('currentDirection').textContent = this.currentSession.direzioneCampo + '°';
+        }
 
         // Update session casts list
         this.updateSessionCastsList();
@@ -2091,6 +2115,31 @@ class LongCastApp {
 
         // Reset form
         this.setDefaultDateTime();
+    }
+
+    // Change Field Direction during active session
+    changeFieldDirection() {
+        if (!this.currentSession) {
+            this.showToast('Errore: nessuna sessione attiva', 'error');
+            return;
+        }
+
+        const newDirection = parseInt(document.getElementById('new-direction').value);
+
+        if (isNaN(newDirection) || newDirection < 0 || newDirection > 359) {
+            this.showToast('Inserisci una direzione valida (0-359°)', 'warning');
+            return;
+        }
+
+        // Update session direction
+        this.currentSession.direzioneCampo = newDirection;
+        this.saveSession();
+
+        // Update UI
+        document.getElementById('currentDirection').textContent = newDirection + '°';
+        document.getElementById('new-direction').value = '';
+
+        this.showToast(`Direzione campo aggiornata: ${newDirection}°`, 'success');
     }
 
     // Delete Session (from history)
@@ -3263,6 +3312,12 @@ class LongCastApp {
         this.currentSession.temperatura = temperatura;
         this.currentSession.umidita = umidita;
 
+        // Calcola deviazione angolare rispetto alla direzione campo
+        let angoloDiDeviazione = null;
+        if (this.currentSession.direzioneCampo !== undefined && this.gpsResult.bearing !== undefined) {
+            angoloDiDeviazione = this.calculateCastDeviation(this.gpsResult.bearing, this.currentSession.direzioneCampo);
+        }
+
         // Create cast object with GPS metadata
         const cast = {
             distanza: distanzaFinale,
@@ -3284,6 +3339,9 @@ class LongCastApp {
 
                 // Angolo del lancio
                 bearing: this.gpsResult.bearing,
+
+                // Angolo di deviazione rispetto alla direzione campo ideale
+                angoloDiDeviazione: angoloDiDeviazione,
 
                 // Statistiche GPS
                 accuracy: this.gpsResult.accuracy,
@@ -3423,6 +3481,14 @@ class LongCastApp {
             return;
         }
 
+        // Disegna il campo da longcasting se la sessione ha direzione campo
+        if (session.direzioneCampo !== undefined && gpsCasts.length > 0) {
+            const firstCast = gpsCasts[0];
+            const centerLat = firstCast.gps.startPosition.latitude;
+            const centerLng = firstCast.gps.startPosition.longitude;
+            this.drawCastingField(centerLat, centerLng, session.direzioneCampo);
+        }
+
         // Add markers for each GPS cast
         gpsCasts.forEach((cast, index) => {
             this.addCastMarkersToMap(cast, index + 1, session);
@@ -3556,6 +3622,110 @@ class LongCastApp {
         this.mapMarkers.push(refLine);
     }
 
+    // Disegna il campo da longcasting sulla mappa
+    drawCastingField(centerLat, centerLng, bearing) {
+        if (!this.map) return;
+
+        const fieldDistances = [150, 175, 200, 225, 250]; // Distanze in metri
+        const coneAngle = 15; // Gradi di apertura laterale
+
+        // 1. LINEA ROSSA - Traiettoria Ideale (250m)
+        const idealEndPoint = this.calculateDestinationPoint(centerLat, centerLng, bearing, 250);
+        const idealLine = L.polyline([
+            [centerLat, centerLng],
+            [idealEndPoint.lat, idealEndPoint.lng]
+        ], {
+            color: '#FF0000',
+            weight: 3,
+            opacity: 1.0
+        });
+        idealLine.addTo(this.map);
+        this.mapMarkers.push(idealLine);
+
+        // 2. LINEE MAGENTA - Cono del campo (±15°)
+        const leftBearing = (bearing - coneAngle + 360) % 360;
+        const rightBearing = (bearing + coneAngle) % 360;
+
+        const leftEndPoint = this.calculateDestinationPoint(centerLat, centerLng, leftBearing, 250);
+        const rightEndPoint = this.calculateDestinationPoint(centerLat, centerLng, rightBearing, 250);
+
+        const leftConeLine = L.polyline([
+            [centerLat, centerLng],
+            [leftEndPoint.lat, leftEndPoint.lng]
+        ], {
+            color: '#FF00FF',
+            weight: 2,
+            opacity: 0.8
+        });
+
+        const rightConeLine = L.polyline([
+            [centerLat, centerLng],
+            [rightEndPoint.lat, rightEndPoint.lng]
+        ], {
+            color: '#FF00FF',
+            weight: 2,
+            opacity: 0.8
+        });
+
+        leftConeLine.addTo(this.map);
+        rightConeLine.addTo(this.map);
+        this.mapMarkers.push(leftConeLine, rightConeLine);
+
+        // 3. ARCHI NERI - Linee di distanza (150, 175, 200, 225, 250m)
+        fieldDistances.forEach(distance => {
+            const arcPoints = [];
+            // Genera punti per l'arco da -15° a +15°
+            for (let angle = -coneAngle; angle <= coneAngle; angle += 1) {
+                const currentBearing = (bearing + angle + 360) % 360;
+                const point = this.calculateDestinationPoint(centerLat, centerLng, currentBearing, distance);
+                arcPoints.push([point.lat, point.lng]);
+            }
+
+            const arc = L.polyline(arcPoints, {
+                color: '#000000',
+                weight: 1.5,
+                opacity: 0.6
+            });
+
+            arc.addTo(this.map);
+            this.mapMarkers.push(arc);
+        });
+    }
+
+    // Calcola punto di destinazione dato lat, lng, bearing e distanza
+    calculateDestinationPoint(lat, lng, bearing, distance) {
+        const R = 6371000; // Raggio Terra in metri
+        const bearingRad = bearing * Math.PI / 180;
+        const latRad = lat * Math.PI / 180;
+        const lngRad = lng * Math.PI / 180;
+
+        const newLatRad = Math.asin(
+            Math.sin(latRad) * Math.cos(distance / R) +
+            Math.cos(latRad) * Math.sin(distance / R) * Math.cos(bearingRad)
+        );
+
+        const newLngRad = lngRad + Math.atan2(
+            Math.sin(bearingRad) * Math.sin(distance / R) * Math.cos(latRad),
+            Math.cos(distance / R) - Math.sin(latRad) * Math.sin(newLatRad)
+        );
+
+        return {
+            lat: newLatRad * 180 / Math.PI,
+            lng: newLngRad * 180 / Math.PI
+        };
+    }
+
+    // Calcola l'angolo di deviazione tra il bearing del lancio e il bearing ideale
+    calculateCastDeviation(castBearing, idealBearing) {
+        let deviation = castBearing - idealBearing;
+
+        // Normalizza l'angolo tra -180 e +180
+        while (deviation > 180) deviation -= 360;
+        while (deviation < -180) deviation += 360;
+
+        return deviation;
+    }
+
     createStartPopupHTML(cast, castNumber) {
         const orario = new Date(cast.data).toLocaleTimeString('it-IT', {
             hour: '2-digit',
@@ -3582,6 +3752,14 @@ class LongCastApp {
                         <span class="map-popup-label">Qualità</span>
                         <span class="map-popup-value">${cast.gps.quality}</span>
                     </div>
+                    ${cast.gps.angoloDiDeviazione !== null && cast.gps.angoloDiDeviazione !== undefined ? `
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Deviazione</span>
+                        <span class="map-popup-value" style="color: ${Math.abs(cast.gps.angoloDiDeviazione) <= 5 ? '#00FF00' : Math.abs(cast.gps.angoloDiDeviazione) <= 10 ? '#FFD700' : '#FF6B6B'}">
+                            ${cast.gps.angoloDiDeviazione > 0 ? '+' : ''}${cast.gps.angoloDiDeviazione.toFixed(1)}° ${cast.gps.angoloDiDeviazione > 0 ? '(destra)' : cast.gps.angoloDiDeviazione < 0 ? '(sinistra)' : '(perfetto)'}
+                        </span>
+                    </div>
+                    ` : ''}
                     ${cast.note ? `
                     <div class="map-popup-row">
                         <span class="map-popup-label">Note</span>
@@ -3606,6 +3784,14 @@ class LongCastApp {
                         <span class="map-popup-label">Angolo</span>
                         <span class="map-popup-value">${cast.gps.bearing ? cast.gps.bearing.toFixed(1) + '°' : 'N/A'}</span>
                     </div>
+                    ${cast.gps.angoloDiDeviazione !== null && cast.gps.angoloDiDeviazione !== undefined ? `
+                    <div class="map-popup-row">
+                        <span class="map-popup-label">Deviazione</span>
+                        <span class="map-popup-value" style="color: ${Math.abs(cast.gps.angoloDiDeviazione) <= 5 ? '#00FF00' : Math.abs(cast.gps.angoloDiDeviazione) <= 10 ? '#FFD700' : '#FF6B6B'}">
+                            ${cast.gps.angoloDiDeviazione > 0 ? '+' : ''}${cast.gps.angoloDiDeviazione.toFixed(1)}° ${cast.gps.angoloDiDeviazione > 0 ? '(destra)' : cast.gps.angoloDiDeviazione < 0 ? '(sinistra)' : '(perfetto)'}
+                        </span>
+                    </div>
+                    ` : ''}
                     ${cast.tecnica ? `
                     <div class="map-popup-row">
                         <span class="map-popup-label">Tecnica</span>

@@ -176,6 +176,12 @@
                                     <input type="text" id="session-luogo" name="session-luogo" required list="luogo-list" data-i18n-placeholder="session.locationPlaceholder" placeholder="es. Campo gara, Spiaggia...">
                                     <datalist id="luogo-list"></datalist>
                                 </div>
+
+                                <div class="form-group">
+                                    <label for="session-direzione-campo" data-i18n="session.castingDirection">Direzione Campo (gradi) *</label>
+                                    <input type="number" id="session-direzione-campo" name="session-direzione-campo" required min="0" max="359" step="1" data-i18n-placeholder="session.castingDirectionPlaceholder" placeholder="0-359° (0=Nord, 90=Est)">
+                                    <small style="color: var(--text-muted); font-size: 0.75rem;" data-i18n="session.castingDirectionHelper">0°=Nord, 90°=Est, 180°=Sud, 270°=Ovest</small>
+                                </div>
                             </div>
 
                             <div class="form-row">
@@ -322,6 +328,28 @@
 
                         <div class="session-details" id="sessionDetails">
                             <!-- Details populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Change Field Direction -->
+                    <div class="form-card" id="changeDirectionCard" style="margin-bottom: 2rem;">
+                        <div class="form-section">
+                            <h3 class="form-section-title">🧭 Modifica Direzione Campo</h3>
+                            <p style="color: var(--text-muted); margin-bottom: 1rem;">Direzione attuale: <strong id="currentDirection">--°</strong></p>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="new-direction">Nuova Direzione (0-359°)</label>
+                                    <input type="number" id="new-direction" min="0" max="359" step="1" placeholder="es. 90" style="margin-bottom: 0.5rem;">
+                                    <small style="color: var(--text-muted); font-size: 0.75rem;">0°=Nord, 90°=Est, 180°=Sud, 270°=Ovest</small>
+                                </div>
+                            </div>
+                            <button type="button" id="changeDirectionBtn" class="btn btn-secondary">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                Aggiorna Direzione
+                            </button>
                         </div>
                     </div>
 
