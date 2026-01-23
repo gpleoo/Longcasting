@@ -509,6 +509,18 @@ class LongCastApp {
                 'session.sea': 'Mare',
                 'session.end': 'Termina Sessione',
                 'session.addCast': 'Aggiungi Lancio',
+                'session.directionSet': 'Direzione impostata:',
+                'session.directionNotSet': 'Direzione non ancora impostata - Clicca il pulsante sopra',
+                'session.openFieldDirectionMap': '🗺️ Imposta Direzione Campo sulla Mappa',
+
+                // Map
+                'map.title': '🗺️ Mappa Lanci GPS',
+                'map.setFieldDirection': '🗺️ Imposta Direzione Campo',
+                'map.closeMap': 'Chiudi Mappa',
+                'map.confirm': '✓ Conferma',
+                'map.castingPoint': 'Punto Lancio',
+                'map.leadFall': 'Caduta Piombo',
+                'map.trajectory': 'Traiettoria',
 
                 // History
                 'history.title': 'Storico Sessioni',
@@ -735,6 +747,18 @@ class LongCastApp {
                 'session.sea': 'Sea',
                 'session.end': 'End Session',
                 'session.addCast': 'Add Cast',
+                'session.directionSet': 'Direction set:',
+                'session.directionNotSet': 'Direction not set yet - Click the button above',
+                'session.openFieldDirectionMap': '🗺️ Set Field Direction on Map',
+
+                // Map
+                'map.title': '🗺️ GPS Casts Map',
+                'map.setFieldDirection': '🗺️ Set Field Direction',
+                'map.closeMap': 'Close Map',
+                'map.confirm': '✓ Confirm',
+                'map.castingPoint': 'Casting Point',
+                'map.leadFall': 'Lead Fall',
+                'map.trajectory': 'Trajectory',
 
                 // History
                 'history.title': 'Session History',
@@ -1916,10 +1940,10 @@ class LongCastApp {
             if (currentFieldDirectionEl) {
                 if (this.currentSession.direzioneCampo !== null && this.currentSession.direzioneCampo !== undefined) {
                     const cardinal = this.getCardinalDirection(this.currentSession.direzioneCampo);
-                    currentFieldDirectionEl.textContent = `Direzione impostata: ${this.currentSession.direzioneCampo}° (${cardinal})`;
+                    currentFieldDirectionEl.textContent = `${this.t('session.directionSet')} ${this.currentSession.direzioneCampo}° (${cardinal})`;
                     currentFieldDirectionEl.style.color = 'var(--primary)';
                 } else {
-                    currentFieldDirectionEl.textContent = 'Direzione non ancora impostata - Clicca il pulsante sopra';
+                    currentFieldDirectionEl.textContent = this.t('session.directionNotSet');
                     currentFieldDirectionEl.style.color = 'var(--text-muted)';
                 }
             }
@@ -2272,7 +2296,7 @@ class LongCastApp {
             // Update map title
             const mapTitle = document.querySelector('.map-header h3');
             if (mapTitle) {
-                mapTitle.textContent = '🗺️ Imposta Direzione Campo';
+                mapTitle.textContent = this.t('map.setFieldDirection');
             }
 
             // Center map on pivot point

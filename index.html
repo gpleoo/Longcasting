@@ -325,7 +325,7 @@
 
                     <!-- Field Direction Setup Button -->
                     <div class="form-card" style="margin-bottom: 2rem;">
-                        <button type="button" id="openFieldDirectionBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1rem;">
+                        <button type="button" id="openFieldDirectionBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1rem;" data-i18n="session.openFieldDirectionMap">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
                                 <circle cx="12" cy="12" r="10"/>
                                 <polyline points="12 6 12 12 16 10"/>
@@ -333,7 +333,7 @@
                             🗺️ Imposta Direzione Campo sulla Mappa
                         </button>
                         <p style="text-align: center; color: var(--text-muted); margin-top: 0.5rem; font-size: 0.85rem;">
-                            <span id="currentFieldDirection">Direzione non ancora impostata</span>
+                            <span id="currentFieldDirection" data-i18n="session.directionNotSet">Direzione non ancora impostata</span>
                         </p>
                     </div>
 
@@ -1099,8 +1099,8 @@
     <!-- Map Container (Global - accessible from any section) -->
     <div id="storicoMapContainer" style="display: none; margin: 2rem 0;">
         <div class="map-header">
-            <h3>🗺️ Mappa Lanci GPS</h3>
-            <button id="closeMapBtn" class="btn btn-secondary">
+            <h3 data-i18n="map.title">🗺️ Mappa Lanci GPS</h3>
+            <button id="closeMapBtn" class="btn btn-secondary" data-i18n="map.closeMap">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
@@ -1119,7 +1119,7 @@
             <input type="range" id="fieldDirectionSlider" min="0" max="359" value="0" step="1"
                    style="width: 100%; height: 4px; border-radius: 3px; outline: none; background: linear-gradient(to right, var(--primary) 0%, var(--primary) 0%, var(--border) 0%); margin-bottom: 0.3rem;">
 
-            <button type="button" id="confirmFieldDirectionBtn" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem; width: 100%;">
+            <button type="button" id="confirmFieldDirectionBtn" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem; width: 100%;" data-i18n="map.confirm">
                 ✓ Conferma
             </button>
         </div>
@@ -1127,13 +1127,13 @@
         <div id="storicoMap" class="map-container"></div>
         <div class="map-legend">
             <span class="legend-item">
-                <span class="legend-marker">🟢</span> Punto Lancio
+                <span class="legend-marker">🟢</span> <span data-i18n="map.castingPoint">Punto Lancio</span>
             </span>
             <span class="legend-item">
-                <span class="legend-marker">🔴</span> Caduta Piombo
+                <span class="legend-marker">🔴</span> <span data-i18n="map.leadFall">Caduta Piombo</span>
             </span>
             <span class="legend-item">
-                <span class="legend-line"></span> Traiettoria
+                <span class="legend-line"></span> <span data-i18n="map.trajectory">Traiettoria</span>
             </span>
         </div>
     </div>
