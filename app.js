@@ -1483,9 +1483,13 @@ class LongCastApp {
         });
 
         // Open Field Direction Setup (from session active view)
-        document.getElementById('openFieldDirectionBtn').addEventListener('click', () => {
-            this.openFieldDirectionSetup();
-        });
+        const openFieldDirectionBtn = document.getElementById('openFieldDirectionBtn');
+        if (openFieldDirectionBtn) {
+            openFieldDirectionBtn.addEventListener('click', () => {
+                console.log('Open Field Direction button clicked');
+                this.openFieldDirectionSetup();
+            });
+        }
 
         // Field Direction Setup - Slider
         document.getElementById('fieldDirectionSlider').addEventListener('input', (e) => {
@@ -1899,19 +1903,32 @@ class LongCastApp {
         document.getElementById('cast-temperatura').value = this.currentSession.temperatura || '';
         document.getElementById('cast-umidita').value = this.currentSession.umidita || '';
 
-        // Update field direction display
+        // Show/hide field direction button based on pivot point availability
+        const openFieldDirectionBtn = document.getElementById('openFieldDirectionBtn');
         const currentFieldDirectionEl = document.getElementById('currentFieldDirection');
-        if (currentFieldDirectionEl) {
-            if (this.currentSession.direzioneCampo !== null && this.currentSession.direzioneCampo !== undefined) {
-                const cardinal = this.getCardinalDirection(this.currentSession.direzioneCampo);
-                currentFieldDirectionEl.textContent = `Direzione impostata: ${this.currentSession.direzioneCampo}° (${cardinal})`;
-                currentFieldDirectionEl.style.color = 'var(--primary)';
-            } else if (this.currentSession.puntoPerno) {
-                currentFieldDirectionEl.textContent = 'Direzione non ancora impostata - Clicca il pulsante sopra';
-                currentFieldDirectionEl.style.color = 'var(--text-muted)';
-            } else {
-                currentFieldDirectionEl.textContent = 'GPS non disponibile per questa sessione';
-                currentFieldDirectionEl.style.color = 'var(--text-muted)';
+
+        if (this.currentSession.puntoPerno) {
+            // GPS available - show button and update status
+            if (openFieldDirectionBtn) {
+                openFieldDirectionBtn.style.display = 'block';
+                openFieldDirectionBtn.parentElement.style.display = 'block';
+            }
+
+            if (currentFieldDirectionEl) {
+                if (this.currentSession.direzioneCampo !== null && this.currentSession.direzioneCampo !== undefined) {
+                    const cardinal = this.getCardinalDirection(this.currentSession.direzioneCampo);
+                    currentFieldDirectionEl.textContent = `Direzione impostata: ${this.currentSession.direzioneCampo}° (${cardinal})`;
+                    currentFieldDirectionEl.style.color = 'var(--primary)';
+                } else {
+                    currentFieldDirectionEl.textContent = 'Direzione non ancora impostata - Clicca il pulsante sopra';
+                    currentFieldDirectionEl.style.color = 'var(--text-muted)';
+                }
+            }
+        } else {
+            // No GPS - hide button
+            if (openFieldDirectionBtn) {
+                openFieldDirectionBtn.style.display = 'none';
+                openFieldDirectionBtn.parentElement.style.display = 'none';
             }
         }
 
@@ -2212,8 +2229,17 @@ class LongCastApp {
     // Change Field Direction during active session
     // Open Field Direction Setup Mode
     openFieldDirectionSetup() {
-        if (!this.currentSession || !this.currentSession.puntoPerno) {
-            this.showToast('Errore: dati sessione non validi', 'error');
+        console.log('openFieldDirectionSetup called');
+        console.log('currentSession:', this.currentSession);
+        console.log('puntoPerno:', this.currentSession?.puntoPerno);
+
+        if (!this.currentSession) {
+            this.showToast('Errore: nessuna sessione attiva', 'error');
+            return;
+        }
+
+        if (!this.currentSession.puntoPerno) {
+            this.showToast('Punto perno GPS non disponibile. Riavvia la sessione per acquisire il GPS.', 'warning');
             return;
         }
 
@@ -2223,8 +2249,11 @@ class LongCastApp {
                 throw new Error('Leaflet non caricato');
             }
 
+            console.log('Opening map...');
+
             // Initialize map if needed
             if (!this.map) {
+                console.log('Creating new map...');
                 this.map = L.map('storicoMap').setView([0, 0], 13);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors',
@@ -2235,6 +2264,7 @@ class LongCastApp {
 
             // Show map in fullscreen
             const mapContainer = document.getElementById('storicoMapContainer');
+            console.log('mapContainer:', mapContainer);
             mapContainer.style.display = 'block';
             mapContainer.classList.add('fullscreen');
             document.body.style.overflow = 'hidden';
@@ -2243,20 +2273,29 @@ class LongCastApp {
             document.getElementById('historySessionsList').style.display = 'none';
 
             // Show field direction panel
-            document.getElementById('fieldDirectionPanel').style.display = 'block';
+            const directionPanel = document.getElementById('fieldDirectionPanel');
+            console.log('fieldDirectionPanel:', directionPanel);
+            if (directionPanel) {
+                directionPanel.style.display = 'block';
+            }
 
             // Update map title
-            document.querySelector('.map-header h3').textContent = '🗺️ Imposta Direzione Campo';
+            const mapTitle = document.querySelector('.map-header h3');
+            if (mapTitle) {
+                mapTitle.textContent = '🗺️ Imposta Direzione Campo';
+            }
 
             // Center map on pivot point
             const lat = this.currentSession.puntoPerno.latitude;
             const lng = this.currentSession.puntoPerno.longitude;
+            console.log('Centering map on:', lat, lng);
             this.map.setView([lat, lng], 18);
 
             // Force map resize
             setTimeout(() => {
                 if (this.map) {
                     this.map.invalidateSize();
+                    console.log('Map invalidated');
                 }
             }, 300);
 
