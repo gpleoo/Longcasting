@@ -2318,7 +2318,9 @@ class LongCastApp {
             const initialDirection = this.currentSession.direzioneCampo !== null && this.currentSession.direzioneCampo !== undefined
                 ? this.currentSession.direzioneCampo
                 : 0;
+            console.log('Calling updateFieldDirection with angle:', initialDirection);
             this.updateFieldDirection(initialDirection);
+            console.log('openFieldDirectionSetup completed successfully');
         } catch (error) {
             console.error('Errore apertura mappa:', error);
             this.showToast('Errore apertura mappa: ' + error.message, 'error');
@@ -2330,9 +2332,18 @@ class LongCastApp {
 
     // Update Field Direction on Map
     updateFieldDirection(angle) {
-        if (!this.currentSession || !this.currentSession.puntoPerno || !this.map) return;
+        console.log('updateFieldDirection called with angle:', angle);
+        console.log('Has currentSession?', !!this.currentSession);
+        console.log('Has puntoPerno?', !!this.currentSession?.puntoPerno);
+        console.log('Has map?', !!this.map);
+
+        if (!this.currentSession || !this.currentSession.puntoPerno || !this.map) {
+            console.log('updateFieldDirection: early return - missing requirements');
+            return;
+        }
 
         try {
+            console.log('updateFieldDirection: starting field update');
             // Update current session direction (temporary until confirmed)
             this.currentSession.direzioneCampo = angle;
 
@@ -3985,8 +3996,13 @@ class LongCastApp {
 
     // Disegna il campo da longcasting sulla mappa
     drawCastingField(centerLat, centerLng, bearing) {
-        if (!this.map) return;
+        console.log('drawCastingField called:', {centerLat, centerLng, bearing});
+        if (!this.map) {
+            console.log('drawCastingField: no map available');
+            return;
+        }
 
+        console.log('drawCastingField: drawing field...');
         const fieldDistances = [150, 175, 200, 225, 250]; // Distanze in metri
         const coneAngle = 15; // Gradi di apertura laterale
 
@@ -4051,6 +4067,8 @@ class LongCastApp {
             arc.addTo(this.map);
             this.mapMarkers.push(arc);
         });
+
+        console.log('drawCastingField: field drawn successfully, total markers:', this.mapMarkers.length);
     }
 
     // Calcola punto di destinazione dato lat, lng, bearing e distanza
