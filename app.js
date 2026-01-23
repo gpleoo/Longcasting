@@ -1486,7 +1486,6 @@ class LongCastApp {
         const openFieldDirectionBtn = document.getElementById('openFieldDirectionBtn');
         if (openFieldDirectionBtn) {
             openFieldDirectionBtn.addEventListener('click', () => {
-                console.log('Open Field Direction button clicked');
                 this.openFieldDirectionSetup();
             });
         }
@@ -2229,10 +2228,6 @@ class LongCastApp {
     // Change Field Direction during active session
     // Open Field Direction Setup Mode
     openFieldDirectionSetup() {
-        console.log('openFieldDirectionSetup called');
-        console.log('currentSession:', this.currentSession);
-        console.log('puntoPerno:', this.currentSession?.puntoPerno);
-
         if (!this.currentSession) {
             this.showToast('Errore: nessuna sessione attiva', 'error');
             return;
@@ -2249,11 +2244,8 @@ class LongCastApp {
                 throw new Error('Leaflet non caricato');
             }
 
-            console.log('Opening map...');
-
             // Initialize map if needed
             if (!this.map) {
-                console.log('Creating new map...');
                 this.map = L.map('storicoMap').setView([0, 0], 13);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors',
@@ -2264,7 +2256,6 @@ class LongCastApp {
 
             // Show map in fullscreen
             const mapContainer = document.getElementById('storicoMapContainer');
-            console.log('mapContainer:', mapContainer);
             mapContainer.style.display = 'block';
             mapContainer.classList.add('fullscreen');
             document.body.style.overflow = 'hidden';
@@ -2274,7 +2265,6 @@ class LongCastApp {
 
             // Show field direction panel
             const directionPanel = document.getElementById('fieldDirectionPanel');
-            console.log('fieldDirectionPanel:', directionPanel);
             if (directionPanel) {
                 directionPanel.style.display = 'block';
             }
@@ -2288,14 +2278,12 @@ class LongCastApp {
             // Center map on pivot point
             const lat = this.currentSession.puntoPerno.latitude;
             const lng = this.currentSession.puntoPerno.longitude;
-            console.log('Centering map on:', lat, lng);
             this.map.setView([lat, lng], 18);
 
             // Force map resize
             setTimeout(() => {
                 if (this.map) {
                     this.map.invalidateSize();
-                    console.log('Map invalidated');
                 }
             }, 300);
 
@@ -2318,9 +2306,7 @@ class LongCastApp {
             const initialDirection = this.currentSession.direzioneCampo !== null && this.currentSession.direzioneCampo !== undefined
                 ? this.currentSession.direzioneCampo
                 : 0;
-            console.log('Calling updateFieldDirection with angle:', initialDirection);
             this.updateFieldDirection(initialDirection);
-            console.log('openFieldDirectionSetup completed successfully');
         } catch (error) {
             console.error('Errore apertura mappa:', error);
             this.showToast('Errore apertura mappa: ' + error.message, 'error');
@@ -2332,18 +2318,11 @@ class LongCastApp {
 
     // Update Field Direction on Map
     updateFieldDirection(angle) {
-        console.log('updateFieldDirection called with angle:', angle);
-        console.log('Has currentSession?', !!this.currentSession);
-        console.log('Has puntoPerno?', !!this.currentSession?.puntoPerno);
-        console.log('Has map?', !!this.map);
-
         if (!this.currentSession || !this.currentSession.puntoPerno || !this.map) {
-            console.log('updateFieldDirection: early return - missing requirements');
             return;
         }
 
         try {
-            console.log('updateFieldDirection: starting field update');
             // Update current session direction (temporary until confirmed)
             this.currentSession.direzioneCampo = angle;
 
@@ -3996,13 +3975,10 @@ class LongCastApp {
 
     // Disegna il campo da longcasting sulla mappa
     drawCastingField(centerLat, centerLng, bearing) {
-        console.log('drawCastingField called:', {centerLat, centerLng, bearing});
         if (!this.map) {
-            console.log('drawCastingField: no map available');
             return;
         }
 
-        console.log('drawCastingField: drawing field...');
         const fieldDistances = [150, 175, 200, 225, 250]; // Distanze in metri
         const coneAngle = 15; // Gradi di apertura laterale
 
@@ -4067,8 +4043,6 @@ class LongCastApp {
             arc.addTo(this.map);
             this.mapMarkers.push(arc);
         });
-
-        console.log('drawCastingField: field drawn successfully, total markers:', this.mapMarkers.length);
     }
 
     // Calcola punto di destinazione dato lat, lng, bearing e distanza
