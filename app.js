@@ -1201,6 +1201,70 @@ class LongCastApp {
         this.checkActiveSession();
     }
 
+    // ============================================
+    // PERFORMANCE OPTIMIZATIONS
+    // ============================================
+
+    async loadLeaflet() {
+        // Check if Leaflet is already loaded
+        if (typeof L !== 'undefined') {
+            return Promise.resolve();
+        }
+
+        this.leafletLoading = this.leafletLoading || new Promise((resolve, reject) => {
+            // Load Leaflet CSS
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+            link.crossOrigin = '';
+            document.head.appendChild(link);
+
+            // Load Leaflet JS
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+            script.crossOrigin = '';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Leaflet'));
+            document.head.appendChild(script);
+        });
+
+        return this.leafletLoading;
+    }
+
+    // Debounce function for expensive operations
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Lazy load images using Intersection Observer
+    setupLazyLoading() {
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+
+            const images = document.querySelectorAll('img.lazy');
+            images.forEach(img => imageObserver.observe(img));
+        }
+    }
+
     checkStorageAvailability() {
         try {
             const test = '__storage_test__';
@@ -2377,7 +2441,7 @@ class LongCastApp {
 
     // Change Field Direction during active session
     // Open Field Direction Setup Mode
-    openFieldDirectionSetup() {
+    async openFieldDirectionSetup() {
         if (!this.currentSession) {
             this.showToast('Errore: nessuna sessione attiva', 'error');
             return;
@@ -2389,10 +2453,8 @@ class LongCastApp {
         }
 
         try {
-            // Check if Leaflet is loaded
-            if (typeof L === 'undefined') {
-                throw new Error('Leaflet non caricato');
-            }
+            // Load Leaflet dynamically if not loaded
+            await this.loadLeaflet();
 
             // Initialize map if needed
             if (!this.map) {
@@ -3916,12 +3978,15 @@ class LongCastApp {
         this.mapMarkers = [];
     }
 
-    showSessionOnMap(sessionId) {
+    async showSessionOnMap(sessionId) {
         const session = this.sessions.find(s => s.id === sessionId);
         if (!session) {
             console.error('Session not found:', sessionId);
             return;
         }
+
+        // Load Leaflet dynamically if not loaded
+        await this.loadLeaflet();
 
         // Initialize map if not already done
         if (!this.map) {
