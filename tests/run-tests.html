@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Longcasting Pro - Test Suite</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 { color: #00D9FF; border-bottom: 2px solid #00D9FF; padding-bottom: 10px; }
+        h2 { color: #ffcc00; margin-top: 30px; }
+        .test-output {
+            background: #0a0a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff4444; }
+        .warning { color: #ffcc00; }
+        button {
+            background: #00D9FF;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 10px 10px 10px 0;
+        }
+        button:hover { background: #00b8d4; }
+        .summary {
+            background: #2a2a4a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Longcasting Pro - Test Suite</h1>
+
+    <p>Questa pagina esegue i test unitari per i moduli JavaScript dell'applicazione.</p>
+
+    <div>
+        <button onclick="runAllTests()">▶️ Esegui Tutti i Test</button>
+        <button onclick="runUtilsTests()">Utils Tests</button>
+        <button onclick="runValidatorTests()">Validator Tests</button>
+        <button onclick="clearOutput()">🗑️ Pulisci Output</button>
+    </div>
+
+    <h2>Output Test</h2>
+    <div id="output" class="test-output">Clicca un pulsante per eseguire i test...</div>
+
+    <div id="summary" class="summary" style="display: none;">
+        <h3>📊 Riepilogo</h3>
+        <div id="summary-content"></div>
+    </div>
+
+    <!-- Carica i moduli -->
+    <script src="../js/utils.js"></script>
+    <script src="../js/Validator.js"></script>
+    <script src="../js/DataManager.js"></script>
+    <script src="../js/GPSTracker.js"></script>
+
+    <!-- Carica i test -->
+    <script src="utils.test.js"></script>
+    <script src="validator.test.js"></script>
+
+    <script>
+        const output = document.getElementById('output');
+        const summary = document.getElementById('summary');
+        const summaryContent = document.getElementById('summary-content');
+
+        let testResults = { passed: 0, failed: 0 };
+
+        // Override console.log per output su pagina
+        const originalLog = console.log;
+        const originalAssert = console.assert;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const text = args.join(' ');
+
+            let className = '';
+            if (text.includes('✅')) className = 'success';
+            else if (text.includes('❌')) className = 'error';
+            else if (text.includes('⚠️')) className = 'warning';
+
+            output.innerHTML += `<span class="${className}">${escapeHtmlForDisplay(text)}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        };
+
+        console.assert = function(condition, ...args) {
+            originalAssert.apply(console, [condition, ...args]);
+            if (!condition) {
+                testResults.failed++;
+                output.innerHTML += `<span class="error">❌ ASSERTION FAILED: ${args.join(' ')}</span>\n`;
+            } else {
+                testResults.passed++;
+            }
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            output.innerHTML += `<span class="error">ERROR: ${args.join(' ')}</span>\n`;
+        };
+
+        function escapeHtmlForDisplay(text) {
+            return text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function clearOutput() {
+            output.innerHTML = 'Output pulito. Clicca un pulsante per eseguire i test...\n';
+            summary.style.display = 'none';
+            testResults = { passed: 0, failed: 0 };
+        }
+
+        function showSummary() {
+            summary.style.display = 'block';
+            const total = testResults.passed + testResults.failed;
+            const percentage = total > 0 ? Math.round((testResults.passed / total) * 100) : 0;
+
+            summaryContent.innerHTML = `
+                <p><strong>Test Totali:</strong> ${total}</p>
+                <p class="success"><strong>✅ Passati:</strong> ${testResults.passed}</p>
+                <p class="${testResults.failed > 0 ? 'error' : ''}"><strong>${testResults.failed > 0 ? '❌' : '✅'} Falliti:</strong> ${testResults.failed}</p>
+                <p><strong>Percentuale Successo:</strong> ${percentage}%</p>
+            `;
+        }
+
+        function runAllTests() {
+            clearOutput();
+            output.innerHTML = '🚀 Esecuzione di tutti i test...\n\n';
+
+            try {
+                if (typeof runUtilsTests === 'function') {
+                    runUtilsTests();
+                }
+            } catch (e) {
+                console.error('Errore in Utils tests:', e.message);
+            }
+
+            try {
+                if (typeof runValidatorTests === 'function') {
+                    runValidatorTests();
+                }
+            } catch (e) {
+                console.error('Errore in Validator tests:', e.message);
+            }
+
+            output.innerHTML += '\n🏁 Tutti i test completati!\n';
+            showSummary();
+        }
+
+        function runUtilsTests() {
+            clearOutput();
+            output.innerHTML = '🧪 Esecuzione Utils tests...\n\n';
+            try {
+                if (typeof window.runUtilsTests === 'function') {
+                    window.runUtilsTests();
+                }
+            } catch (e) {
+                console.error('Errore:', e.message);
+            }
+            showSummary();
+        }
+
+        function runValidatorTests() {
+            clearOutput();
+            output.innerHTML = '🧪 Esecuzione Validator tests...\n\n';
+            try {
+                if (typeof window.runValidatorTests === 'function') {
+                    window.runValidatorTests();
+                }
+            } catch (e) {
+                console.error('Errore:', e.message);
+            }
+            showSummary();
+        }
+    </script>
+</body>
+</html>
