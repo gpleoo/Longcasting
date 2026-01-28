@@ -1,7 +1,7 @@
 // Service Worker for Longcasting Pro
-// Version 1.1.0
+// Version 1.2.0
 
-const CACHE_NAME = 'longcasting-v1.1';
+const CACHE_NAME = 'longcasting-v1.2';
 const RUNTIME_CACHE = 'longcasting-runtime';
 const MAP_TILES_CACHE = 'longcasting-map-tiles';
 
@@ -16,6 +16,7 @@ const STATIC_ASSETS = [
     '/js/utils.js',
     '/js/DataManager.js',
     '/js/GPSTracker.js',
+    '/js/i18n.js',
     // Add offline fallback page
     '/offline.html'
 ];
