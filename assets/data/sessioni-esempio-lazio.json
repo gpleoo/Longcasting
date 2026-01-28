@@ -1,0 +1,1929 @@
+{
+  "version": "1.0",
+  "exportDate": "2026-01-21T10:30:00.000Z",
+  "sessions": [
+    {
+      "id": 1737450000001,
+      "dataInizio": "2026-01-05T08:30:00.000Z",
+      "dataFine": "2026-01-05T11:45:00.000Z",
+      "luogo": "Ostia - Spiaggia Libera",
+      "tecnica": "Ground Cast",
+      "pesoPiombo": "150g",
+      "mulinello": "Daiwa Tournament S 5500",
+      "filo": "0.20mm Shimano Power Pro",
+      "vento": "Maestrale 15 km/h",
+      "temperatura": "12°C",
+      "meteo": "Sereno",
+      "note": "Prima sessione dell'anno, mare calmo, ottima visibilità. Campo molto compatto, condizioni ideali.",
+      "tipo": "campo",
+      "lanci": [
+        {
+          "id": 1737450000101,
+          "data": "2026-01-05T08:45:00.000Z",
+          "distanza": 178.5,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 15 km/h",
+          "note": "Riscaldamento, lancio buono",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.734638,
+              "longitude": 12.292071
+            },
+            "bearing": 103,
+            "accuracy": 4.8,
+            "points": 82,
+            "duration": 127,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000102,
+          "data": "2026-01-05T08:52:00.000Z",
+          "distanza": 185.2,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 15 km/h",
+          "note": "Migliorata la rotazione",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.735087,
+              "longitude": 12.292202
+            },
+            "bearing": 87,
+            "accuracy": 3.7,
+            "points": 85,
+            "duration": 132,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000103,
+          "data": "2026-01-05T09:00:00.000Z",
+          "distanza": 192.8,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 16 km/h",
+          "note": "Timing perfetto, lancio pulito",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.733815,
+              "longitude": 12.291679
+            },
+            "bearing": 133,
+            "accuracy": 4.8,
+            "points": 81,
+            "duration": 137,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000104,
+          "data": "2026-01-05T09:08:00.000Z",
+          "distanza": 188.4,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 14 km/h",
+          "note": "Piccolo errore nel rilascio",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.733932,
+              "longitude": 12.291743
+            },
+            "bearing": 129,
+            "accuracy": 4.6,
+            "points": 82,
+            "duration": 134,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000105,
+          "data": "2026-01-05T09:18:00.000Z",
+          "distanza": 201.5,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 17 km/h",
+          "note": "Ottimo! Record personale della sessione",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.73588,
+              "longitude": 12.292098
+            },
+            "bearing": 61,
+            "accuracy": 4.1,
+            "points": 96,
+            "duration": 143,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000106,
+          "data": "2026-01-05T09:30:00.000Z",
+          "distanza": 195.7,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 15 km/h",
+          "note": "Buon lancio, stabile",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.734092,
+              "longitude": 12.291997
+            },
+            "bearing": 121,
+            "accuracy": 4.2,
+            "points": 84,
+            "duration": 139,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000107,
+          "data": "2026-01-05T09:42:00.000Z",
+          "distanza": 189.3,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 13 km/h",
+          "note": "Vento calato, lancio ok",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.736306,
+              "longitude": 12.291449
+            },
+            "bearing": 40,
+            "accuracy": 5.0,
+            "points": 103,
+            "duration": 135,
+            "quality": "Buona"
+          }
+        },
+        {
+          "id": 1737450000108,
+          "data": "2026-01-05T09:55:00.000Z",
+          "distanza": 198.6,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 16 km/h",
+          "note": "Ripresa del vento, buon lancio",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.736077,
+              "longitude": 12.291888
+            },
+            "bearing": 53,
+            "accuracy": 3.5,
+            "points": 82,
+            "duration": 141,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000109,
+          "data": "2026-01-05T10:10:00.000Z",
+          "distanza": 191.2,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 14 km/h",
+          "note": "Lancio standard",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.735913,
+              "longitude": 12.29193
+            },
+            "bearing": 58,
+            "accuracy": 4.2,
+            "points": 115,
+            "duration": 136,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000110,
+          "data": "2026-01-05T10:28:00.000Z",
+          "distanza": 203.4,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 18 km/h",
+          "note": "Nuovo record! Traiettoria perfetta",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.734029,
+              "longitude": 12.292053
+            },
+            "bearing": 122,
+            "accuracy": 3.1,
+            "points": 90,
+            "duration": 145,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737450000111,
+          "data": "2026-01-05T10:45:00.000Z",
+          "distanza": 196.8,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "150g",
+          "vento": "Maestrale 16 km/h",
+          "note": "Ultimo lancio della sessione, soddisfatto",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.735,
+              "longitude": 12.29
+            },
+            "endPosition": {
+              "latitude": 41.736297,
+              "longitude": 12.291598
+            },
+            "bearing": 43,
+            "accuracy": 4.6,
+            "points": 89,
+            "duration": 140,
+            "quality": "Eccellente"
+          }
+        }
+      ],
+      "distanzaMedia": 192.85,
+      "distanzaMassima": 203.4,
+      "distanzaMinima": 178.5
+    },
+    {
+      "id": 1737796800001,
+      "dataInizio": "2026-01-09T14:00:00.000Z",
+      "dataFine": "2026-01-09T17:30:00.000Z",
+      "luogo": "Fregene - Zona Camping",
+      "tecnica": "Pendulum Cast",
+      "pesoPiombo": "175g",
+      "mulinello": "Penn Slammer III 5500",
+      "filo": "0.22mm PowerPro",
+      "vento": "Grecale 20 km/h",
+      "temperatura": "14°C",
+      "meteo": "Nuvoloso",
+      "note": "Sessione pomeridiana, spiaggia più affollata. Provato piombo più pesante per contrastare il vento.",
+      "tipo": "campo",
+      "lanci": [
+        {
+          "id": 1737796800101,
+          "data": "2026-01-09T14:15:00.000Z",
+          "distanza": 165.3,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 19 km/h",
+          "note": "Primo lancio, adattamento al pendulum",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.869104,
+              "longitude": 12.201572
+            },
+            "bearing": 127,
+            "accuracy": 4.9,
+            "points": 93,
+            "duration": 118,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800102,
+          "data": "2026-01-09T14:28:00.000Z",
+          "distanza": 172.8,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 21 km/h",
+          "note": "Miglior coordinazione",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.869519,
+              "longitude": 12.201956
+            },
+            "bearing": 108,
+            "accuracy": 3.6,
+            "points": 95,
+            "duration": 123,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800103,
+          "data": "2026-01-09T14:42:00.000Z",
+          "distanza": 181.5,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 22 km/h",
+          "note": "Buon rilascio, sfruttato il vento",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.871323,
+              "longitude": 12.20127
+            },
+            "bearing": 36,
+            "accuracy": 4.4,
+            "points": 91,
+            "duration": 129,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800104,
+          "data": "2026-01-09T14:58:00.000Z",
+          "distanza": 176.4,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 20 km/h",
+          "note": "Lancio stabile",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.869182,
+              "longitude": 12.2018
+            },
+            "bearing": 121,
+            "accuracy": 3.4,
+            "points": 112,
+            "duration": 126,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800105,
+          "data": "2026-01-09T15:15:00.000Z",
+          "distanza": 188.9,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 23 km/h",
+          "note": "Ottimo! Pendolo molto fluido",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.868839,
+              "longitude": 12.201645
+            },
+            "bearing": 133,
+            "accuracy": 5.0,
+            "points": 96,
+            "duration": 134,
+            "quality": "Buona"
+          }
+        },
+        {
+          "id": 1737796800106,
+          "data": "2026-01-09T15:32:00.000Z",
+          "distanza": 183.7,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 21 km/h",
+          "note": "Lancio pulito",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.87115,
+              "longitude": 12.201573
+            },
+            "bearing": 46,
+            "accuracy": 4.3,
+            "points": 117,
+            "duration": 131,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800107,
+          "data": "2026-01-09T15:50:00.000Z",
+          "distanza": 179.2,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 19 km/h",
+          "note": "Vento diminuito leggermente",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.870831,
+              "longitude": 12.201829
+            },
+            "bearing": 59,
+            "accuracy": 3.5,
+            "points": 92,
+            "duration": 128,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800108,
+          "data": "2026-01-09T16:08:00.000Z",
+          "distanza": 191.6,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 24 km/h",
+          "note": "Vento rafforzato, ottimo risultato",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.871464,
+              "longitude": 12.201209
+            },
+            "bearing": 32,
+            "accuracy": 4.2,
+            "points": 87,
+            "duration": 136,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800109,
+          "data": "2026-01-09T16:28:00.000Z",
+          "distanza": 186.5,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 22 km/h",
+          "note": "Buona consistenza",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.869651,
+              "longitude": 12.202172
+            },
+            "bearing": 102,
+            "accuracy": 4.5,
+            "points": 91,
+            "duration": 133,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800110,
+          "data": "2026-01-09T16:48:00.000Z",
+          "distanza": 194.8,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 25 km/h",
+          "note": "Eccellente! Miglior lancio della giornata",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.869458,
+              "longitude": 12.202206
+            },
+            "bearing": 108,
+            "accuracy": 3.8,
+            "points": 84,
+            "duration": 139,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800111,
+          "data": "2026-01-09T17:10:00.000Z",
+          "distanza": 189.3,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 23 km/h",
+          "note": "Ultimo lancio, tecnica consolidata",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.869334,
+              "longitude": 12.202074
+            },
+            "bearing": 113,
+            "accuracy": 3.9,
+            "points": 104,
+            "duration": 135,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1737796800112,
+          "data": "2026-01-09T17:25:00.000Z",
+          "distanza": 182.1,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "175g",
+          "vento": "Grecale 21 km/h",
+          "note": "Chiusura sessione",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.87,
+              "longitude": 12.2
+            },
+            "endPosition": {
+              "latitude": 41.869439,
+              "longitude": 12.202037
+            },
+            "bearing": 110,
+            "accuracy": 3.8,
+            "points": 106,
+            "duration": 130,
+            "quality": "Eccellente"
+          }
+        }
+      ],
+      "distanzaMedia": 182.68,
+      "distanzaMassima": 194.8,
+      "distanzaMinima": 165.3
+    },
+    {
+      "id": 1738143600001,
+      "dataInizio": "2026-01-13T09:00:00.000Z",
+      "dataFine": "2026-01-13T12:15:00.000Z",
+      "luogo": "Sabaudia - Dune",
+      "tecnica": "Off The Ground",
+      "pesoPiombo": "150g",
+      "mulinello": "Shimano Baitrunner 6000",
+      "filo": "0.20mm Sufix 832",
+      "vento": "Libeccio 12 km/h",
+      "temperatura": "16°C",
+      "meteo": "Sole",
+      "note": "Mattinata perfetta, temperatura mite. Campo sabbioso molto morbido, ottimo per OTG. Parco di Sabaudia spettacolare.",
+      "tipo": "campo",
+      "lanci": [
+        {
+          "id": 1738143600101,
+          "data": "2026-01-13T09:12:00.000Z",
+          "distanza": 169.7,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 11 km/h",
+          "note": "Avviamento, sabbia morbida",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.30081,
+              "longitude": 13.031713
+            },
+            "bearing": 58,
+            "accuracy": 3.5,
+            "points": 99,
+            "duration": 121,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600102,
+          "data": "2026-01-13T09:25:00.000Z",
+          "distanza": 177.3,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 12 km/h",
+          "note": "Adattato al terreno",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.300222,
+              "longitude": 13.03209
+            },
+            "bearing": 82,
+            "accuracy": 3.0,
+            "points": 103,
+            "duration": 126,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600103,
+          "data": "2026-01-13T09:40:00.000Z",
+          "distanza": 185.9,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 13 km/h",
+          "note": "Ottimo equilibrio",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.301302,
+              "longitude": 13.031393
+            },
+            "bearing": 39,
+            "accuracy": 4.8,
+            "points": 106,
+            "duration": 132,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600104,
+          "data": "2026-01-13T09:55:00.000Z",
+          "distanza": 192.4,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 14 km/h",
+          "note": "Lancio molto fluido",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.300893,
+              "longitude": 13.031963
+            },
+            "bearing": 59,
+            "accuracy": 3.6,
+            "points": 90,
+            "duration": 137,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600105,
+          "data": "2026-01-13T10:12:00.000Z",
+          "distanza": 198.7,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 13 km/h",
+          "note": "Eccellente tecnica OTG",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.300493,
+              "longitude": 13.032274
+            },
+            "bearing": 74,
+            "accuracy": 4.3,
+            "points": 99,
+            "duration": 141,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600106,
+          "data": "2026-01-13T10:30:00.000Z",
+          "distanza": 204.2,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 15 km/h",
+          "note": "Wow! Oltre i 200m",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.301182,
+              "longitude": 13.031862
+            },
+            "bearing": 50,
+            "accuracy": 4.9,
+            "points": 83,
+            "duration": 145,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600107,
+          "data": "2026-01-13T10:48:00.000Z",
+          "distanza": 196.5,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 13 km/h",
+          "note": "Buon lancio",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.300858,
+              "longitude": 13.032046
+            },
+            "bearing": 61,
+            "accuracy": 4.2,
+            "points": 80,
+            "duration": 140,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600108,
+          "data": "2026-01-13T11:05:00.000Z",
+          "distanza": 189.8,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 12 km/h",
+          "note": "Stanchezza si sente",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.298599,
+              "longitude": 13.031296
+            },
+            "bearing": 145,
+            "accuracy": 3.2,
+            "points": 93,
+            "duration": 135,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600109,
+          "data": "2026-01-13T11:25:00.000Z",
+          "distanza": 193.6,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 14 km/h",
+          "note": "Recuperata concentrazione",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.298724,
+              "longitude": 13.031572
+            },
+            "bearing": 137,
+            "accuracy": 4.7,
+            "points": 100,
+            "duration": 138,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600110,
+          "data": "2026-01-13T11:42:00.000Z",
+          "distanza": 201.3,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 15 km/h",
+          "note": "Secondo over 200! Ottima sessione",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.301389,
+              "longitude": 13.03154
+            },
+            "bearing": 40,
+            "accuracy": 3.0,
+            "points": 87,
+            "duration": 143,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738143600111,
+          "data": "2026-01-13T11:58:00.000Z",
+          "distanza": 194.8,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Libeccio 13 km/h",
+          "note": "Chiusura positiva",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.3,
+              "longitude": 13.03
+            },
+            "endPosition": {
+              "latitude": 41.299149,
+              "longitude": 13.032028
+            },
+            "bearing": 119,
+            "accuracy": 3.3,
+            "points": 100,
+            "duration": 139,
+            "quality": "Eccellente"
+          }
+        }
+      ],
+      "distanzaMedia": 191.29,
+      "distanzaMassima": 204.2,
+      "distanzaMinima": 169.7
+    },
+    {
+      "id": 1738490400001,
+      "dataInizio": "2026-01-17T07:30:00.000Z",
+      "dataFine": "2026-01-17T10:45:00.000Z",
+      "luogo": "Santa Marinella - Spiaggia Nord",
+      "tecnica": "Ground Cast",
+      "pesoPiombo": "160g",
+      "mulinello": "Daiwa Emblem 5500",
+      "filo": "0.21mm J-Braid",
+      "vento": "Tramontana 18 km/h",
+      "temperatura": "10°C",
+      "meteo": "Parzialmente nuvoloso",
+      "note": "Sessione mattutina presto, temperatura fredda ma campo eccellente. Vento sostenuto da Nord.",
+      "tipo": "campo",
+      "lanci": [
+        {
+          "id": 1738490400101,
+          "data": "2026-01-17T07:45:00.000Z",
+          "distanza": 174.2,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 17 km/h",
+          "note": "Freddo, muscoli rigidi",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.02878,
+              "longitude": 11.851305
+            },
+            "bearing": 141,
+            "accuracy": 3.1,
+            "points": 80,
+            "duration": 124,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400102,
+          "data": "2026-01-17T07:58:00.000Z",
+          "distanza": 181.6,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 18 km/h",
+          "note": "Riscaldato meglio",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.02897,
+              "longitude": 11.85168
+            },
+            "bearing": 129,
+            "accuracy": 4.6,
+            "points": 93,
+            "duration": 129,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400103,
+          "data": "2026-01-17T08:12:00.000Z",
+          "distanza": 188.4,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 19 km/h",
+          "note": "Buon lancio, vento favorevole",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.03139,
+              "longitude": 11.851286
+            },
+            "bearing": 35,
+            "accuracy": 4.1,
+            "points": 87,
+            "duration": 134,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400104,
+          "data": "2026-01-17T08:28:00.000Z",
+          "distanza": 195.7,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 20 km/h",
+          "note": "Ottimo! Vento aiuta",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.028574,
+              "longitude": 11.851369
+            },
+            "bearing": 144,
+            "accuracy": 4.4,
+            "points": 90,
+            "duration": 139,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400105,
+          "data": "2026-01-17T08:45:00.000Z",
+          "distanza": 202.8,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 21 km/h",
+          "note": "Eccellente, oltre i 200m!",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.02856,
+              "longitude": 11.851486
+            },
+            "bearing": 142,
+            "accuracy": 4.3,
+            "points": 87,
+            "duration": 144,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400106,
+          "data": "2026-01-17T09:02:00.000Z",
+          "distanza": 198.3,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 19 km/h",
+          "note": "Buona consistenza",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.029273,
+              "longitude": 11.852157
+            },
+            "bearing": 114,
+            "accuracy": 3.8,
+            "points": 99,
+            "duration": 141,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400107,
+          "data": "2026-01-17T09:20:00.000Z",
+          "distanza": 191.5,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 18 km/h",
+          "note": "Vento calato leggermente",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.028641,
+              "longitude": 11.851404
+            },
+            "bearing": 142,
+            "accuracy": 4.6,
+            "points": 110,
+            "duration": 136,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400108,
+          "data": "2026-01-17T09:38:00.000Z",
+          "distanza": 206.4,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 22 km/h",
+          "note": "WOW! Record personale della sessione!",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.03045,
+              "longitude": 11.852384
+            },
+            "bearing": 76,
+            "accuracy": 3.5,
+            "points": 102,
+            "duration": 147,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400109,
+          "data": "2026-01-17T09:55:00.000Z",
+          "distanza": 199.7,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 20 km/h",
+          "note": "Quasi 200, ottimo",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.031437,
+              "longitude": 11.851431
+            },
+            "bearing": 37,
+            "accuracy": 4.7,
+            "points": 113,
+            "duration": 142,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400110,
+          "data": "2026-01-17T10:15:00.000Z",
+          "distanza": 194.2,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 19 km/h",
+          "note": "Lancio solido",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.031053,
+              "longitude": 11.851846
+            },
+            "bearing": 53,
+            "accuracy": 4.8,
+            "points": 112,
+            "duration": 138,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738490400111,
+          "data": "2026-01-17T10:32:00.000Z",
+          "distanza": 187.9,
+          "tecnica": "Ground Cast",
+          "pesoPiombo": "160g",
+          "vento": "Tramontana 17 km/h",
+          "note": "Ultimo lancio, soddisfatto",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 42.03,
+              "longitude": 11.85
+            },
+            "endPosition": {
+              "latitude": 42.029205,
+              "longitude": 11.851975
+            },
+            "bearing": 118,
+            "accuracy": 3.5,
+            "points": 117,
+            "duration": 134,
+            "quality": "Eccellente"
+          }
+        }
+      ],
+      "distanzaMedia": 192.79,
+      "distanzaMassima": 206.4,
+      "distanzaMinima": 174.2
+    },
+    {
+      "id": 1738663200001,
+      "dataInizio": "2026-01-19T15:00:00.000Z",
+      "dataFine": "2026-01-19T18:30:00.000Z",
+      "luogo": "Torvaianica - Zona Sud",
+      "tecnica": "Pendulum Cast",
+      "pesoPiombo": "170g",
+      "mulinello": "Penn Spinfisher VI 5500",
+      "filo": "0.22mm Sunline PE",
+      "vento": "Scirocco 25 km/h",
+      "temperatura": "17°C",
+      "meteo": "Nuvoloso con schiarite",
+      "note": "Pomeriggio ventoso, scirocco forte. Mare mosso ma campo praticabile. Ottima opportunità per testare condizioni difficili.",
+      "tipo": "campo",
+      "lanci": [
+        {
+          "id": 1738663200101,
+          "data": "2026-01-19T15:18:00.000Z",
+          "distanza": 158.4,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 24 km/h",
+          "note": "Vento laterale complicato",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.650936,
+              "longitude": 12.481423
+            },
+            "bearing": 49,
+            "accuracy": 3.2,
+            "points": 82,
+            "duration": 113,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200102,
+          "data": "2026-01-19T15:35:00.000Z",
+          "distanza": 167.9,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 26 km/h",
+          "note": "Migliore compensazione vento",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.651032,
+              "longitude": 12.481462
+            },
+            "bearing": 47,
+            "accuracy": 4.5,
+            "points": 118,
+            "duration": 119,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200103,
+          "data": "2026-01-19T15:52:00.000Z",
+          "distanza": 175.3,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 27 km/h",
+          "note": "Adattamento alla direzione vento",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.650566,
+              "longitude": 12.481948
+            },
+            "bearing": 69,
+            "accuracy": 3.7,
+            "points": 103,
+            "duration": 125,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200104,
+          "data": "2026-01-19T16:10:00.000Z",
+          "distanza": 183.6,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 25 km/h",
+          "note": "Buon lancio nonostante condizioni",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.651248,
+              "longitude": 12.481434
+            },
+            "bearing": 41,
+            "accuracy": 4.2,
+            "points": 115,
+            "duration": 131,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200105,
+          "data": "2026-01-19T16:28:00.000Z",
+          "distanza": 191.2,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 28 km/h",
+          "note": "Ottimo! Vento rafforzato",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.6487,
+              "longitude": 12.481493
+            },
+            "bearing": 139,
+            "accuracy": 4.7,
+            "points": 92,
+            "duration": 136,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200106,
+          "data": "2026-01-19T16:48:00.000Z",
+          "distanza": 186.7,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 26 km/h",
+          "note": "Lancio stabile",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.649084,
+              "longitude": 12.481864
+            },
+            "bearing": 123,
+            "accuracy": 4.6,
+            "points": 80,
+            "duration": 133,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200107,
+          "data": "2026-01-19T17:05:00.000Z",
+          "distanza": 179.5,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 24 km/h",
+          "note": "Vento calmato",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.651386,
+              "longitude": 12.481101
+            },
+            "bearing": 31,
+            "accuracy": 4.6,
+            "points": 96,
+            "duration": 128,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200108,
+          "data": "2026-01-19T17:22:00.000Z",
+          "distanza": 195.8,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 29 km/h",
+          "note": "Eccellente! Vento molto forte",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.651496,
+              "longitude": 12.481235
+            },
+            "bearing": 32,
+            "accuracy": 4.8,
+            "points": 98,
+            "duration": 139,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200109,
+          "data": "2026-01-19T17:42:00.000Z",
+          "distanza": 188.4,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 27 km/h",
+          "note": "Buona costanza",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.649618,
+              "longitude": 12.482185
+            },
+            "bearing": 103,
+            "accuracy": 3.5,
+            "points": 96,
+            "duration": 134,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200110,
+          "data": "2026-01-19T18:00:00.000Z",
+          "distanza": 192.7,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 28 km/h",
+          "note": "Penultimo lancio ottimo",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.65092,
+              "longitude": 12.481945
+            },
+            "bearing": 58,
+            "accuracy": 3.1,
+            "points": 82,
+            "duration": 137,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200111,
+          "data": "2026-01-19T18:18:00.000Z",
+          "distanza": 184.9,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 26 km/h",
+          "note": "Chiusura sessione impegnativa",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.650318,
+              "longitude": 12.482161
+            },
+            "bearing": 79,
+            "accuracy": 3.2,
+            "points": 82,
+            "duration": 132,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738663200112,
+          "data": "2026-01-19T18:28:00.000Z",
+          "distanza": 176.2,
+          "tecnica": "Pendulum Cast",
+          "pesoPiombo": "170g",
+          "vento": "Scirocco 25 km/h",
+          "note": "Ultimo lancio, stanchezza evidente",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.65,
+              "longitude": 12.48
+            },
+            "endPosition": {
+              "latitude": 41.648784,
+              "longitude": 12.481348
+            },
+            "bearing": 140,
+            "accuracy": 3.9,
+            "points": 97,
+            "duration": 125,
+            "quality": "Eccellente"
+          }
+        }
+      ],
+      "distanzaMedia": 181.72,
+      "distanzaMassima": 195.8,
+      "distanzaMinima": 158.4
+    },
+    {
+      "id": 1738836000001,
+      "dataInizio": "2026-01-21T08:00:00.000Z",
+      "dataFine": "2026-01-21T11:30:00.000Z",
+      "luogo": "Anzio - Riviera di Levante",
+      "tecnica": "Off The Ground",
+      "pesoPiombo": "150g",
+      "mulinello": "Shimano Power Aero 14000 XTB",
+      "filo": "0.20mm Varivas",
+      "vento": "Ponente 14 km/h",
+      "temperatura": "15°C",
+      "meteo": "Sereno",
+      "note": "Ultima sessione della serie, condizioni perfette. Campo pulito, visibilità ottima. Obiettivo: superare i 210m.",
+      "tipo": "campo",
+      "lanci": [
+        {
+          "id": 1738836000101,
+          "data": "2026-01-21T08:15:00.000Z",
+          "distanza": 182.7,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 13 km/h",
+          "note": "Riscaldamento tranquillo",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.448635,
+              "longitude": 12.621216
+            },
+            "bearing": 146,
+            "accuracy": 3.8,
+            "points": 80,
+            "duration": 130,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000102,
+          "data": "2026-01-21T08:32:00.000Z",
+          "distanza": 189.5,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 14 km/h",
+          "note": "Buon avvio",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.450119,
+              "longitude": 12.62225
+            },
+            "bearing": 86,
+            "accuracy": 4.5,
+            "points": 120,
+            "duration": 135,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000103,
+          "data": "2026-01-21T08:48:00.000Z",
+          "distanza": 197.3,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 15 km/h",
+          "note": "Ottima traiettoria",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.449938,
+              "longitude": 12.622347
+            },
+            "bearing": 92,
+            "accuracy": 4.3,
+            "points": 101,
+            "duration": 140,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000104,
+          "data": "2026-01-21T09:05:00.000Z",
+          "distanza": 205.6,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 16 km/h",
+          "note": "Oltre i 200! Motivato",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.450694,
+              "longitude": 12.622269
+            },
+            "bearing": 68,
+            "accuracy": 4.1,
+            "points": 97,
+            "duration": 146,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000105,
+          "data": "2026-01-21T09:22:00.000Z",
+          "distanza": 211.4,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 17 km/h",
+          "note": "FANTASTICO! Oltre 210m!",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.448801,
+              "longitude": 12.621956
+            },
+            "bearing": 129,
+            "accuracy": 4.8,
+            "points": 118,
+            "duration": 151,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000106,
+          "data": "2026-01-21T09:40:00.000Z",
+          "distanza": 208.9,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 16 km/h",
+          "note": "Ancora sopra 200, incredibile",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.448477,
+              "longitude": 12.621462
+            },
+            "bearing": 144,
+            "accuracy": 4.0,
+            "points": 93,
+            "duration": 149,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000107,
+          "data": "2026-01-21T09:58:00.000Z",
+          "distanza": 203.2,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 15 km/h",
+          "note": "Terzo consecutive over 200",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.451552,
+              "longitude": 12.621282
+            },
+            "bearing": 32,
+            "accuracy": 3.4,
+            "points": 99,
+            "duration": 145,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000108,
+          "data": "2026-01-21T10:18:00.000Z",
+          "distanza": 216.3,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 18 km/h",
+          "note": "RECORD ASSOLUTO! 216m! Traiettoria perfetta!",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.450271,
+              "longitude": 12.62255
+            },
+            "bearing": 82,
+            "accuracy": 4.4,
+            "points": 108,
+            "duration": 154,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000109,
+          "data": "2026-01-21T10:38:00.000Z",
+          "distanza": 209.7,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 17 km/h",
+          "note": "Dopo il record, ancora oltre 200",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.450296,
+              "longitude": 12.622466
+            },
+            "bearing": 81,
+            "accuracy": 4.0,
+            "points": 102,
+            "duration": 149,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000110,
+          "data": "2026-01-21T10:55:00.000Z",
+          "distanza": 201.8,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 15 km/h",
+          "note": "Consistenza eccellente",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.45099,
+              "longitude": 12.622015
+            },
+            "bearing": 57,
+            "accuracy": 3.1,
+            "points": 104,
+            "duration": 144,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000111,
+          "data": "2026-01-21T11:12:00.000Z",
+          "distanza": 195.4,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 14 km/h",
+          "note": "Penultimo lancio, stanchezza",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.448651,
+              "longitude": 12.621495
+            },
+            "bearing": 140,
+            "accuracy": 4.0,
+            "points": 83,
+            "duration": 139,
+            "quality": "Eccellente"
+          }
+        },
+        {
+          "id": 1738836000112,
+          "data": "2026-01-21T11:28:00.000Z",
+          "distanza": 206.5,
+          "tecnica": "Off The Ground",
+          "pesoPiombo": "150g",
+          "vento": "Ponente 16 km/h",
+          "note": "Chiusura in bellezza! Sessione storica!",
+          "tipo": "campo",
+          "gps": {
+            "misurato": true,
+            "startPosition": {
+              "latitude": 41.45,
+              "longitude": 12.62
+            },
+            "endPosition": {
+              "latitude": 41.450323,
+              "longitude": 12.622421
+            },
+            "bearing": 80,
+            "accuracy": 3.1,
+            "points": 115,
+            "duration": 147,
+            "quality": "Eccellente"
+          }
+        }
+      ],
+      "distanzaMedia": 202.36,
+      "distanzaMassima": 216.3,
+      "distanzaMinima": 182.7
+    }
+  ],
+  "profile": {
+    "nome": "Marco Rossi",
+    "eta": 35,
+    "peso": 82,
+    "altezza": 178,
+    "bmi": 25.88,
+    "annoInizio": 2022,
+    "obiettivoDistanza": 220
+  }
+}
