@@ -1211,7 +1211,12 @@ class LongCastApp {
             return Promise.resolve();
         }
 
-        this.leafletLoading = this.leafletLoading || new Promise((resolve, reject) => {
+        // Return existing loading promise if already loading
+        if (this.leafletLoading) {
+            return this.leafletLoading;
+        }
+
+        this.leafletLoading = new Promise((resolve, reject) => {
             // Load Leaflet CSS
             const link = document.createElement('link');
             link.rel = 'stylesheet';
@@ -1226,7 +1231,11 @@ class LongCastApp {
             script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
             script.crossOrigin = '';
             script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Failed to load Leaflet'));
+            script.onerror = () => {
+                // Reset loading promise on error so retry is possible
+                this.leafletLoading = null;
+                reject(new Error('Failed to load Leaflet'));
+            };
             document.head.appendChild(script);
         });
 
@@ -4441,11 +4450,28 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// Update connection status indicator
+function updateConnectionStatus() {
+    const statusEl = document.getElementById('connectionStatus');
+    if (!statusEl) return;
+
+    if (navigator.onLine) {
+        statusEl.classList.remove('offline');
+        statusEl.classList.add('online');
+        statusEl.setAttribute('title', 'Connessione attiva');
+    } else {
+        statusEl.classList.remove('online');
+        statusEl.classList.add('offline');
+        statusEl.setAttribute('title', 'Modalità offline');
+    }
+}
+
 // Online/Offline status monitoring
 window.addEventListener('online', () => {
     console.log('[App] Connection restored');
     document.body.classList.remove('offline');
     document.body.classList.add('online');
+    updateConnectionStatus();
 
     // Show toast notification
     if (window.app) {
@@ -4457,6 +4483,7 @@ window.addEventListener('offline', () => {
     console.log('[App] Connection lost');
     document.body.classList.remove('online');
     document.body.classList.add('offline');
+    updateConnectionStatus();
 
     // Show toast notification
     if (window.app) {
@@ -4473,4 +4500,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         document.body.classList.add('offline');
     }
+
+    // Update connection status indicator
+    updateConnectionStatus();
 });
