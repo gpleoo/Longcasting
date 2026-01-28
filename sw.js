@@ -1,7 +1,7 @@
 // Service Worker for Longcasting Pro
-// Version 1.3.0
+// Version 1.4.0
 
-const CACHE_NAME = 'longcasting-v1.3';
+const CACHE_NAME = 'longcasting-v1.4';
 const RUNTIME_CACHE = 'longcasting-runtime';
 const MAP_TILES_CACHE = 'longcasting-map-tiles';
 
@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
     '/index.html',
     '/app.js',
     '/styles.css',
+    '/css/mobile.css',
     '/manifest.json',
     // Moduli JS
     '/js/utils.js',
