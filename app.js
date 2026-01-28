@@ -1,6 +1,11 @@
 // ============================================
-// GPS TRACKER CLASS (Professional Module)
+// GPS TRACKER CLASS - Caricato da js/GPSTracker.js
 // ============================================
+// La classe GPSTracker è ora in un file separato (js/GPSTracker.js)
+// e viene caricata prima di questo file in index.html
+
+// Fallback: se GPSTracker non è definito, usa una versione inline
+if (typeof GPSTracker === 'undefined') {
 class GPSTracker {
     constructor() {
         this.isTracking = false;
@@ -361,6 +366,7 @@ class GPSTracker {
         }, 1000);
     }
 }
+} // Fine fallback GPSTracker
 
 // ============================================
 // LONGCAST PRO - MAIN APPLICATION
