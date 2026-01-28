@@ -5,11 +5,16 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "validate": "npm run lint && npm run format:check"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"**/*.{js,css,html,json}\"",
+    "format:check": "prettier --check \"**/*.{js,css,html,json}\"",
+    "validate": "npm run lint && npm run format:check",
+    "clean": "rm -rf dist",
+    "serve": "npx serve ."
   },
   "keywords": [
     "longcasting",
@@ -23,7 +28,9 @@
   "license": "MIT",
   "devDependencies": {
     "eslint": "^8.57.0",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "vite": "^5.0.0",
+    "vite-plugin-pwa": "^0.17.0"
   },
   "engines": {
     "node": ">=18.0.0"
