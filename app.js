@@ -4423,6 +4423,54 @@ class LongCastApp {
 
 // Initialize app when DOM is loaded
 let app;
+// Register Service Worker for offline support
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('[App] Service Worker registered:', registration.scope);
+
+                // Check for updates periodically
+                setInterval(() => {
+                    registration.update();
+                }, 60000); // Check every minute
+            })
+            .catch((error) => {
+                console.error('[App] Service Worker registration failed:', error);
+            });
+    });
+}
+
+// Online/Offline status monitoring
+window.addEventListener('online', () => {
+    console.log('[App] Connection restored');
+    document.body.classList.remove('offline');
+    document.body.classList.add('online');
+
+    // Show toast notification
+    if (window.app) {
+        window.app.showToast('Connessione ripristinata', 'success');
+    }
+});
+
+window.addEventListener('offline', () => {
+    console.log('[App] Connection lost');
+    document.body.classList.remove('online');
+    document.body.classList.add('offline');
+
+    // Show toast notification
+    if (window.app) {
+        window.app.showToast('Modalità offline attiva', 'warning');
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     app = new LongCastApp();
+
+    // Set initial online/offline status
+    if (navigator.onLine) {
+        document.body.classList.add('online');
+    } else {
+        document.body.classList.add('offline');
+    }
 });
