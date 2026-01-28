@@ -1,0 +1,329 @@
+/* ============================================
+   ACCESSIBILITY STYLES
+   ============================================ */
+
+/* Screen Reader Only - visibile solo per screen reader */
+.sr-only,
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Skip Link - visibile solo al focus */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-color, #00D9FF);
+    color: #000;
+    padding: 12px 24px;
+    text-decoration: none;
+    font-weight: bold;
+    z-index: 10000;
+    border-radius: 0 0 8px 8px;
+    transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+/* ============================================
+   Focus Styles
+   ============================================ */
+
+/* Focus visibile per tutti gli elementi interattivi */
+:focus-visible {
+    outline: 3px solid var(--primary-color, #00D9FF);
+    outline-offset: 2px;
+}
+
+/* Nascondi outline per mouse users */
+.using-mouse *:focus {
+    outline: none;
+}
+
+/* Focus per bottoni */
+button:focus-visible,
+.btn:focus-visible,
+.nav-btn:focus-visible {
+    outline: 3px solid var(--primary-color, #00D9FF);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.3);
+}
+
+/* Focus per input */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--primary-color, #00D9FF);
+    outline-offset: 0;
+    border-color: var(--primary-color, #00D9FF);
+}
+
+/* Focus per link */
+a:focus-visible {
+    outline: 2px solid var(--primary-color, #00D9FF);
+    outline-offset: 2px;
+    text-decoration: underline;
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* ============================================
+   High Contrast Mode
+   ============================================ */
+
+@media (prefers-contrast: high) {
+    :root {
+        --text-color: #ffffff;
+        --bg-color: #000000;
+        --primary-color: #00ffff;
+        --border-color: #ffffff;
+    }
+
+    button,
+    .btn,
+    input,
+    select,
+    textarea {
+        border: 2px solid #fff !important;
+    }
+
+    a {
+        text-decoration: underline !important;
+    }
+}
+
+/* Forced colors mode (Windows High Contrast) */
+@media (forced-colors: active) {
+    .btn,
+    button {
+        border: 2px solid currentColor;
+    }
+
+    :focus-visible {
+        outline: 3px solid Highlight;
+    }
+}
+
+/* ============================================
+   Text & Typography Accessibility
+   ============================================ */
+
+/* Minimum text size */
+body {
+    font-size: max(16px, 1rem);
+    line-height: 1.5;
+}
+
+/* Readable line length */
+p,
+li,
+.text-content {
+    max-width: 75ch;
+}
+
+/* Scalable text */
+html {
+    font-size: 100%;
+}
+
+/* Support for larger text */
+@media (min-resolution: 120dpi) {
+    html {
+        font-size: 110%;
+    }
+}
+
+/* ============================================
+   Interactive Elements
+   ============================================ */
+
+/* Minimum touch target size (44x44px) */
+button,
+.btn,
+.nav-btn,
+a.btn,
+input[type="checkbox"],
+input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Disabled state */
+[disabled],
+[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Loading state */
+[aria-busy="true"] {
+    cursor: wait;
+}
+
+/* Expanded/Collapsed indicators */
+[aria-expanded="false"]::after {
+    content: " ▸";
+}
+
+[aria-expanded="true"]::after {
+    content: " ▾";
+}
+
+/* ============================================
+   Form Accessibility
+   ============================================ */
+
+/* Required field indicator */
+label[data-required]::after,
+.required::after {
+    content: " *";
+    color: #ff4444;
+    font-weight: bold;
+}
+
+/* Error state */
+.error,
+[aria-invalid="true"] {
+    border-color: #ff4444 !important;
+    background-color: rgba(255, 68, 68, 0.1);
+}
+
+.error-message,
+[role="alert"] {
+    color: #ff4444;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+/* Success state */
+.success,
+[aria-valid="true"] {
+    border-color: #44ff44 !important;
+}
+
+/* ============================================
+   Modal Accessibility
+   ============================================ */
+
+[role="dialog"],
+[aria-modal="true"] {
+    /* Ensure modal is above everything */
+    z-index: 9999;
+}
+
+/* Backdrop per modali */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9998;
+}
+
+/* ============================================
+   Table Accessibility
+   ============================================ */
+
+table {
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    font-weight: bold;
+}
+
+th,
+td {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color, #333);
+}
+
+caption {
+    font-weight: bold;
+    text-align: left;
+    padding: 8px 0;
+}
+
+/* ============================================
+   Image Accessibility
+   ============================================ */
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+img:not([alt]) {
+    outline: 3px dashed #ff4444;
+}
+
+/* ============================================
+   Selection Accessibility
+   ============================================ */
+
+::selection {
+    background: var(--primary-color, #00D9FF);
+    color: #000;
+}
+
+::-moz-selection {
+    background: var(--primary-color, #00D9FF);
+    color: #000;
+}
+
+/* ============================================
+   Print Accessibility
+   ============================================ */
+
+@media print {
+    .sr-only,
+    .skip-link {
+        display: none !important;
+    }
+
+    a[href]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.8em;
+    }
+
+    abbr[title]::after {
+        content: " (" attr(title) ")";
+    }
+}
