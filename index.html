@@ -1196,6 +1196,29 @@
         </div>
     </div>
 
+    <!-- GPS Error Modal -->
+    <div id="gpsErrorModal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="gps.errorTitle">⚠️ Errore GPS</h3>
+            </div>
+            <div class="modal-body">
+                <p id="gpsErrorMessage" data-i18n="gps.errorMessage" style="margin-bottom: 1rem;">Impossibile acquisire la posizione GPS</p>
+                <p id="gpsRetryAttempt" style="font-size: 0.9rem; color: var(--text-muted);"></p>
+                <p data-i18n="gps.retryQuestion" style="margin-top: 1rem;">Vuoi riprovare ad acquisire il GPS o avviare la sessione senza punto perno?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="gpsErrorContinue" class="btn btn-secondary" data-i18n="gps.continueButton">
+                    Continua Senza GPS
+                </button>
+                <button id="gpsErrorRetry" class="btn btn-primary" data-i18n="gps.retryButton">
+                    🔄 Riprova GPS
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

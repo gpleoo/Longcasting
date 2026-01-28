@@ -651,7 +651,24 @@ class LongCastApp {
                 'common.loading': 'Caricamento...',
                 'common.error': 'Errore',
                 'common.success': 'Successo',
-                'common.warning': 'Attenzione'
+                'common.warning': 'Attenzione',
+                'common.retry': 'Riprova',
+                'common.continueWithout': 'Continua Senza',
+
+                // GPS & Validation
+                'gps.acquiring': 'Acquisizione posizione GPS...',
+                'gps.acquired': 'Sessione avviata! Punto perno GPS acquisito.',
+                'gps.notSupported': 'Geolocalizzazione non supportata',
+                'gps.errorTitle': 'Errore GPS',
+                'gps.errorMessage': 'Impossibile acquisire la posizione GPS',
+                'gps.retryQuestion': 'Vuoi riprovare ad acquisire il GPS o avviare la sessione senza punto perno?',
+                'gps.retryButton': 'Riprova GPS',
+                'gps.continueButton': 'Continua Senza GPS',
+                'gps.attempt': 'Tentativo',
+                'gps.of': 'di',
+                'validation.required': 'Questo campo è obbligatorio',
+                'validation.fillRequired': 'Compila tutti i campi obbligatori (*) prima di continuare',
+                'validation.invalidNumber': 'Inserisci un numero valido'
             },
             en: {
                 // Navigation
@@ -889,7 +906,24 @@ class LongCastApp {
                 'common.loading': 'Loading...',
                 'common.error': 'Error',
                 'common.success': 'Success',
-                'common.warning': 'Warning'
+                'common.warning': 'Warning',
+                'common.retry': 'Retry',
+                'common.continueWithout': 'Continue Without',
+
+                // GPS & Validation
+                'gps.acquiring': 'Acquiring GPS position...',
+                'gps.acquired': 'Session started! GPS pivot point acquired.',
+                'gps.notSupported': 'Geolocation not supported',
+                'gps.errorTitle': 'GPS Error',
+                'gps.errorMessage': 'Unable to acquire GPS position',
+                'gps.retryQuestion': 'Do you want to retry GPS acquisition or start the session without pivot point?',
+                'gps.retryButton': 'Retry GPS',
+                'gps.continueButton': 'Continue Without GPS',
+                'gps.attempt': 'Attempt',
+                'gps.of': 'of',
+                'validation.required': 'This field is required',
+                'validation.fillRequired': 'Fill all required fields (*) before continuing',
+                'validation.invalidNumber': 'Enter a valid number'
             },
             es: {
                 // Navigation
@@ -1573,6 +1607,17 @@ class LongCastApp {
         document.getElementById('gpsConfirmSave').addEventListener('click', () => this.saveGPSCast());
         document.getElementById('gpsConfirmCancel').addEventListener('click', () => this.cancelGPSCast());
 
+        // GPS Error Modal
+        document.getElementById('gpsErrorRetry').addEventListener('click', () => {
+            this.hideGPSErrorModal();
+            this.acquireGPSWithRetry();
+        });
+        document.getElementById('gpsErrorContinue').addEventListener('click', () => {
+            this.hideGPSErrorModal();
+            const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro} = this.sessionFormData;
+            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+        });
+
         // Map Controls
         document.getElementById('closeMapBtn').addEventListener('click', () => this.closeMap());
     }
@@ -1726,6 +1771,11 @@ class LongCastApp {
     }
 
     startSession() {
+        // Validate required fields first
+        if (!this.validateSessionForm()) {
+            return;
+        }
+
         const formData = new FormData(document.getElementById('startSessionForm'));
 
         const tipo = formData.get('session-tipo');
@@ -1744,18 +1794,70 @@ class LongCastApp {
         const note = formData.get('session-note');
         const metriPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-metri-per-giro')) : null;
 
+        // Store form data for potential retry
+        this.sessionFormData = {
+            formData, tipo, pesoPiombo, tecnica, cannaModello, vento,
+            direzioneVento, luogo, cannaGrammatura, mulinello, filo,
+            cannaLunghezza, temperatura, umidita, note, metriPerGiro
+        };
+
         // Always acquire GPS position for field pivot point
         if (!navigator.geolocation) {
-            this.showToast('Geolocalizzazione non supportata. Sessione avviata senza punto perno.', 'warning');
+            this.showToast(this.t('gps.notSupported') + '. ' + this.t('gps.continueButton'), 'warning');
             this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
             return;
         }
 
-        this.showToast('Acquisizione posizione GPS...', 'info');
+        // Start GPS acquisition with retry counter
+        this.gpsRetryCount = 0;
+        this.gpsMaxRetries = 3;
+        this.acquireGPSWithRetry();
+    }
+
+    validateSessionForm() {
+        const form = document.getElementById('startSessionForm');
+        const requiredFields = form.querySelectorAll('[required], input[data-required="true"], select[data-required="true"]');
+        let isValid = true;
+        let firstInvalidField = null;
+
+        // Get actual required fields from form
+        const tipo = form.querySelector('[name="session-tipo"]').value;
+        const luogo = form.querySelector('[name="session-luogo"]').value;
+        const pesoPiombo = form.querySelector('[name="session-peso-piombo"]').value;
+        const tecnica = form.querySelector('[name="session-tecnica"]').value;
+
+        // Check required fields
+        if (!tipo || !luogo || !pesoPiombo || !tecnica) {
+            isValid = false;
+        }
+
+        // For sea type, check metri-per-giro
+        if (tipo === 'mare') {
+            const metriPerGiro = form.querySelector('[name="session-metri-per-giro"]').value;
+            if (!metriPerGiro) {
+                isValid = false;
+            }
+        }
+
+        if (!isValid) {
+            this.showToast(this.t('validation.fillRequired'), 'error');
+            return false;
+        }
+
+        return true;
+    }
+
+    acquireGPSWithRetry() {
+        this.gpsRetryCount++;
+
+        const attemptMessage = `${this.t('gps.acquiring')} (${this.t('gps.attempt')} ${this.gpsRetryCount}/${this.gpsMaxRetries})`;
+        this.showToast(attemptMessage, 'info');
+
+        const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro} = this.sessionFormData;
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                // Create session with pivot point
+                // Success - Create session with pivot point
                 this.currentSession = {
                     id: Date.now(),
                     tipo: tipo,
@@ -1778,7 +1880,7 @@ class LongCastApp {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude
                     },
-                    direzioneCampo: null, // Not set yet, user will set it from map button
+                    direzioneCampo: null,
                     lanci: []
                 };
 
@@ -1789,16 +1891,14 @@ class LongCastApp {
                 document.getElementById('startSessionForm').reset();
                 this.setDefaultDateTime();
 
-                // Start session - user will set direction later from button
+                // Start session
                 this.showSessionActive();
-                this.showToast('Sessione avviata! Punto perno GPS acquisito.', 'success');
+                this.showToast(this.t('gps.acquired'), 'success');
             },
             (error) => {
+                // GPS Error - show modal or retry
                 console.error('GPS Error:', error);
-                this.showToast('Errore GPS: ' + error.message + '. Sessione avviata senza punto perno.', 'warning');
-
-                // Start session anyway without GPS
-                this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+                this.handleGPSError(error);
             },
             {
                 enableHighAccuracy: true,
@@ -1806,6 +1906,32 @@ class LongCastApp {
                 maximumAge: 0
             }
         );
+    }
+
+    handleGPSError(error) {
+        if (this.gpsRetryCount < this.gpsMaxRetries) {
+            // Show modal asking user to retry or continue
+            this.showGPSErrorModal(error);
+        } else {
+            // Max retries reached - automatically continue without GPS
+            this.showToast(this.t('gps.errorMessage') + '. ' + this.t('gps.continueButton'), 'warning');
+            const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro} = this.sessionFormData;
+            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+        }
+    }
+
+    showGPSErrorModal(error) {
+        const modal = document.getElementById('gpsErrorModal');
+        const attemptText = document.getElementById('gpsRetryAttempt');
+
+        attemptText.textContent = `${this.t('gps.attempt')} ${this.gpsRetryCount} ${this.t('gps.of')} ${this.gpsMaxRetries}`;
+
+        modal.style.display = 'flex';
+    }
+
+    hideGPSErrorModal() {
+        const modal = document.getElementById('gpsErrorModal');
+        modal.style.display = 'none';
     }
 
     startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro) {
