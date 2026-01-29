@@ -602,7 +602,7 @@ class LongCastApp {
                 'settings.install': 'Installa Applicazione',
                 'settings.installDesc': 'Installa Longcasting Pro sul tuo dispositivo per un\'esperienza ottimale',
                 'settings.about': 'ℹ️ Informazioni',
-                'settings.version': 'Versione 1.0.0',
+                'settings.version': 'Versione 2.0.0',
                 'settings.copyright': '© 2026 Longcasting Pro. Tutti i diritti riservati.',
 
                 // Profile
@@ -857,7 +857,7 @@ class LongCastApp {
                 'settings.install': 'Install Application',
                 'settings.installDesc': 'Install Longcasting Pro on your device for an optimal experience',
                 'settings.about': 'ℹ️ About',
-                'settings.version': 'Version 1.0.0',
+                'settings.version': 'Version 2.0.0',
                 'settings.copyright': '© 2026 Longcasting Pro. All rights reserved.',
 
                 // Profile
@@ -1112,7 +1112,7 @@ class LongCastApp {
                 'settings.install': 'Instalar Aplicación',
                 'settings.installDesc': 'Instala Longcasting Pro en tu dispositivo para una experiencia óptima',
                 'settings.about': 'ℹ️ Acerca de',
-                'settings.version': 'Versión 1.0.0',
+                'settings.version': 'Versión 2.0.0',
                 'settings.copyright': '© 2026 Longcasting Pro. Todos los derechos reservados.',
 
                 // Profile
@@ -1367,7 +1367,7 @@ class LongCastApp {
                 'settings.install': 'Installer Application',
                 'settings.installDesc': 'Installez Longcasting Pro sur votre appareil pour une expérience optimale',
                 'settings.about': 'ℹ️ À Propos',
-                'settings.version': 'Version 1.0.0',
+                'settings.version': 'Version 2.0.0',
                 'settings.copyright': '© 2026 Longcasting Pro. Tous droits réservés.',
 
                 // Profile
