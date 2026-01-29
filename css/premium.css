@@ -1,0 +1,604 @@
+/* ============================================
+   PREMIUM FEATURES - Stili per funzionalità Premium
+   ============================================ */
+
+/* === BADGE E ACHIEVEMENT === */
+
+.achievements-container {
+    padding: 20px;
+}
+
+.level-card {
+    background: linear-gradient(135deg, var(--primary-dark), var(--secondary-dark));
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.level-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 217, 255, 0.1) 0%, transparent 70%);
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.level-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.level-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: 4px;
+}
+
+.level-info {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.xp-bar {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    height: 12px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), #00ff88);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.xp-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Badge Grid */
+.badges-section {
+    margin-bottom: 24px;
+}
+
+.badges-section h3 {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+}
+
+.badge-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.badge-card.unlocked {
+    border-color: var(--accent-color);
+}
+
+.badge-card.locked {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.badge-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.2);
+}
+
+.badge-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.badge-name {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.badge-description {
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.badge-rarity {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.badge-rarity.common { background: #9e9e9e; }
+.badge-rarity.uncommon { background: #4caf50; }
+.badge-rarity.rare { background: #2196f3; }
+.badge-rarity.epic { background: #9c27b0; }
+.badge-rarity.legendary { background: #ff9800; }
+.badge-rarity.mythic { background: linear-gradient(45deg, #ff0080, #00ff80, #0080ff); }
+
+/* Badge Unlock Animation */
+.badge-unlock-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg, var(--primary-dark), var(--secondary-dark));
+    border: 3px solid var(--accent-color);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    z-index: 10000;
+    animation: badge-pop 0.5s ease forwards;
+    box-shadow: 0 0 60px rgba(0, 217, 255, 0.5);
+}
+
+@keyframes badge-pop {
+    0% { transform: translate(-50%, -50%) scale(0); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.badge-unlock-popup .badge-icon {
+    font-size: 72px;
+    animation: badge-bounce 0.6s ease 0.3s;
+}
+
+@keyframes badge-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.badge-unlock-popup h2 {
+    color: var(--accent-color);
+    margin: 16px 0 8px;
+}
+
+.badge-unlock-popup p {
+    color: var(--text-secondary);
+}
+
+/* === AI COACH === */
+
+.coach-container {
+    padding: 20px;
+}
+
+.coach-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.coach-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.coach-avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--accent-color), #00ff88);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.coach-title {
+    flex: 1;
+}
+
+.coach-title h3 {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.coach-title span {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.daily-tip {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(0, 255, 136, 0.1));
+    border-left: 4px solid var(--accent-color);
+    padding: 16px;
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 20px;
+}
+
+.daily-tip h4 {
+    color: var(--accent-color);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.daily-tip p {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Recommendations */
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.recommendation-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+}
+
+.recommendation-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 217, 255, 0.1);
+    border-radius: 10px;
+}
+
+.recommendation-content {
+    flex: 1;
+}
+
+.recommendation-content h4 {
+    color: var(--text-primary);
+    margin: 0 0 4px;
+    font-size: 14px;
+}
+
+.recommendation-content p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 13px;
+}
+
+.recommendation-tip {
+    color: var(--accent-color);
+    font-size: 12px;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+.priority-high { border-left: 3px solid #f44336; }
+.priority-medium { border-left: 3px solid #ff9800; }
+.priority-low { border-left: 3px solid #4caf50; }
+
+/* Patterns */
+.patterns-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.pattern-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.pattern-card .label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pattern-card .value {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin: 8px 0 4px;
+}
+
+.pattern-card .detail {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Predictions */
+.prediction-card {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.2), rgba(0, 217, 255, 0.2));
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+
+.prediction-card h4 {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.prediction-value {
+    font-size: 48px;
+    font-weight: bold;
+    background: linear-gradient(90deg, var(--accent-color), #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.prediction-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Motivational */
+.motivational-message {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    font-size: 18px;
+    color: var(--text-primary);
+    font-style: italic;
+    position: relative;
+}
+
+.motivational-message::before,
+.motivational-message::after {
+    content: '"';
+    font-size: 48px;
+    color: var(--accent-color);
+    opacity: 0.3;
+    position: absolute;
+}
+
+.motivational-message::before {
+    top: 10px;
+    left: 20px;
+}
+
+.motivational-message::after {
+    bottom: -10px;
+    right: 20px;
+}
+
+/* === REPORTS === */
+
+.reports-container {
+    padding: 20px;
+}
+
+.report-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.report-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 16px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.report-btn:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.report-btn .icon {
+    font-size: 24px;
+}
+
+.report-preview {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.report-section {
+    margin-bottom: 24px;
+}
+
+.report-section h3 {
+    color: var(--accent-color);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stats-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stats-row:last-child {
+    border-bottom: none;
+}
+
+.stats-row .label {
+    color: var(--text-secondary);
+}
+
+.stats-row .value {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+/* Progress indicators */
+.progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.progress-fill.positive { background: #4caf50; }
+.progress-fill.negative { background: #f44336; }
+.progress-fill.neutral { background: var(--accent-color); }
+
+/* Next badges to unlock */
+.next-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.next-badge-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.next-badge-item .icon {
+    font-size: 28px;
+    opacity: 0.5;
+}
+
+.next-badge-item .info {
+    flex: 1;
+}
+
+.next-badge-item .name {
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.next-badge-item .description {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.next-badge-item .progress-bar {
+    width: 60px;
+    height: 6px;
+}
+
+.next-badge-item .progress-text {
+    font-size: 11px;
+    color: var(--text-secondary);
+    min-width: 35px;
+    text-align: right;
+}
+
+/* Streak display */
+.streak-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.2), rgba(255, 87, 34, 0.2));
+    border-radius: 12px;
+}
+
+.streak-display.active {
+    animation: streak-pulse 2s ease-in-out infinite;
+}
+
+@keyframes streak-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+    50% { box-shadow: 0 0 20px 5px rgba(255, 152, 0, 0.2); }
+}
+
+.streak-fire {
+    font-size: 32px;
+}
+
+.streak-number {
+    font-size: 36px;
+    font-weight: bold;
+    color: #ff9800;
+}
+
+.streak-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .badges-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .patterns-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-actions {
+        flex-direction: column;
+    }
+
+    .report-btn {
+        flex-direction: row;
+        justify-content: center;
+    }
+}
