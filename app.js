@@ -2023,7 +2023,178 @@ class LongCastApp {
             this.checkActiveSession();
         } else if (section === 'impostazioni') {
             this.loadSettings();
+        } else if (section === 'coach') {
+            this.updateCoachAI();
+        } else if (section === 'achievements') {
+            this.updateAchievements();
+        } else if (section === 'reports') {
+            this.updateReports();
         }
+    }
+
+    // ==========================================
+    // PREMIUM FEATURES
+    // ==========================================
+
+    updateCoachAI() {
+        if (typeof AICoach === 'undefined') {
+            console.warn('AICoach module not loaded');
+            return;
+        }
+        const coach = new AICoach();
+        const sessions = this.sessions || [];
+        const analysis = coach.analyzePerformance(sessions);
+
+        const dailyTip = coach.getDailyTip(sessions);
+        const dailyTipEl = document.getElementById('dailyTip');
+        if (dailyTipEl) dailyTipEl.textContent = dailyTip.tip;
+
+        const motivationalEl = document.getElementById('motivationalMessage');
+        if (motivationalEl) motivationalEl.textContent = coach.getMotivationalMessage(analysis);
+
+        const overviewEl = document.getElementById('coachOverview');
+        if (overviewEl && analysis.overview) {
+            overviewEl.innerHTML = `
+                <div class="stats-row"><span class="label">Lanci Totali</span><span class="value">${analysis.overview.totalCasts}</span></div>
+                <div class="stats-row"><span class="label">Distanza Media</span><span class="value">${analysis.overview.averageDistance}m</span></div>
+                <div class="stats-row"><span class="label">Record</span><span class="value">${analysis.overview.maxDistance}m</span></div>
+                <div class="stats-row"><span class="label">Consistenza</span><span class="value">${analysis.overview.consistency}%</span></div>
+            `;
+        }
+
+        if (analysis.patterns) {
+            if (analysis.patterns.bestTechnique) document.getElementById('bestTechnique').textContent = analysis.patterns.bestTechnique.value;
+            if (analysis.patterns.bestWeight) document.getElementById('bestWeight').textContent = analysis.patterns.bestWeight.value + 'g';
+            if (analysis.patterns.bestTimeOfDay) document.getElementById('bestTime').textContent = analysis.patterns.bestTimeOfDay.value;
+            if (analysis.patterns.bestWindCondition) document.getElementById('bestWind').textContent = analysis.patterns.bestWindCondition.value;
+        }
+
+        const predictedEl = document.getElementById('predictedRecord');
+        if (predictedEl && analysis.predictions && analysis.predictions.canPredict) {
+            predictedEl.textContent = analysis.predictions.predictedNextRecord;
+        }
+
+        const recListEl = document.getElementById('recommendationsList');
+        if (recListEl && analysis.recommendations && analysis.recommendations.length > 0) {
+            recListEl.innerHTML = analysis.recommendations.map(rec => `
+                <div class="recommendation-item priority-${rec.priority}">
+                    <div class="recommendation-icon">${rec.icon}</div>
+                    <div class="recommendation-content">
+                        <h4>${rec.title}</h4>
+                        <p>${rec.message}</p>
+                        ${rec.tip ? `<div class="recommendation-tip">${rec.tip}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    updateAchievements() {
+        if (typeof AchievementManager === 'undefined') {
+            console.warn('AchievementManager module not loaded');
+            return;
+        }
+        const achievements = new AchievementManager();
+        achievements.updateFromSessions(this.sessions || []);
+
+        const level = achievements.getCurrentLevel();
+        document.getElementById('levelIcon').textContent = level.icon;
+        document.getElementById('levelName').textContent = level.name;
+        document.getElementById('levelNumber').textContent = level.level;
+        document.getElementById('currentXP').textContent = level.currentXP;
+        document.getElementById('nextLevelXP').textContent = level.nextLevel ? level.nextLevel.minXP : level.currentXP;
+        document.getElementById('xpFill').style.width = level.progress + '%';
+
+        document.getElementById('streakNumber').textContent = achievements.stats.currentStreak;
+        if (achievements.stats.currentStreak > 0) {
+            document.getElementById('streakDisplay').classList.add('active');
+        }
+
+        const badgeStats = achievements.getBadgeStats();
+        document.getElementById('badgesUnlocked').textContent = `${badgeStats.unlocked} / ${badgeStats.total}`;
+        document.getElementById('badgesPercentage').textContent = badgeStats.percentage + '%';
+
+        const nextBadges = achievements.getNextAchievableBadges(3);
+        const nextBadgesEl = document.getElementById('nextBadges');
+        if (nextBadgesEl && nextBadges.length > 0) {
+            nextBadgesEl.innerHTML = nextBadges.map(badge => `
+                <div class="next-badge-item">
+                    <span class="icon">${badge.icon}</span>
+                    <div class="info">
+                        <div class="name">${badge.name}</div>
+                        <div class="description">${badge.description}</div>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill neutral" style="width: ${badge.progress}%"></div></div>
+                    <span class="progress-text">${Math.round(badge.progress)}%</span>
+                </div>
+            `).join('');
+        }
+
+        this.renderBadgeCategory(achievements, 'distance', 'distanceBadges');
+        this.renderBadgeCategory(achievements, 'consistency', 'consistencyBadges');
+        this.renderBadgeCategory(achievements, 'sessions', 'sessionsBadges');
+        this.renderBadgeCategory(achievements, 'streak', 'streakBadges');
+        this.renderBadgeCategory(achievements, 'special', 'specialBadges');
+    }
+
+    renderBadgeCategory(achievements, category, elementId) {
+        const badges = achievements.getBadgesByCategory(category);
+        const container = document.getElementById(elementId);
+        if (!container) return;
+        container.innerHTML = badges.map(badge => `
+            <div class="badge-card ${badge.unlocked ? 'unlocked' : 'locked'}">
+                <div class="badge-rarity ${badge.rarity}"></div>
+                <div class="badge-icon">${badge.icon}</div>
+                <div class="badge-name">${badge.name}</div>
+                <div class="badge-description">${badge.description}</div>
+            </div>
+        `).join('');
+    }
+
+    updateReports() {
+        if (typeof ReportGenerator === 'undefined') {
+            console.warn('ReportGenerator module not loaded');
+            return;
+        }
+        const reportGen = new ReportGenerator();
+        const sessions = this.sessions || [];
+        if (sessions.length === 0) return;
+
+        const report = reportGen.generateFullReport(sessions, this.profile, null);
+
+        document.getElementById('reportSessions').textContent = report.summary.totalSessions;
+        document.getElementById('reportCasts').textContent = report.summary.totalCasts;
+        document.getElementById('reportAvgDistance').textContent = report.summary.averageDistance + ' m';
+        document.getElementById('reportMaxDistance').textContent = report.summary.maxDistance + ' m';
+        document.getElementById('reportMedian').textContent = report.summary.medianDistance + ' m';
+
+        if (report.statistics.percentiles) {
+            document.getElementById('reportP90').textContent = report.statistics.percentiles.p90 + ' m';
+            document.getElementById('reportP75').textContent = report.statistics.percentiles.p75 + ' m';
+            document.getElementById('reportP50').textContent = report.statistics.percentiles.p50 + ' m';
+        }
+
+        if (report.trends && report.trends.hasEnoughData) {
+            const trendDir = report.trends.linearTrend.direction;
+            const trendIcon = trendDir === 'improving' ? '📈' : trendDir === 'declining' ? '📉' : '➡️';
+            document.getElementById('reportTrend').textContent = trendIcon + ' ' + trendDir;
+            document.getElementById('reportConsistency').textContent = report.trends.volatility.rating;
+            document.getElementById('reportStdDev').textContent = report.trends.volatility.standardDeviation + ' m';
+        }
+
+        const techContainer = document.getElementById('reportByTechnique');
+        if (techContainer && report.statistics.byTechnique) {
+            const techniques = Object.entries(report.statistics.byTechnique);
+            if (techniques.length > 0) {
+                techContainer.innerHTML = techniques.map(([tech, stats]) => `
+                    <div class="stats-row">
+                        <span class="label">${tech}</span>
+                        <span class="value">${stats.average}m (${stats.count} lanci)</span>
+                    </div>
+                `).join('');
+            }
+        }
+        this.currentReport = report;
     }
 
     // Campo/Mare Management
@@ -4784,3 +4955,59 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update connection status indicator
     updateConnectionStatus();
 });
+
+// ==========================================
+// GLOBAL EXPORT FUNCTIONS FOR REPORTS
+// ==========================================
+
+function exportReportPDF() {
+    if (typeof ReportGenerator === 'undefined') {
+        alert('Modulo Report non disponibile');
+        return;
+    }
+    const reportGen = new ReportGenerator();
+    const sessions = app ? app.sessions : [];
+    const profile = app ? app.profile : null;
+
+    if (sessions.length === 0) {
+        alert('Nessun dato da esportare. Registra prima alcune sessioni.');
+        return;
+    }
+
+    const report = reportGen.generateFullReport(sessions, profile, null);
+    reportGen.exportToPDF(report, profile);
+}
+
+function exportReportCSV() {
+    if (typeof ReportGenerator === 'undefined') {
+        alert('Modulo Report non disponibile');
+        return;
+    }
+    const reportGen = new ReportGenerator();
+    const sessions = app ? app.sessions : [];
+
+    if (sessions.length === 0) {
+        alert('Nessun dato da esportare. Registra prima alcune sessioni.');
+        return;
+    }
+
+    reportGen.exportToCSV(sessions);
+}
+
+function exportReportJSON() {
+    if (typeof ReportGenerator === 'undefined') {
+        alert('Modulo Report non disponibile');
+        return;
+    }
+    const reportGen = new ReportGenerator();
+    const sessions = app ? app.sessions : [];
+    const profile = app ? app.profile : null;
+
+    if (sessions.length === 0) {
+        alert('Nessun dato da esportare. Registra prima alcune sessioni.');
+        return;
+    }
+
+    const report = reportGen.generateFullReport(sessions, profile, null);
+    reportGen.exportToJSON(report);
+}
