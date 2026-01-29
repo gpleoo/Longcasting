@@ -1458,6 +1458,9 @@ class LongCastApp {
         // Configurazione mulinelli custom (salvata in localStorage)
         this.mulinelliConfig = {};
 
+        // Tipo dashboard selezionato (campo o mare)
+        this.selectedDashboardType = 'campo';
+
         this.init();
     }
 
@@ -1880,6 +1883,16 @@ class LongCastApp {
                 const section = e.currentTarget.dataset.section;
                 if (section) {
                     this.navigate(section);
+                }
+            });
+        });
+
+        // Dashboard Type Tabs (Campo/Mare)
+        document.querySelectorAll('.dashboard-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const type = e.currentTarget.dataset.type;
+                if (type) {
+                    this.switchDashboardType(type);
                 }
             });
         });
@@ -3174,6 +3187,39 @@ class LongCastApp {
         this.updateRecentSessions();
     }
 
+    // Switch between Campo and Mare dashboard views
+    switchDashboardType(type) {
+        this.selectedDashboardType = type;
+
+        // Update tab UI
+        document.querySelectorAll('.dashboard-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.type === type) {
+                tab.classList.add('active');
+            }
+        });
+
+        // Refresh dashboard with new type filter
+        this.updateDashboard();
+    }
+
+    // Get sessions filtered by current dashboard type
+    getFilteredSessions() {
+        return this.sessions.filter(s => s.tipo === this.selectedDashboardType);
+    }
+
+    // Update tab counters
+    updateDashboardTabCounts() {
+        const campoSessions = this.sessions.filter(s => s.tipo === 'campo');
+        const mareSessions = this.sessions.filter(s => s.tipo === 'mare');
+
+        const campoCount = document.getElementById('tab-campo-count');
+        const mareCount = document.getElementById('tab-mare-count');
+
+        if (campoCount) campoCount.textContent = campoSessions.length;
+        if (mareCount) mareCount.textContent = mareSessions.length;
+    }
+
     showEmptyDashboard() {
         document.getElementById('stat-media').textContent = '-- m';
         document.getElementById('stat-record').textContent = '-- m';
@@ -3183,12 +3229,19 @@ class LongCastApp {
         document.getElementById('chartCanvas').style.display = 'none';
         document.getElementById('noDataMessage').style.display = 'block';
 
-        document.getElementById('recentCastsList').innerHTML = '<p class="no-data-text">Nessuna sessione registrata</p>';
+        const typeLabel = this.selectedDashboardType === 'mare' ? 'mare' : 'campo';
+        document.getElementById('recentCastsList').innerHTML = `<p class="no-data-text">Nessuna sessione ${typeLabel} registrata</p>`;
     }
 
     updateStats() {
-        // Collect all casts from all sessions
-        const allCasts = this.sessions.flatMap(s => s.lanci || []);
+        // Update tab counters first
+        this.updateDashboardTabCounts();
+
+        // Get sessions filtered by selected type (campo/mare)
+        const filteredSessions = this.getFilteredSessions();
+
+        // Collect all casts from filtered sessions
+        const allCasts = filteredSessions.flatMap(s => s.lanci || []);
 
         if (allCasts.length === 0) {
             this.showEmptyDashboard();
@@ -3197,18 +3250,18 @@ class LongCastApp {
 
         const distanze = allCasts.map(c => c.distanza);
 
-        // Media totale
+        // Media totale (per tipo selezionato)
         const media = distanze.reduce((a, b) => a + b, 0) / distanze.length;
         document.getElementById('stat-media').textContent = media.toFixed(1) + ' m';
 
-        // Record assoluto
+        // Record assoluto (per tipo selezionato)
         const record = Math.max(...distanze);
         document.getElementById('stat-record').textContent = record.toFixed(1) + ' m';
 
-        // Totale lanci
+        // Totale lanci (per tipo selezionato)
         document.getElementById('stat-totale').textContent = allCasts.length;
 
-        // Miglioramento tra sessioni
+        // Miglioramento tra sessioni (per tipo selezionato)
         const improvement = this.calculateSessionImprovement();
         const improvementText = improvement !== null ?
             (improvement > 0 ? '+' : '') + improvement.toFixed(1) + '%' :
@@ -3217,12 +3270,15 @@ class LongCastApp {
     }
 
     calculateSessionImprovement() {
-        if (this.sessions.length < 2) {
+        // Get sessions filtered by selected type
+        const filteredSessions = this.getFilteredSessions();
+
+        if (filteredSessions.length < 2) {
             return null;
         }
 
         // Sort sessions by date
-        const sortedSessions = [...this.sessions].sort((a, b) =>
+        const sortedSessions = [...filteredSessions].sort((a, b) =>
             new Date(a.dataInizio) - new Date(b.dataInizio)
         );
 
@@ -3249,8 +3305,9 @@ class LongCastApp {
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Sort sessions by date
-        const sortedSessions = [...this.sessions].sort((a, b) => new Date(a.dataInizio) - new Date(b.dataInizio));
+        // Get sessions filtered by selected type and sort by date
+        const filteredSessions = this.getFilteredSessions();
+        const sortedSessions = [...filteredSessions].sort((a, b) => new Date(a.dataInizio) - new Date(b.dataInizio));
 
         if (sortedSessions.length === 0) {
             canvas.style.display = 'none';
@@ -3358,14 +3415,17 @@ class LongCastApp {
     }
 
     updateRecentSessions() {
-        const recentSessions = [...this.sessions]
+        // Get sessions filtered by selected type
+        const filteredSessions = this.getFilteredSessions();
+        const recentSessions = [...filteredSessions]
             .sort((a, b) => new Date(b.dataInizio) - new Date(a.dataInizio))
             .slice(0, 3);
 
         const container = document.getElementById('recentCastsList');
 
         if (recentSessions.length === 0) {
-            container.innerHTML = '<p class="no-data-text">Nessuna sessione registrata</p>';
+            const typeLabel = this.selectedDashboardType === 'mare' ? 'mare' : 'campo';
+            container.innerHTML = `<p class="no-data-text">Nessuna sessione ${typeLabel} registrata</p>`;
             return;
         }
 
