@@ -4,7 +4,7 @@
 
 Longcasting Pro è un'applicazione web progressiva (PWA) completa per gli appassionati di Long Casting (lancio da pesca a lunga distanza). Permette di tracciare le distanze di lancio tramite GPS, monitorare i miglioramenti nel tempo e gestire i propri dati fisici e preferenze.
 
-## 🆕 Versione 1.6.0
+## 🆕 Versione 2.0.0 - Premium Features
 
 - **PWA Completa**: installabile su dispositivi mobili con supporto offline
 - **Multilingua**: supporto per Italiano, English, Español, Français
@@ -12,6 +12,12 @@ Longcasting Pro è un'applicazione web progressiva (PWA) completa per gli appass
 - **GPS Tracking**: tracciamento distanze con geolocalizzazione
 - **Performance ottimizzate**: lazy loading, caching intelligente
 - **Build System**: Vite per build ottimizzate
+
+### 🆕 Funzionalità Premium v2.0
+
+- **🤖 Coach Virtuale AI**: analisi intelligente delle performance, suggerimenti personalizzati, predizioni di miglioramento
+- **🏆 Sistema Achievement**: badge, livelli, streak, gamification completa
+- **📊 Report Avanzati**: statistiche dettagliate, export PDF/CSV, analisi trend
 
 ## ✨ Caratteristiche Principali
 
@@ -233,6 +239,13 @@ Tutti i dati vengono salvati **esclusivamente sul tuo dispositivo** tramite Loca
 Questo progetto è open source e disponibile per uso personale e educativo.
 
 ## 📝 Changelog
+
+### v2.0.0 - Premium Features
+- **Coach Virtuale AI**: analisi performance, suggerimenti personalizzati, predizioni
+- **Sistema Achievement**: 30+ badge, 10 livelli, streak, gamification
+- **Report Avanzati**: statistiche dettagliate, export PDF/CSV/JSON
+- Analisi trend e pattern
+- Messaggi motivazionali personalizzati
 
 ### v1.6.0
 - Architettura modulare JavaScript
