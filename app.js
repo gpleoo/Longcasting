@@ -1465,6 +1465,12 @@ class LongCastApp {
         // Ensure body overflow is reset on app load
         document.body.style.overflow = '';
 
+        // Initialize ReelCalculator for sea session distance calculation
+        if (typeof ReelCalculator !== 'undefined') {
+            this.reelCalculator = new ReelCalculator();
+            console.log('🎣 ReelCalculator initialized');
+        }
+
         // Check if localStorage is available
         this.checkStorageAvailability();
         this.loadData();
@@ -1949,7 +1955,7 @@ class LongCastApp {
         // Campo/Mare Logic
         document.getElementById('session-tipo').addEventListener('change', () => this.handleTipoSessioneChange());
         document.getElementById('session-mulinello').addEventListener('input', () => this.handleMulinelloChange());
-        document.getElementById('session-metri-per-giro').addEventListener('change', () => this.handleMetriPerGiroChange());
+        document.getElementById('session-cm-per-giro').addEventListener('change', () => this.handleCmPerGiroChange());
         document.getElementById('cast-distanza').addEventListener('input', () => this.calculateDistanzaMare());
 
         // GPS Tracking
@@ -1967,8 +1973,8 @@ class LongCastApp {
         });
         document.getElementById('gpsErrorContinue').addEventListener('click', () => {
             this.hideGPSErrorModal();
-            const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro} = this.sessionFormData;
-            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+            const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro} = this.sessionFormData;
+            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro);
         });
 
         // Map Controls
@@ -2200,43 +2206,26 @@ class LongCastApp {
     // Campo/Mare Management
     handleTipoSessioneChange() {
         const tipo = document.getElementById('session-tipo').value;
-        const metriPerGiroGroup = document.getElementById('metri-per-giro-group');
+        const cmPerGiroGroup = document.getElementById('cm-per-giro-group');
 
         if (tipo === 'mare') {
-            // Mostra campo metri-per-giro
-            metriPerGiroGroup.style.display = 'block';
+            // Mostra campo cm-per-giro per sessioni mare
+            cmPerGiroGroup.style.display = 'block';
         } else {
-            // Nascondi campo metri-per-giro
-            metriPerGiroGroup.style.display = 'none';
+            // Nascondi campo cm-per-giro per sessioni campo
+            cmPerGiroGroup.style.display = 'none';
         }
     }
 
     handleMulinelloChange() {
-        const mulinelloNome = document.getElementById('session-mulinello').value.trim();
-        const metriPerGiroInput = document.getElementById('session-metri-per-giro');
-        const tipo = document.getElementById('session-tipo').value;
-
-        // Auto-compila metri-per-giro se mulinello conosciuto e tipo=mare
-        if (tipo === 'mare' && mulinelloNome) {
-            const metriPerGiro = this.getMulinelloMetriPerGiro(mulinelloNome);
-            if (metriPerGiro !== null) {
-                metriPerGiroInput.value = metriPerGiro;
-                const source = this.mulinelliConfig[mulinelloNome] !== undefined ? 'custom' : 'predefinito';
-                console.log(`✅ Mulinello "${mulinelloNome}" riconosciuto (${source}): ${metriPerGiro} m/giro`);
-            }
-        }
+        // Il campo cm/giro è sempre inserito manualmente dall'utente
+        // basandosi sui dati del produttore del mulinello
     }
 
-    handleMetriPerGiroChange() {
-        const mulinelloNome = document.getElementById('session-mulinello').value.trim();
-        const metriPerGiro = parseFloat(document.getElementById('session-metri-per-giro').value);
-        const tipo = document.getElementById('session-tipo').value;
-
-        // Salva configurazione mulinello se valida
-        if (tipo === 'mare' && mulinelloNome && !isNaN(metriPerGiro) && metriPerGiro > 0) {
-            this.mulinelliConfig[mulinelloNome] = metriPerGiro;
-            this.saveMulinelliConfig();
-            console.log(`💾 Salvato mulinello "${mulinelloNome}": ${metriPerGiro} m/giro`);
+    handleCmPerGiroChange() {
+        // Ricalcola la distanza se siamo in una sessione mare attiva
+        if (this.currentSession && this.currentSession.tipo === 'mare') {
+            this.calculateDistanzaMare();
         }
     }
 
@@ -2245,9 +2234,22 @@ class LongCastApp {
         if (this.currentSession.tipo !== 'mare') return;
 
         const giri = parseFloat(document.getElementById('cast-distanza').value);
-        const metriPerGiro = this.currentSession.metriPerGiro;
+        const cmPerGiro = this.currentSession.cmPerGiro;
+        const metriPerGiro = cmPerGiro / 100; // Converti cm in metri
 
-        if (giri && metriPerGiro) {
+        if (giri && metriPerGiro && this.reelCalculator) {
+            // Usa ReelCalculator per calcolo con coefficienti
+            const pesoPiombo = this.currentSession.pesoPiombo;
+            const vento = this.currentSession.vento;
+
+            const result = this.reelCalculator.calculateDistance(giri, metriPerGiro, pesoPiombo, vento);
+
+            // Mostra distanza calcolata con dettagli
+            document.getElementById('cast-distanza-calc').style.display = 'block';
+            const calcValue = document.getElementById('cast-distanza-calc-value');
+            calcValue.innerHTML = `<strong>${result.distanzaEffettiva} m</strong> <small style="color: var(--text-muted);">(${result.distanzaSemplice} m senza correzioni, -${result.correzione.percentuale}%)</small>`;
+        } else if (giri && metriPerGiro) {
+            // Fallback senza ReelCalculator
             const distanzaCalcolata = giri * metriPerGiro;
             document.getElementById('cast-distanza-calc').style.display = 'block';
             document.getElementById('cast-distanza-calc-value').textContent = distanzaCalcolata.toFixed(1) + ' m';
@@ -2316,19 +2318,19 @@ class LongCastApp {
         const temperatura = formData.get('session-temperatura');
         const umidita = formData.get('session-umidita');
         const note = formData.get('session-note');
-        const metriPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-metri-per-giro')) : null;
+        const cmPerGiro = tipo === 'mare' ? parseFloat(formData.get('session-cm-per-giro')) : null;
 
         // Store form data for potential retry
         this.sessionFormData = {
             formData, tipo, pesoPiombo, tecnica, cannaModello, vento,
             direzioneVento, luogo, cannaGrammatura, mulinello, filo,
-            cannaLunghezza, temperatura, umidita, note, metriPerGiro
+            cannaLunghezza, temperatura, umidita, note, cmPerGiro
         };
 
         // Always acquire GPS position for field pivot point
         if (!navigator.geolocation) {
             this.showToast(this.t('gps.notSupported') + '. ' + this.t('gps.continueButton'), 'warning');
-            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro);
             return;
         }
 
@@ -2355,10 +2357,10 @@ class LongCastApp {
             isValid = false;
         }
 
-        // For sea type, check metri-per-giro
+        // For sea type, check cm-per-giro
         if (tipo === 'mare') {
-            const metriPerGiro = form.querySelector('[name="session-metri-per-giro"]').value;
-            if (!metriPerGiro) {
+            const cmPerGiro = form.querySelector('[name="session-cm-per-giro"]').value;
+            if (!cmPerGiro) {
                 isValid = false;
             }
         }
@@ -2377,7 +2379,7 @@ class LongCastApp {
         const attemptMessage = `${this.t('gps.acquiring')} (${this.t('gps.attempt')} ${this.gpsRetryCount}/${this.gpsMaxRetries})`;
         this.showToast(attemptMessage, 'info');
 
-        const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro} = this.sessionFormData;
+        const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro} = this.sessionFormData;
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -2393,7 +2395,7 @@ class LongCastApp {
                     cannaLunghezza: cannaLunghezza,
                     cannaGrammatura: cannaGrammatura,
                     mulinello: mulinello,
-                    metriPerGiro: metriPerGiro,
+                    cmPerGiro: cmPerGiro,
                     filo: filo,
                     vento: vento,
                     direzioneVento: direzioneVento,
@@ -2439,8 +2441,8 @@ class LongCastApp {
         } else {
             // Max retries reached - automatically continue without GPS
             this.showToast(this.t('gps.errorMessage') + '. ' + this.t('gps.continueButton'), 'warning');
-            const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro} = this.sessionFormData;
-            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro);
+            const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro} = this.sessionFormData;
+            this.startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro);
         }
     }
 
@@ -2458,7 +2460,7 @@ class LongCastApp {
         modal.style.display = 'none';
     }
 
-    startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, metriPerGiro) {
+    startSessionWithoutGPS(formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro) {
         // Create session without pivot point
         this.currentSession = {
             id: Date.now(),
@@ -2471,7 +2473,7 @@ class LongCastApp {
             cannaLunghezza: cannaLunghezza,
             cannaGrammatura: cannaGrammatura,
             mulinello: mulinello,
-            metriPerGiro: metriPerGiro,
+            cmPerGiro: cmPerGiro,
             filo: filo,
             vento: vento,
             direzioneVento: direzioneVento,
@@ -2615,34 +2617,46 @@ class LongCastApp {
         let distanzaInput = parseFloat(document.getElementById('cast-distanza').value);
         const note = document.getElementById('cast-note').value;
 
+        // Get weather data first (might have been updated during session)
+        const ventoCorrente = document.getElementById('cast-vento').value;
+        const direzioneVento = document.getElementById('cast-direzione-vento').value;
+        const temperatura = document.getElementById('cast-temperatura').value;
+        const umidita = document.getElementById('cast-umidita').value;
+
         // Calculate distance based on session type
         let distanzaFinale;
         let giri = null;
 
         if (this.currentSession.tipo === 'mare') {
-            // Mare: distanzaInput = giri, calcoliamo distanza
+            // Mare: distanzaInput = giri, calcoliamo distanza con ReelCalculator
             giri = distanzaInput;
-            distanzaFinale = giri * this.currentSession.metriPerGiro;
-            console.log(`🌊 Mare: ${giri} giri × ${this.currentSession.metriPerGiro} m/giro = ${distanzaFinale.toFixed(1)} m`);
+            const cmPerGiro = this.currentSession.cmPerGiro;
+            const metriPerGiro = cmPerGiro / 100; // Converti cm in metri
+            const pesoPiombo = this.currentSession.pesoPiombo;
+
+            if (this.reelCalculator) {
+                // Usa ReelCalculator con coefficienti elasticità e vento corrente
+                const result = this.reelCalculator.calculateDistance(giri, metriPerGiro, pesoPiombo, ventoCorrente);
+                distanzaFinale = result.distanzaEffettiva;
+                console.log(`🌊 Mare: ${giri} giri × ${cmPerGiro} cm/giro | Distanza effettiva: ${distanzaFinale} m (${result.distanzaSemplice} m senza correzioni, -${result.correzione.percentuale}%)`);
+            } else {
+                // Fallback senza ReelCalculator
+                distanzaFinale = giri * metriPerGiro;
+                console.log(`🌊 Mare: ${giri} giri × ${metriPerGiro} m/giro = ${distanzaFinale.toFixed(1)} m`);
+            }
         } else {
-            // Campo: distanzaInput = metri
+            // Campo: distanzaInput = metri (misurazione diretta)
             distanzaFinale = distanzaInput;
         }
 
-        // Get weather data (might have been updated)
-        const vento = document.getElementById('cast-vento').value;
-        const direzioneVento = document.getElementById('cast-direzione-vento').value;
-        const temperatura = document.getElementById('cast-temperatura').value;
-        const umidita = document.getElementById('cast-umidita').value;
-
         // Update session weather if changed
-        this.currentSession.vento = vento;
+        this.currentSession.vento = ventoCorrente;
         this.currentSession.direzioneVento = direzioneVento;
         this.currentSession.temperatura = temperatura;
         this.currentSession.umidita = umidita;
 
         // Save weather suggestions
-        this.addSuggestion('vento', vento);
+        this.addSuggestion('vento', ventoCorrente);
         this.addSuggestion('direzioneVento', direzioneVento);
         this.addSuggestion('temperatura', temperatura);
         this.addSuggestion('umidita', umidita);
@@ -4276,13 +4290,15 @@ class LongCastApp {
         let giri = null;
 
         if (this.currentSession.tipo === 'mare') {
-            // Mare: calcola giri dal GPS
-            const metriPerGiro = this.currentSession.metriPerGiro;
+            // Mare: calcola giri stimati dalla distanza GPS reale
+            const cmPerGiro = this.currentSession.cmPerGiro;
+            const metriPerGiro = cmPerGiro / 100; // Converti cm in metri
             if (metriPerGiro && metriPerGiro > 0) {
-                giri = distance / metriPerGiro;
-                distanzaFinale = distance;
+                // La distanza GPS è reale, calcoliamo i giri equivalenti
+                giri = Math.round(distance / metriPerGiro);
+                distanzaFinale = distance; // Distanza reale misurata con GPS
             } else {
-                this.showToast('Errore: metri per giro non configurati', 'error');
+                this.showToast('Errore: cm per giro non configurati', 'error');
                 return;
             }
         } else {
