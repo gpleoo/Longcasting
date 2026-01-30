@@ -1461,6 +1461,15 @@ class LongCastApp {
         // Tipo dashboard selezionato (campo o mare)
         this.selectedDashboardType = 'campo';
 
+        // Tipo Coach AI selezionato (campo o mare)
+        this.selectedCoachType = 'campo';
+
+        // Tipo Reports selezionato (campo o mare)
+        this.selectedReportsType = 'campo';
+
+        // Tipo Achievements selezionato (campo o mare)
+        this.selectedAchievementsType = 'campo';
+
         this.init();
     }
 
@@ -1888,11 +1897,41 @@ class LongCastApp {
         });
 
         // Dashboard Type Tabs (Campo/Mare)
-        document.querySelectorAll('.dashboard-tab').forEach(tab => {
+        document.querySelectorAll('#dashboard .dashboard-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 const type = e.currentTarget.dataset.type;
                 if (type) {
                     this.switchDashboardType(type);
+                }
+            });
+        });
+
+        // Coach AI Type Tabs (Campo/Mare)
+        document.querySelectorAll('#coach-tabs .dashboard-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const type = e.currentTarget.dataset.type;
+                if (type) {
+                    this.switchCoachType(type);
+                }
+            });
+        });
+
+        // Reports Type Tabs (Campo/Mare)
+        document.querySelectorAll('#reports-tabs .dashboard-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const type = e.currentTarget.dataset.type;
+                if (type) {
+                    this.switchReportsType(type);
+                }
+            });
+        });
+
+        // Achievements Type Tabs (Campo/Mare)
+        document.querySelectorAll('#achievements-tabs .dashboard-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const type = e.currentTarget.dataset.type;
+                if (type) {
+                    this.switchAchievementsType(type);
                 }
             });
         });
@@ -2055,13 +2094,35 @@ class LongCastApp {
     // PREMIUM FEATURES
     // ==========================================
 
+    // Switch between Campo and Mare for Coach AI
+    switchCoachType(type) {
+        this.selectedCoachType = type;
+
+        // Update tab UI
+        document.querySelectorAll('#coach-tabs .dashboard-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.type === type) {
+                tab.classList.add('active');
+            }
+        });
+
+        // Refresh Coach AI with new type filter
+        this.updateCoachAI();
+    }
+
+    // Get sessions filtered by Coach type
+    getCoachFilteredSessions() {
+        return this.sessions.filter(s => s.tipo === this.selectedCoachType);
+    }
+
     updateCoachAI() {
         if (typeof AICoach === 'undefined') {
             console.warn('AICoach module not loaded');
             return;
         }
         const coach = new AICoach();
-        const sessions = this.sessions || [];
+        // Filter sessions by selected Coach type (campo/mare)
+        const sessions = this.getCoachFilteredSessions();
         const analysis = coach.analyzePerformance(sessions);
 
         const dailyTip = coach.getDailyTip(sessions);
@@ -2108,13 +2169,36 @@ class LongCastApp {
         }
     }
 
+    // Switch between Campo and Mare for Achievements
+    switchAchievementsType(type) {
+        this.selectedAchievementsType = type;
+
+        // Update tab UI
+        document.querySelectorAll('#achievements-tabs .dashboard-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.type === type) {
+                tab.classList.add('active');
+            }
+        });
+
+        // Refresh Achievements with new type filter
+        this.updateAchievements();
+    }
+
+    // Get sessions filtered by Achievements type
+    getAchievementsFilteredSessions() {
+        return this.sessions.filter(s => s.tipo === this.selectedAchievementsType);
+    }
+
     updateAchievements() {
         if (typeof AchievementManager === 'undefined') {
             console.warn('AchievementManager module not loaded');
             return;
         }
         const achievements = new AchievementManager();
-        achievements.updateFromSessions(this.sessions || []);
+        // Filter sessions by selected Achievements type (campo/mare)
+        const filteredSessions = this.getAchievementsFilteredSessions();
+        achievements.updateFromSessions(filteredSessions);
 
         const level = achievements.getCurrentLevel();
         document.getElementById('levelIcon').textContent = level.icon;
@@ -2170,13 +2254,35 @@ class LongCastApp {
         `).join('');
     }
 
+    // Switch between Campo and Mare for Reports
+    switchReportsType(type) {
+        this.selectedReportsType = type;
+
+        // Update tab UI
+        document.querySelectorAll('#reports-tabs .dashboard-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.type === type) {
+                tab.classList.add('active');
+            }
+        });
+
+        // Refresh Reports with new type filter
+        this.updateReports();
+    }
+
+    // Get sessions filtered by Reports type
+    getReportsFilteredSessions() {
+        return this.sessions.filter(s => s.tipo === this.selectedReportsType);
+    }
+
     updateReports() {
         if (typeof ReportGenerator === 'undefined') {
             console.warn('ReportGenerator module not loaded');
             return;
         }
         const reportGen = new ReportGenerator();
-        const sessions = this.sessions || [];
+        // Filter sessions by selected Reports type (campo/mare)
+        const sessions = this.getReportsFilteredSessions();
         if (sessions.length === 0) return;
 
         const report = reportGen.generateFullReport(sessions, this.profile, null);
