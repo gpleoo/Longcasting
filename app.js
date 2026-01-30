@@ -3576,8 +3576,19 @@ class LongCastApp {
         });
 
         const numLanci = session.lanci ? session.lanci.length : 0;
-        const mediaDistanza = session.distanzaMedia ? session.distanzaMedia.toFixed(1) : '--';
-        const maxDistanza = session.distanzaMassima ? session.distanzaMassima.toFixed(1) : '--';
+
+        // Calculate media and massima from lanci if not stored
+        let mediaDistanza = '--';
+        let maxDistanza = '--';
+        if (session.lanci && session.lanci.length > 0) {
+            const distanze = session.lanci.map(l => l.distanza).filter(d => d > 0);
+            if (distanze.length > 0) {
+                const media = session.distanzaMedia || (distanze.reduce((a, b) => a + b, 0) / distanze.length);
+                const massima = session.distanzaMassima || Math.max(...distanze);
+                mediaDistanza = media.toFixed(1);
+                maxDistanza = massima.toFixed(1);
+            }
+        }
 
         // Check if session has GPS casts
         const hasGPSCasts = session.lanci && session.lanci.some(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
