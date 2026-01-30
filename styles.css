@@ -191,10 +191,6 @@ body {
     box-shadow: 0 2px 8px rgba(0, 217, 255, 0.3);
 }
 
-.dashboard-tab .tab-icon {
-    font-size: 1.1rem;
-}
-
 .dashboard-tab .tab-count {
     background: rgba(255, 255, 255, 0.2);
     padding: 0.15rem 0.5rem;
@@ -206,6 +202,26 @@ body {
 
 .dashboard-tab.active .tab-count {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* Dashboard Tabs Mobile */
+@media (max-width: 480px) {
+    .dashboard-tabs {
+        gap: 0.25rem;
+        padding: 0.2rem;
+    }
+
+    .dashboard-tab {
+        padding: 0.6rem 0.5rem;
+        font-size: 0.85rem;
+        gap: 0.3rem;
+    }
+
+    .dashboard-tab .tab-count {
+        padding: 0.1rem 0.4rem;
+        font-size: 0.7rem;
+        min-width: 1.2rem;
+    }
 }
 
 /* Stats Grid */
