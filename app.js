@@ -2111,8 +2111,14 @@ class LongCastApp {
     }
 
     // Get sessions filtered by Coach type
+    // Sessions without 'tipo' field are treated as 'campo' (backwards compatibility)
     getCoachFilteredSessions() {
-        return this.sessions.filter(s => s.tipo === this.selectedCoachType);
+        return this.sessions.filter(s => {
+            if (this.selectedCoachType === 'campo') {
+                return s.tipo === 'campo' || !s.tipo;
+            }
+            return s.tipo === 'mare';
+        });
     }
 
     updateCoachAI() {
@@ -2186,8 +2192,14 @@ class LongCastApp {
     }
 
     // Get sessions filtered by Achievements type
+    // Sessions without 'tipo' field are treated as 'campo' (backwards compatibility)
     getAchievementsFilteredSessions() {
-        return this.sessions.filter(s => s.tipo === this.selectedAchievementsType);
+        return this.sessions.filter(s => {
+            if (this.selectedAchievementsType === 'campo') {
+                return s.tipo === 'campo' || !s.tipo;
+            }
+            return s.tipo === 'mare';
+        });
     }
 
     updateAchievements() {
@@ -2271,8 +2283,14 @@ class LongCastApp {
     }
 
     // Get sessions filtered by Reports type
+    // Sessions without 'tipo' field are treated as 'campo' (backwards compatibility)
     getReportsFilteredSessions() {
-        return this.sessions.filter(s => s.tipo === this.selectedReportsType);
+        return this.sessions.filter(s => {
+            if (this.selectedReportsType === 'campo') {
+                return s.tipo === 'campo' || !s.tipo;
+            }
+            return s.tipo === 'mare';
+        });
     }
 
     updateReports() {
@@ -3310,13 +3328,20 @@ class LongCastApp {
     }
 
     // Get sessions filtered by current dashboard type
+    // Sessions without 'tipo' field are treated as 'campo' (backwards compatibility)
     getFilteredSessions() {
-        return this.sessions.filter(s => s.tipo === this.selectedDashboardType);
+        return this.sessions.filter(s => {
+            if (this.selectedDashboardType === 'campo') {
+                return s.tipo === 'campo' || !s.tipo;
+            }
+            return s.tipo === 'mare';
+        });
     }
 
     // Update tab counters
+    // Sessions without 'tipo' field are counted as 'campo' (backwards compatibility)
     updateDashboardTabCounts() {
-        const campoSessions = this.sessions.filter(s => s.tipo === 'campo');
+        const campoSessions = this.sessions.filter(s => s.tipo === 'campo' || !s.tipo);
         const mareSessions = this.sessions.filter(s => s.tipo === 'mare');
 
         const campoCount = document.getElementById('tab-campo-count');
