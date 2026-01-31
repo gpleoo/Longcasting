@@ -262,6 +262,12 @@
                                     <input type="text" id="session-mulinello" name="session-mulinello" list="mulinello-list" data-i18n-placeholder="session.reelPlaceholder" placeholder="es. Shimano 8000">
                                     <datalist id="mulinello-list"></datalist>
                                 </div>
+
+                                <div class="form-group" id="cm-per-giro-group" style="display: none;">
+                                    <label for="session-cm-per-giro" data-i18n="session.cmPerTurn">cm giro *</label>
+                                    <input type="number" id="session-cm-per-giro" name="session-cm-per-giro" step="1" min="50" max="150" required data-i18n-placeholder="session.cmPerTurnPlaceholder" placeholder="es. 75, 82, 91">
+                                    <small style="color: var(--text-muted); font-size: 0.75rem;" data-i18n="session.cmPerTurnHint">Dato fornito dal produttore del mulinello</small>
+                                </div>
                             </div>
 
                             <div class="form-row">
@@ -269,12 +275,6 @@
                                     <label for="session-filo" data-i18n="session.line">Filo/Shock Leader</label>
                                     <input type="text" id="session-filo" name="session-filo" list="filo-list" data-i18n-placeholder="session.linePlaceholder" placeholder="es. 0.28mm + SL 0.60mm">
                                     <datalist id="filo-list"></datalist>
-                                </div>
-
-                                <div class="form-group" id="cm-per-giro-group" style="display: none;">
-                                    <label for="session-cm-per-giro" data-i18n="session.cmPerTurn">Centimetri per Giro Mulinello *</label>
-                                    <input type="number" id="session-cm-per-giro" name="session-cm-per-giro" step="1" min="50" max="150" required data-i18n-placeholder="session.cmPerTurnPlaceholder" placeholder="es. 75, 82, 91">
-                                    <small style="color: var(--text-muted); font-size: 0.75rem;" data-i18n="session.cmPerTurnHint">Dato fornito dal produttore del mulinello</small>
                                 </div>
                             </div>
                         </div>
