@@ -4359,6 +4359,9 @@ class LongCastApp {
     }
 
     showToast(message, type = 'success') {
+        // Skip success toasts - only show errors and warnings
+        if (type === 'success') return;
+
         const toast = document.getElementById('toast');
         toast.textContent = message;
         toast.className = `toast ${type}`;
