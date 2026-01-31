@@ -2565,31 +2565,55 @@ class LongCastApp {
 
     validateSessionForm() {
         const form = document.getElementById('startSessionForm');
-        const requiredFields = form.querySelectorAll('[required], input[data-required="true"], select[data-required="true"]');
         let isValid = true;
         let firstInvalidField = null;
 
         // Get actual required fields from form
-        const tipo = form.querySelector('[name="session-tipo"]').value;
-        const luogo = form.querySelector('[name="session-luogo"]').value;
-        const pesoPiombo = form.querySelector('[name="session-peso-piombo"]').value;
-        const tecnica = form.querySelector('[name="session-tecnica"]').value;
+        const tipoField = form.querySelector('[name="session-tipo"]');
+        const luogoField = form.querySelector('[name="session-luogo"]');
+        const pesoPiomboField = form.querySelector('[name="session-peso-piombo"]');
+        const tecnicaField = form.querySelector('[name="session-tecnica"]');
 
-        // Check required fields
-        if (!tipo || !luogo || !pesoPiombo || !tecnica) {
+        const tipo = tipoField.value;
+        const luogo = luogoField.value;
+        const pesoPiombo = pesoPiomboField.value;
+        const tecnica = tecnicaField.value;
+
+        // Check required fields and track first invalid
+        if (!tipo) {
             isValid = false;
+            if (!firstInvalidField) firstInvalidField = tipoField;
+        }
+        if (!luogo) {
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = luogoField;
+        }
+        if (!pesoPiombo) {
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = pesoPiomboField;
+        }
+        if (!tecnica) {
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = tecnicaField;
         }
 
         // For sea type, check cm-per-giro
         if (tipo === 'mare') {
-            const cmPerGiro = form.querySelector('[name="session-cm-per-giro"]').value;
+            const cmPerGiroField = form.querySelector('[name="session-cm-per-giro"]');
+            const cmPerGiro = cmPerGiroField.value;
             if (!cmPerGiro) {
                 isValid = false;
+                if (!firstInvalidField) firstInvalidField = cmPerGiroField;
             }
         }
 
         if (!isValid) {
             this.showToast(this.t('validation.fillRequired'), 'error');
+            // Scroll to and focus the first invalid field
+            if (firstInvalidField) {
+                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => firstInvalidField.focus(), 300);
+            }
             return false;
         }
 
@@ -4359,6 +4383,9 @@ class LongCastApp {
     }
 
     showToast(message, type = 'success') {
+        // Skip success toasts - only show errors and warnings
+        if (type === 'success') return;
+
         const toast = document.getElementById('toast');
         toast.textContent = message;
         toast.className = `toast ${type}`;
