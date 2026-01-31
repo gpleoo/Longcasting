@@ -1504,7 +1504,7 @@ body {
     .toast {
         left: 1rem;
         right: 1rem;
-        bottom: 1rem;
+        bottom: 6rem; /* Moved higher to avoid overlapping with end-session button */
     }
 }
 
