@@ -429,6 +429,9 @@ class LongCastApp {
                 'nav.partners': '🤝 Partner',
                 'nav.settings': '⚙️ Impostazioni',
                 'nav.profile': 'Profilo',
+                'nav.coach': '🤖 Coach AI',
+                'nav.achievements': '🏆 Achievement',
+                'nav.reports': '📊 Report',
 
                 // Dashboard
                 'dashboard.title': 'Dashboard',
@@ -684,6 +687,9 @@ class LongCastApp {
                 'nav.partners': '🤝 Partners',
                 'nav.settings': '⚙️ Settings',
                 'nav.profile': 'Profile',
+                'nav.coach': '🤖 AI Coach',
+                'nav.achievements': '🏆 Achievements',
+                'nav.reports': '📊 Reports',
 
                 // Dashboard
                 'dashboard.title': 'Dashboard',
@@ -939,6 +945,9 @@ class LongCastApp {
                 'nav.partners': '🤝 Socios',
                 'nav.settings': '⚙️ Configuración',
                 'nav.profile': 'Perfil',
+                'nav.coach': '🤖 Coach IA',
+                'nav.achievements': '🏆 Logros',
+                'nav.reports': '📊 Informes',
 
                 // Dashboard
                 'dashboard.title': 'Panel',
@@ -1194,6 +1203,9 @@ class LongCastApp {
                 'nav.partners': '🤝 Partenaires',
                 'nav.settings': '⚙️ Paramètres',
                 'nav.profile': 'Profil',
+                'nav.coach': '🤖 Coach IA',
+                'nav.achievements': '🏆 Succès',
+                'nav.reports': '📊 Rapports',
 
                 // Dashboard
                 'dashboard.title': 'Tableau de Bord',
