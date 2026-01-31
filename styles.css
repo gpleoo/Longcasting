@@ -1380,14 +1380,18 @@ body {
     padding: 1rem 1.5rem;
     box-shadow: var(--shadow-lg);
     transform: translateY(200%);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
     z-index: 2000;
     max-width: 400px;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .toast.show {
     transform: translateY(0);
     pointer-events: none;
+    opacity: 1;
+    visibility: visible;
 }
 
 .toast.success {
