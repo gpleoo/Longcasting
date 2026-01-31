@@ -367,13 +367,20 @@ class AchievementManager {
 
     /**
      * Aggiorna statistiche da sessioni
-     * @param {Array} sessions - Tutte le sessioni
+     * @param {Array} sessions - Tutte le sessioni (o sessioni filtrate per tipo)
      */
     updateFromSessions(sessions) {
-        if (!sessions || sessions.length === 0) return;
+        if (!sessions || sessions.length === 0) {
+            // Reset stats and badges when no sessions
+            this.stats = this.getDefaultStats();
+            this.unlockedBadges = {};
+            return;
+        }
 
-        const oldMaxDistance = this.stats.maxDistance;
-        const oldTotalCasts = this.stats.totalCasts;
+        // Reset badges and stats to recalculate from scratch based on provided sessions
+        // This ensures Campo/Mare separation works correctly
+        this.unlockedBadges = {};
+        this.stats = this.getDefaultStats();
 
         // Calcola statistiche
         let totalCasts = 0;
@@ -405,11 +412,6 @@ class AchievementManager {
 
         // Calcola streak
         this.stats.currentStreak = this.calculateStreak(Array.from(dates).sort());
-
-        // Verifica nuovo record
-        if (maxDistance > oldMaxDistance && oldMaxDistance > 0) {
-            this.stats.recordsCount++;
-        }
 
         // Calcola XP
         this.calculateXP(sessions);
