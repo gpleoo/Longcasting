@@ -475,6 +475,9 @@ class LongCastApp {
                 'session.rodCastingWeightPlaceholder': 'es. 100-200',
                 'session.reel': 'Mulinello',
                 'session.reelPlaceholder': 'es. Shimano 8000',
+                'session.cmPerTurn': 'cm giro *',
+                'session.cmPerTurnPlaceholder': 'es. 75, 82, 91',
+                'session.cmPerTurnHint': 'Dato fornito dal produttore del mulinello',
                 'session.line': 'Filo/Shock Leader',
                 'session.linePlaceholder': 'es. 0.28mm + SL 0.60mm',
                 'session.metersPerTurn': 'Metri per Giro Mulinello',
@@ -733,6 +736,9 @@ class LongCastApp {
                 'session.rodCastingWeightPlaceholder': 'e.g. 100-200',
                 'session.reel': 'Reel',
                 'session.reelPlaceholder': 'e.g. Shimano 8000',
+                'session.cmPerTurn': 'cm per turn *',
+                'session.cmPerTurnPlaceholder': 'e.g. 75, 82, 91',
+                'session.cmPerTurnHint': 'Data provided by the reel manufacturer',
                 'session.line': 'Line/Shock Leader',
                 'session.linePlaceholder': 'e.g. 0.28mm + SL 0.60mm',
                 'session.metersPerTurn': 'Meters per Reel Turn',
@@ -991,6 +997,9 @@ class LongCastApp {
                 'session.rodCastingWeightPlaceholder': 'ej. 100-200',
                 'session.reel': 'Carrete',
                 'session.reelPlaceholder': 'ej. Shimano 8000',
+                'session.cmPerTurn': 'cm por giro *',
+                'session.cmPerTurnPlaceholder': 'ej. 75, 82, 91',
+                'session.cmPerTurnHint': 'Dato proporcionado por el fabricante del carrete',
                 'session.line': 'Línea/Shock Leader',
                 'session.linePlaceholder': 'ej. 0.28mm + SL 0.60mm',
                 'session.metersPerTurn': 'Metros por Vuelta de Carrete',
@@ -1249,6 +1258,9 @@ class LongCastApp {
                 'session.rodCastingWeightPlaceholder': 'ex. 100-200',
                 'session.reel': 'Moulinet',
                 'session.reelPlaceholder': 'ex. Shimano 8000',
+                'session.cmPerTurn': 'cm par tour *',
+                'session.cmPerTurnPlaceholder': 'ex. 75, 82, 91',
+                'session.cmPerTurnHint': 'Donnée fournie par le fabricant du moulinet',
                 'session.line': 'Ligne/Shock Leader',
                 'session.linePlaceholder': 'ex. 0.28mm + SL 0.60mm',
                 'session.metersPerTurn': 'Mètres par Tour de Moulinet',
@@ -4354,7 +4366,7 @@ class LongCastApp {
 
         setTimeout(() => {
             toast.classList.remove('show');
-        }, 3000);
+        }, 2000);
     }
 
     // ============================================
