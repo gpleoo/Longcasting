@@ -429,6 +429,9 @@ class LongCastApp {
                 'nav.partners': '🤝 Partner',
                 'nav.settings': '⚙️ Impostazioni',
                 'nav.profile': 'Profilo',
+                'coach': '🤖 Coach AI',
+                'achievements': '🏆 Achievement',
+                'reports': '📊 Report',
 
                 // Dashboard
                 'dashboard.title': 'Dashboard',
@@ -684,6 +687,9 @@ class LongCastApp {
                 'nav.partners': '🤝 Partners',
                 'nav.settings': '⚙️ Settings',
                 'nav.profile': 'Profile',
+                'coach': '🤖 AI Coach',
+                'achievements': '🏆 Achievements',
+                'reports': '📊 Reports',
 
                 // Dashboard
                 'dashboard.title': 'Dashboard',
@@ -939,6 +945,9 @@ class LongCastApp {
                 'nav.partners': '🤝 Socios',
                 'nav.settings': '⚙️ Configuración',
                 'nav.profile': 'Perfil',
+                'coach': '🤖 Coach IA',
+                'achievements': '🏆 Logros',
+                'reports': '📊 Informes',
 
                 // Dashboard
                 'dashboard.title': 'Panel',
@@ -1194,6 +1203,9 @@ class LongCastApp {
                 'nav.partners': '🤝 Partenaires',
                 'nav.settings': '⚙️ Paramètres',
                 'nav.profile': 'Profil',
+                'coach': '🤖 Coach IA',
+                'achievements': '🏆 Succès',
+                'reports': '📊 Rapports',
 
                 // Dashboard
                 'dashboard.title': 'Tableau de Bord',
@@ -2129,6 +2141,42 @@ class LongCastApp {
         const coach = new AICoach();
         // Filter sessions by selected Coach type (campo/mare)
         const sessions = this.getCoachFilteredSessions();
+
+        // Handle case with no sessions for selected type
+        if (sessions.length === 0) {
+            const dailyTipEl = document.getElementById('dailyTip');
+            if (dailyTipEl) dailyTipEl.textContent = 'Inizia ad allenarti per ricevere consigli personalizzati!';
+
+            const motivationalEl = document.getElementById('motivationalMessage');
+            if (motivationalEl) motivationalEl.textContent = 'Ogni campione ha iniziato con il primo lancio. Inizia oggi! 💪';
+
+            const overviewEl = document.getElementById('coachOverview');
+            if (overviewEl) {
+                overviewEl.innerHTML = `
+                    <div class="stats-row"><span class="label">Lanci Totali</span><span class="value">0</span></div>
+                    <div class="stats-row"><span class="label">Distanza Media</span><span class="value">--</span></div>
+                    <div class="stats-row"><span class="label">Record</span><span class="value">--</span></div>
+                    <div class="stats-row"><span class="label">Consistenza</span><span class="value">--</span></div>
+                `;
+            }
+
+            const bestTechEl = document.getElementById('bestTechnique');
+            const bestWeightEl = document.getElementById('bestWeight');
+            const bestTimeEl = document.getElementById('bestTime');
+            const bestWindEl = document.getElementById('bestWind');
+            if (bestTechEl) bestTechEl.textContent = '--';
+            if (bestWeightEl) bestWeightEl.textContent = '--';
+            if (bestTimeEl) bestTimeEl.textContent = '--';
+            if (bestWindEl) bestWindEl.textContent = '--';
+
+            const predictedEl = document.getElementById('predictedRecord');
+            if (predictedEl) predictedEl.textContent = '--';
+
+            const recListEl = document.getElementById('recommendationsList');
+            if (recListEl) recListEl.innerHTML = '<div class="recommendation-item"><div class="recommendation-content"><p>Nessun dato disponibile per questo tipo di sessione</p></div></div>';
+            return;
+        }
+
         const analysis = coach.analyzePerformance(sessions);
 
         const dailyTip = coach.getDailyTip(sessions);
@@ -2223,6 +2271,8 @@ class LongCastApp {
         document.getElementById('streakNumber').textContent = achievements.stats.currentStreak;
         if (achievements.stats.currentStreak > 0) {
             document.getElementById('streakDisplay').classList.add('active');
+        } else {
+            document.getElementById('streakDisplay').classList.remove('active');
         }
 
         const badgeStats = achievements.getBadgeStats();
@@ -2301,7 +2351,25 @@ class LongCastApp {
         const reportGen = new ReportGenerator();
         // Filter sessions by selected Reports type (campo/mare)
         const sessions = this.getReportsFilteredSessions();
-        if (sessions.length === 0) return;
+
+        // Handle case with no sessions for selected type
+        if (sessions.length === 0) {
+            document.getElementById('reportSessions').textContent = '0';
+            document.getElementById('reportCasts').textContent = '0';
+            document.getElementById('reportAvgDistance').textContent = '-- m';
+            document.getElementById('reportMaxDistance').textContent = '-- m';
+            document.getElementById('reportMedian').textContent = '-- m';
+            document.getElementById('reportP90').textContent = '-- m';
+            document.getElementById('reportP75').textContent = '-- m';
+            document.getElementById('reportP50').textContent = '-- m';
+            document.getElementById('reportTrend').textContent = '--';
+            document.getElementById('reportConsistency').textContent = '--';
+            document.getElementById('reportStdDev').textContent = '-- m';
+            const techContainer = document.getElementById('reportByTechnique');
+            if (techContainer) techContainer.innerHTML = '<div class="stats-row"><span class="label">Nessun dato</span></div>';
+            this.currentReport = null;
+            return;
+        }
 
         const report = reportGen.generateFullReport(sessions, this.profile, null);
 
@@ -2323,6 +2391,10 @@ class LongCastApp {
             document.getElementById('reportTrend').textContent = trendIcon + ' ' + trendDir;
             document.getElementById('reportConsistency').textContent = report.trends.volatility.rating;
             document.getElementById('reportStdDev').textContent = report.trends.volatility.standardDeviation + ' m';
+        } else {
+            document.getElementById('reportTrend').textContent = '--';
+            document.getElementById('reportConsistency').textContent = '--';
+            document.getElementById('reportStdDev').textContent = '-- m';
         }
 
         const techContainer = document.getElementById('reportByTechnique');
@@ -2335,6 +2407,8 @@ class LongCastApp {
                         <span class="value">${stats.average}m (${stats.count} lanci)</span>
                     </div>
                 `).join('');
+            } else {
+                techContainer.innerHTML = '<div class="stats-row"><span class="label">Nessun dato</span></div>';
             }
         }
         this.currentReport = report;
