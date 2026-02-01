@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badge Editor - Longcasting Pro</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .instructions {
+            background: #2a2a4e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #00d4ff;
+        }
+        .instructions ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .category {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .category h2 {
+            color: #00d4ff;
+            margin: 0;
+            font-size: 18px;
+        }
+        .badge-new {
+            background: #00d4ff;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .badge-existing {
+            background: #4CAF50;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        th {
+            background: #0f3460;
+            padding: 10px;
+            text-align: left;
+            font-size: 13px;
+        }
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #2a2a4e;
+            font-size: 14px;
+        }
+        td[contenteditable="true"] {
+            background: #1a1a3e;
+            cursor: text;
+        }
+        td[contenteditable="true"]:focus {
+            outline: 2px solid #00d4ff;
+            background: #2a2a5e;
+        }
+        .emoji-cell {
+            font-size: 24px;
+            text-align: center;
+            width: 50px;
+        }
+        .status-cell {
+            width: 100px;
+        }
+        .actions-cell {
+            width: 80px;
+            text-align: center;
+        }
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+        .btn-add {
+            background: #27ae60;
+            color: white;
+            margin-top: 5px;
+        }
+        .btn-add:hover {
+            background: #219a52;
+        }
+        .btn-export {
+            background: #00d4ff;
+            color: #000;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+        }
+        .btn-export:hover {
+            background: #00b8e6;
+        }
+        select {
+            background: #1a1a3e;
+            color: #eee;
+            border: 1px solid #444;
+            padding: 5px;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .rarity-common { color: #aaa; }
+        .rarity-uncommon { color: #1eff00; }
+        .rarity-rare { color: #0070dd; }
+        .rarity-epic { color: #a335ee; }
+        .rarity-legendary { color: #ff8000; }
+        .rarity-mythic { color: #e6cc80; }
+        .summary {
+            background: #2a2a4e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .summary h3 {
+            color: #00d4ff;
+            margin-top: 0;
+        }
+        #summaryContent {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .summary-item {
+            background: #16213e;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .emoji-picker {
+            position: relative;
+            display: inline-block;
+        }
+        .common-emojis {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏆 Badge Editor - Longcasting Pro</h1>
+    <p class="subtitle">Clicca su qualsiasi cella per modificarla</p>
+
+    <div class="instructions">
+        <h3>📋 Istruzioni</h3>
+        <ul>
+            <li><strong>Modifica:</strong> Clicca su qualsiasi cella per editarla direttamente</li>
+            <li><strong>Elimina:</strong> Usa il pulsante 🗑️ per rimuovere un badge</li>
+            <li><strong>Aggiungi:</strong> Usa "+ Aggiungi Badge" sotto ogni categoria</li>
+            <li><strong>Esporta:</strong> Quando hai finito, clicca "Esporta JSON" in fondo</li>
+            <li><strong>Emoji:</strong> Copia/incolla emoji o usa: Win+. (Windows) / Cmd+Ctrl+Spazio (Mac)</li>
+        </ul>
+    </div>
+
+    <div id="categories"></div>
+
+    <div class="summary">
+        <h3>📊 Riepilogo</h3>
+        <div id="summaryContent"></div>
+    </div>
+
+    <button class="btn btn-export" onclick="exportJSON()">📥 Esporta JSON (per implementazione)</button>
+
+    <script>
+        const badgeData = {
+            "distanza": {
+                name: "Distanza",
+                badges: [
+                    { icon: "🎣", name: "Primo Lancio", description: "Registra il primo lancio", requirement: "total_casts:1", rarity: "common", status: "existing" },
+                    { icon: "💯", name: "Centenario", description: "Supera i 100m", requirement: "max_distance:100", rarity: "common", status: "existing" },
+                    { icon: "🔥", name: "Oltre il Limite", description: "Supera i 120m", requirement: "max_distance:120", rarity: "uncommon", status: "existing" },
+                    { icon: "💪", name: "Cannone", description: "Supera i 140m", requirement: "max_distance:140", rarity: "rare", status: "existing" },
+                    { icon: "🎯", name: "Cecchino", description: "Supera i 160m", requirement: "max_distance:160", rarity: "epic", status: "existing" },
+                    { icon: "⭐", name: "Elite", description: "Supera i 180m", requirement: "max_distance:180", rarity: "legendary", status: "existing" },
+                    { icon: "👑", name: "Leggenda", description: "Supera i 200m", requirement: "max_distance:200", rarity: "mythic", status: "existing" },
+                    { icon: "🌙", name: "Lunare", description: "Supera i 220m", requirement: "max_distance:220", rarity: "mythic", status: "new" },
+                    { icon: "☄️", name: "Meteora", description: "Supera i 250m", requirement: "max_distance:250", rarity: "mythic", status: "new" },
+                    { icon: "🎰", name: "Jackpot", description: "Lancio esattamente a 150.0m o 200.0m", requirement: "exact_distance:150,200", rarity: "rare", status: "new" },
+                    { icon: "🏹", name: "Arciere", description: "10 lanci sopra 130m in una sessione", requirement: "session_above:130,10", rarity: "epic", status: "new" }
+                ]
+            },
+            "mare": {
+                name: "Mare (giri mulinello)",
+                badges: [
+                    { icon: "🌊", name: "Lupo di Mare", description: "Prima sessione in mare", requirement: "sea_sessions:1", rarity: "common", status: "new" },
+                    { icon: "🐙", name: "Polpo", description: "100 lanci totali in mare", requirement: "sea_casts:100", rarity: "uncommon", status: "new" },
+                    { icon: "🦈", name: "Squalo", description: "Supera i 300 giri in un lancio", requirement: "max_giri:300", rarity: "rare", status: "new" },
+                    { icon: "🐋", name: "Balena", description: "Supera i 400 giri in un lancio", requirement: "max_giri:400", rarity: "epic", status: "new" },
+                    { icon: "🦑", name: "Kraken", description: "Supera i 500 giri in un lancio", requirement: "max_giri:500", rarity: "legendary", status: "new" },
+                    { icon: "⚓", name: "Capitano", description: "25 sessioni in mare", requirement: "sea_sessions:25", rarity: "rare", status: "new" },
+                    { icon: "🚢", name: "Ammiraglio", description: "50 sessioni in mare", requirement: "sea_sessions:50", rarity: "epic", status: "new" },
+                    { icon: "🧜", name: "Poseidone", description: "Record personale in mare", requirement: "sea_record:1", rarity: "rare", status: "new" }
+                ]
+            },
+            "consistenza": {
+                name: "Consistenza",
+                badges: [
+                    { icon: "📊", name: "Costante", description: "10 lanci con variazione < 10%", requirement: "consistency_streak:10", rarity: "uncommon", status: "existing" },
+                    { icon: "🤖", name: "Macchina", description: "25 lanci con variazione < 10%", requirement: "consistency_streak:25", rarity: "rare", status: "existing" },
+                    { icon: "🎖️", name: "Precisione Svizzera", description: "50 lanci con variazione < 10%", requirement: "consistency_streak:50", rarity: "epic", status: "existing" },
+                    { icon: "🎯", name: "Perfezionista", description: "10 lanci entro il 5% della media", requirement: "tight_consistency:10,5", rarity: "rare", status: "new" },
+                    { icon: "🔬", name: "Chirurgico", description: "5 lanci con variazione < 2%", requirement: "tight_consistency:5,2", rarity: "epic", status: "new" },
+                    { icon: "🎻", name: "Virtuoso", description: "100 lanci con variazione < 10%", requirement: "consistency_streak:100", rarity: "legendary", status: "new" }
+                ]
+            },
+            "sessioni": {
+                name: "Sessioni",
+                badges: [
+                    { icon: "📝", name: "Iniziato", description: "5 sessioni completate", requirement: "total_sessions:5", rarity: "common", status: "existing" },
+                    { icon: "📚", name: "Praticante", description: "25 sessioni completate", requirement: "total_sessions:25", rarity: "uncommon", status: "existing" },
+                    { icon: "🎖️", name: "Veterano", description: "50 sessioni completate", requirement: "total_sessions:50", rarity: "rare", status: "existing" },
+                    { icon: "🏅", name: "Maestro", description: "100 sessioni completate", requirement: "total_sessions:100", rarity: "epic", status: "existing" },
+                    { icon: "🏛️", name: "Senatore", description: "200 sessioni completate", requirement: "total_sessions:200", rarity: "legendary", status: "new" },
+                    { icon: "👴", name: "Saggio", description: "500 sessioni completate", requirement: "total_sessions:500", rarity: "mythic", status: "new" }
+                ]
+            },
+            "lanci_totali": {
+                name: "Lanci Totali",
+                badges: [
+                    { icon: "💪", name: "Braccio Caldo", description: "50 lanci totali", requirement: "total_casts:50", rarity: "common", status: "existing" },
+                    { icon: "🔋", name: "Instancabile", description: "250 lanci totali", requirement: "total_casts:250", rarity: "uncommon", status: "existing" },
+                    { icon: "🏃", name: "Maratoneta", description: "500 lanci totali", requirement: "total_casts:500", rarity: "rare", status: "existing" },
+                    { icon: "🌟", name: "Mille e Uno", description: "1000 lanci totali", requirement: "total_casts:1000", rarity: "epic", status: "existing" },
+                    { icon: "🔥", name: "Infuocato", description: "2500 lanci totali", requirement: "total_casts:2500", rarity: "legendary", status: "new" },
+                    { icon: "💎", name: "Diamante", description: "5000 lanci totali", requirement: "total_casts:5000", rarity: "mythic", status: "new" }
+                ]
+            },
+            "streak": {
+                name: "Streak (giorni consecutivi)",
+                badges: [
+                    { icon: "🔥", name: "Momentum", description: "3 giorni consecutivi", requirement: "daily_streak:3", rarity: "common", status: "existing" },
+                    { icon: "📅", name: "Settimana Perfetta", description: "7 giorni consecutivi", requirement: "daily_streak:7", rarity: "uncommon", status: "existing" },
+                    { icon: "💎", name: "Due Settimane", description: "14 giorni consecutivi", requirement: "daily_streak:14", rarity: "rare", status: "existing" },
+                    { icon: "🏆", name: "Mese di Fuoco", description: "30 giorni consecutivi", requirement: "daily_streak:30", rarity: "legendary", status: "existing" },
+                    { icon: "🌋", name: "Vulcano", description: "60 giorni consecutivi", requirement: "daily_streak:60", rarity: "legendary", status: "new" },
+                    { icon: "🏔️", name: "Everest", description: "100 giorni consecutivi", requirement: "daily_streak:100", rarity: "mythic", status: "new" }
+                ]
+            },
+            "miglioramento": {
+                name: "Miglioramento",
+                badges: [
+                    { icon: "📈", name: "In Crescita", description: "+10% in un mese", requirement: "monthly_improvement:10", rarity: "uncommon", status: "existing" },
+                    { icon: "🚀", name: "Salto di Qualità", description: "+20% in un mese", requirement: "monthly_improvement:20", rarity: "rare", status: "existing" },
+                    { icon: "🏅", name: "Record Breaker", description: "Batti il tuo record personale", requirement: "personal_record:1", rarity: "uncommon", status: "existing" },
+                    { icon: "🔙", name: "Comeback", description: "Migliora dopo 2 settimane di pausa", requirement: "comeback:14", rarity: "rare", status: "new" },
+                    { icon: "🧱", name: "Rompi Plateau", description: "Nuovo record dopo 10 sessioni senza miglioramenti", requirement: "break_plateau:10", rarity: "epic", status: "new" },
+                    { icon: "⚡", name: "Fulmine", description: "+5m in una settimana", requirement: "weekly_improvement:5", rarity: "uncommon", status: "new" }
+                ]
+            },
+            "speciali": {
+                name: "Speciali",
+                badges: [
+                    { icon: "🦉", name: "Nottambulo", description: "Sessione dopo le 21:00", requirement: "night_session:1", rarity: "uncommon", status: "existing" },
+                    { icon: "🐦", name: "Mattiniero", description: "Sessione prima delle 7:00", requirement: "early_session:1", rarity: "uncommon", status: "existing" },
+                    { icon: "💨", name: "Domatore di Vento", description: "Record con vento forte", requirement: "windy_record:1", rarity: "rare", status: "existing" },
+                    { icon: "🎨", name: "Poliedrico", description: "Usato tutte le tecniche", requirement: "all_techniques:1", rarity: "rare", status: "existing" },
+                    { icon: "🌅", name: "Alba Dorata", description: "Sessione all'alba (5:00-6:00)", requirement: "dawn_session:1", rarity: "rare", status: "new" },
+                    { icon: "🌇", name: "Tramonto", description: "Sessione al tramonto (19:00-20:00)", requirement: "sunset_session:1", rarity: "uncommon", status: "new" },
+                    { icon: "🎃", name: "Halloween", description: "Sessione il 31 ottobre", requirement: "date_session:10-31", rarity: "rare", status: "new" },
+                    { icon: "🎄", name: "Spirito Natalizio", description: "Sessione il 25 dicembre", requirement: "date_session:12-25", rarity: "rare", status: "new" }
+                ]
+            },
+            "resistenza": {
+                name: "Resistenza",
+                badges: [
+                    { icon: "🏋️", name: "Maratona", description: "50+ lanci in una sessione", requirement: "session_casts:50", rarity: "uncommon", status: "new" },
+                    { icon: "⏱️", name: "Ironman", description: "Sessione di oltre 2 ore", requirement: "session_duration:120", rarity: "rare", status: "new" },
+                    { icon: "🔄", name: "Ripetitore", description: "100 lanci in una sessione", requirement: "session_casts:100", rarity: "epic", status: "new" },
+                    { icon: "⚡", name: "Speed Demon", description: "20 lanci in meno di 30 minuti", requirement: "speed_session:20,30", rarity: "rare", status: "new" },
+                    { icon: "🦾", name: "Braccio d'Acciaio", description: "150 lanci in una sessione", requirement: "session_casts:150", rarity: "legendary", status: "new" }
+                ]
+            },
+            "location": {
+                name: "Location",
+                badges: [
+                    { icon: "🗺️", name: "Esploratore", description: "Allenamento in 5 luoghi diversi", requirement: "unique_locations:5", rarity: "uncommon", status: "new" },
+                    { icon: "🏠", name: "Casa Dolce Casa", description: "20 sessioni nello stesso luogo", requirement: "same_location:20", rarity: "rare", status: "new" },
+                    { icon: "✈️", name: "Giramondo", description: "Allenamento in 10 luoghi diversi", requirement: "unique_locations:10", rarity: "rare", status: "new" },
+                    { icon: "🌍", name: "Globetrotter", description: "25 luoghi diversi", requirement: "unique_locations:25", rarity: "epic", status: "new" },
+                    { icon: "📍", name: "Fedele al Campo", description: "50 sessioni nello stesso luogo", requirement: "same_location:50", rarity: "epic", status: "new" }
+                ]
+            },
+            "attrezzatura": {
+                name: "Attrezzatura",
+                badges: [
+                    { icon: "🔧", name: "Tecnico", description: "Usato 3 canne diverse", requirement: "unique_rods:3", rarity: "uncommon", status: "new" },
+                    { icon: "🎣", name: "Collezionista", description: "Usato 5 mulinelli diversi", requirement: "unique_reels:5", rarity: "rare", status: "new" },
+                    { icon: "💎", name: "Fedele", description: "50 lanci con la stessa attrezzatura", requirement: "same_setup:50", rarity: "rare", status: "new" },
+                    { icon: "⚖️", name: "Sperimentatore", description: "Usato 5 pesi piombo diversi", requirement: "unique_weights:5", rarity: "uncommon", status: "new" },
+                    { icon: "🎯", name: "Specialista", description: "100 lanci con la stessa canna", requirement: "same_rod:100", rarity: "epic", status: "new" }
+                ]
+            },
+            "calendario": {
+                name: "Calendario",
+                badges: [
+                    { icon: "🎆", name: "Capodanno", description: "Prima sessione dell'anno", requirement: "first_of_year:1", rarity: "rare", status: "new" },
+                    { icon: "☀️", name: "Estate Rovente", description: "15 sessioni in estate (giu-ago)", requirement: "summer_sessions:15", rarity: "rare", status: "new" },
+                    { icon: "❄️", name: "Guerriero Invernale", description: "Sessione in inverno (dic-feb)", requirement: "winter_session:1", rarity: "uncommon", status: "new" },
+                    { icon: "🗓️", name: "Costanza Annuale", description: "1 sessione/mese per 6 mesi", requirement: "monthly_regular:6", rarity: "epic", status: "new" },
+                    { icon: "🎂", name: "Anniversario App", description: "Usi l'app da 1 anno", requirement: "app_anniversary:365", rarity: "legendary", status: "new" },
+                    { icon: "🌅", name: "Weekend Warrior", description: "Sessioni sia sabato che domenica", requirement: "weekend_both:1", rarity: "uncommon", status: "new" },
+                    { icon: "📆", name: "Tutto l'Anno", description: "1 sessione in tutti i 12 mesi", requirement: "all_months:12", rarity: "legendary", status: "new" }
+                ]
+            },
+            "meteo": {
+                name: "Condizioni Meteo",
+                badges: [
+                    { icon: "🌧️", name: "Impermeabile", description: "Sessione con pioggia", requirement: "rain_session:1", rarity: "uncommon", status: "new" },
+                    { icon: "🌡️", name: "Sangue Freddo", description: "Sessione sotto i 10°C", requirement: "cold_session:10", rarity: "rare", status: "new" },
+                    { icon: "🥵", name: "Resistente al Caldo", description: "Sessione sopra i 35°C", requirement: "hot_session:35", rarity: "rare", status: "new" },
+                    { icon: "🌪️", name: "Tempesta", description: "Sessione con vento > 30 km/h", requirement: "storm_session:30", rarity: "epic", status: "new" }
+                ]
+            },
+            "distanza_cumulativa": {
+                name: "Distanza Cumulativa",
+                badges: [
+                    { icon: "🛤️", name: "Primo Chilometro", description: "1 km totale lanciato", requirement: "total_distance:1000", rarity: "common", status: "new" },
+                    { icon: "🛣️", name: "10K", description: "10 km totali lanciati", requirement: "total_distance:10000", rarity: "uncommon", status: "new" },
+                    { icon: "🏃", name: "Maratona Totale", description: "42.195 km totali", requirement: "total_distance:42195", rarity: "rare", status: "new" },
+                    { icon: "🚀", name: "Centista", description: "100 km totali lanciati", requirement: "total_distance:100000", rarity: "epic", status: "new" },
+                    { icon: "🌍", name: "Giro del Mondo", description: "500 km totali", requirement: "total_distance:500000", rarity: "legendary", status: "new" }
+                ]
+            },
+            "engagement": {
+                name: "App & Engagement",
+                badges: [
+                    { icon: "📊", name: "Analista", description: "Consulta i Report 10 volte", requirement: "view_reports:10", rarity: "uncommon", status: "new" },
+                    { icon: "🤖", name: "Studente", description: "Chiedi consiglio al Coach AI 5 volte", requirement: "use_coach:5", rarity: "uncommon", status: "new" },
+                    { icon: "📱", name: "Power User", description: "Usa l'app per 30 giorni", requirement: "app_days:30", rarity: "rare", status: "new" },
+                    { icon: "📋", name: "Completista", description: "Compila tutti i campi di una sessione", requirement: "complete_session:1", rarity: "common", status: "new" },
+                    { icon: "🗃️", name: "Archivista", description: "50 sessioni con note", requirement: "sessions_with_notes:50", rarity: "rare", status: "new" }
+                ]
+            }
+        };
+
+        function renderCategories() {
+            const container = document.getElementById('categories');
+            container.innerHTML = '';
+
+            for (const [categoryId, category] of Object.entries(badgeData)) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.id = `category-${categoryId}`;
+
+                let tableHTML = `
+                    <div class="category-header">
+                        <h2>${category.name}</h2>
+                        <span style="color:#888">${category.badges.length} badge</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:50px">Emoji</th>
+                                <th style="width:150px">Nome</th>
+                                <th>Descrizione/Obiettivo</th>
+                                <th style="width:120px">Rarità</th>
+                                <th style="width:80px">Stato</th>
+                                <th style="width:60px">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                category.badges.forEach((badge, index) => {
+                    const statusBadge = badge.status === 'existing'
+                        ? '<span class="badge-existing">Esistente</span>'
+                        : '<span class="badge-new">Nuovo</span>';
+
+                    tableHTML += `
+                        <tr data-category="${categoryId}" data-index="${index}">
+                            <td class="emoji-cell" contenteditable="true" data-field="icon">${badge.icon}</td>
+                            <td contenteditable="true" data-field="name">${badge.name}</td>
+                            <td contenteditable="true" data-field="description">${badge.description}</td>
+                            <td class="status-cell">
+                                <select data-field="rarity" onchange="updateRarity(this, '${categoryId}', ${index})">
+                                    <option value="common" ${badge.rarity === 'common' ? 'selected' : ''}>Common</option>
+                                    <option value="uncommon" ${badge.rarity === 'uncommon' ? 'selected' : ''}>Uncommon</option>
+                                    <option value="rare" ${badge.rarity === 'rare' ? 'selected' : ''}>Rare</option>
+                                    <option value="epic" ${badge.rarity === 'epic' ? 'selected' : ''}>Epic</option>
+                                    <option value="legendary" ${badge.rarity === 'legendary' ? 'selected' : ''}>Legendary</option>
+                                    <option value="mythic" ${badge.rarity === 'mythic' ? 'selected' : ''}>Mythic</option>
+                                </select>
+                            </td>
+                            <td>${statusBadge}</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-delete" onclick="deleteBadge('${categoryId}', ${index})">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += `
+                        </tbody>
+                    </table>
+                    <button class="btn btn-add" onclick="addBadge('${categoryId}')">+ Aggiungi Badge</button>
+                `;
+
+                categoryDiv.innerHTML = tableHTML;
+                container.appendChild(categoryDiv);
+            }
+
+            // Add event listeners for contenteditable cells
+            document.querySelectorAll('td[contenteditable="true"]').forEach(cell => {
+                cell.addEventListener('blur', function() {
+                    const row = this.closest('tr');
+                    const categoryId = row.dataset.category;
+                    const index = parseInt(row.dataset.index);
+                    const field = this.dataset.field;
+                    badgeData[categoryId].badges[index][field] = this.textContent.trim();
+                    updateSummary();
+                });
+            });
+
+            updateSummary();
+        }
+
+        function updateRarity(select, categoryId, index) {
+            badgeData[categoryId].badges[index].rarity = select.value;
+        }
+
+        function deleteBadge(categoryId, index) {
+            if (confirm('Sei sicuro di voler eliminare questo badge?')) {
+                badgeData[categoryId].badges.splice(index, 1);
+                renderCategories();
+            }
+        }
+
+        function addBadge(categoryId) {
+            badgeData[categoryId].badges.push({
+                icon: "🆕",
+                name: "Nuovo Badge",
+                description: "Descrizione obiettivo",
+                requirement: "tipo:valore",
+                rarity: "common",
+                status: "new"
+            });
+            renderCategories();
+            // Scroll to the new badge
+            const table = document.querySelector(`#category-${categoryId} table`);
+            const lastRow = table.querySelector('tbody tr:last-child');
+            lastRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Focus on the emoji cell
+            lastRow.querySelector('td[data-field="icon"]').focus();
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summaryContent');
+            let totalBadges = 0;
+            let existingCount = 0;
+            let newCount = 0;
+            let html = '';
+
+            for (const [categoryId, category] of Object.entries(badgeData)) {
+                const count = category.badges.length;
+                const existing = category.badges.filter(b => b.status === 'existing').length;
+                const newBadges = count - existing;
+                totalBadges += count;
+                existingCount += existing;
+                newCount += newBadges;
+
+                html += `
+                    <div class="summary-item">
+                        <strong>${category.name}</strong><br>
+                        ${count} badge (${existing} esistenti, ${newBadges} nuovi)
+                    </div>
+                `;
+            }
+
+            html = `
+                <div class="summary-item" style="background:#00d4ff22; grid-column: 1/-1;">
+                    <strong>TOTALE: ${totalBadges} badge</strong> (${existingCount} esistenti + ${newCount} nuovi)
+                </div>
+            ` + html;
+
+            summaryDiv.innerHTML = html;
+        }
+
+        function exportJSON() {
+            // Create clean export format
+            const exportData = {};
+
+            for (const [categoryId, category] of Object.entries(badgeData)) {
+                exportData[categoryId] = {
+                    name: category.name,
+                    badges: category.badges.map(b => ({
+                        icon: b.icon,
+                        name: b.name,
+                        description: b.description,
+                        requirement: b.requirement,
+                        rarity: b.rarity
+                    }))
+                };
+            }
+
+            const jsonStr = JSON.stringify(exportData, null, 2);
+
+            // Create download
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'badges-config.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert('File JSON scaricato! Inviamelo e lo implementerò nell\'app.');
+        }
+
+        // Initialize
+        renderCategories();
+    </script>
+</body>
+</html>
