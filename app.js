@@ -2308,10 +2308,17 @@ class LongCastApp {
         }
 
         this.renderBadgeCategory(achievements, 'distance', 'distanceBadges');
+        this.renderBadgeCategory(achievements, 'sea', 'seaBadges');
         this.renderBadgeCategory(achievements, 'consistency', 'consistencyBadges');
         this.renderBadgeCategory(achievements, 'sessions', 'sessionsBadges');
+        this.renderBadgeCategory(achievements, 'volume', 'volumeBadges');
         this.renderBadgeCategory(achievements, 'streak', 'streakBadges');
+        this.renderBadgeCategory(achievements, 'improvement', 'improvementBadges');
         this.renderBadgeCategory(achievements, 'special', 'specialBadges');
+        this.renderBadgeCategory(achievements, 'endurance', 'enduranceBadges');
+        this.renderBadgeCategory(achievements, 'location', 'locationBadges');
+        this.renderBadgeCategory(achievements, 'equipment', 'equipmentBadges');
+        this.renderBadgeCategory(achievements, 'cumulative', 'cumulativeBadges');
     }
 
     renderBadgeCategory(achievements, category, elementId) {
