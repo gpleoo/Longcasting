@@ -1494,6 +1494,9 @@ class LongCastApp {
         // Tipo Achievements selezionato (campo o mare)
         this.selectedAchievementsType = 'campo';
 
+        // Tipo History/Storico selezionato (campo o mare)
+        this.selectedHistoryType = 'campo';
+
         this.init();
     }
 
@@ -1956,6 +1959,16 @@ class LongCastApp {
                 const type = e.currentTarget.dataset.type;
                 if (type) {
                     this.switchAchievementsType(type);
+                }
+            });
+        });
+
+        // History Type Tabs (Campo/Mare)
+        document.querySelectorAll('#history-tabs .dashboard-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const type = e.currentTarget.dataset.type;
+                if (type) {
+                    this.switchHistoryType(type);
                 }
             });
         });
@@ -2431,6 +2444,45 @@ class LongCastApp {
             }
         }
         this.currentReport = report;
+    }
+
+    // Switch between Campo and Mare for History/Storico
+    switchHistoryType(type) {
+        this.selectedHistoryType = type;
+
+        // Update tab UI
+        document.querySelectorAll('#history-tabs .dashboard-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.type === type) {
+                tab.classList.add('active');
+            }
+        });
+
+        // Refresh History with new type filter
+        this.filterHistory();
+    }
+
+    // Get sessions filtered by History type
+    // Sessions without 'tipo' field are treated as 'campo' (backwards compatibility)
+    getHistoryFilteredSessions() {
+        return this.sessions.filter(s => {
+            if (this.selectedHistoryType === 'campo') {
+                return s.tipo === 'campo' || !s.tipo;
+            }
+            return s.tipo === 'mare';
+        });
+    }
+
+    // Update History tab counts
+    updateHistoryTabCounts() {
+        const campoCount = this.sessions.filter(s => s.tipo === 'campo' || !s.tipo).length;
+        const mareCount = this.sessions.filter(s => s.tipo === 'mare').length;
+
+        const campoCountEl = document.getElementById('history-tab-campo-count');
+        const mareCountEl = document.getElementById('history-tab-mare-count');
+
+        if (campoCountEl) campoCountEl.textContent = campoCount;
+        if (mareCountEl) mareCountEl.textContent = mareCount;
     }
 
     // Campo/Mare Management
@@ -3777,6 +3829,9 @@ class LongCastApp {
 
     // Filter History
     filterHistory() {
+        // Update tab counts first
+        this.updateHistoryTabCounts();
+
         // Close map when filters are applied
         document.getElementById('storicoMapContainer').style.display = 'none';
         document.getElementById('historySessionsList').style.display = 'block';
@@ -3785,7 +3840,8 @@ class LongCastApp {
         const periodoFilter = parseInt(document.getElementById('filter-periodo').value);
         const sortBy = document.getElementById('sort-by').value;
 
-        let filtered = [...this.sessions];
+        // Start with sessions filtered by selected type (campo/mare)
+        let filtered = [...this.getHistoryFilteredSessions()];
 
         // Filter by location
         if (luogoFilter && luogoFilter.trim()) {

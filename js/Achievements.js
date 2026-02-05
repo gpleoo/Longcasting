@@ -1154,6 +1154,15 @@ class AchievementManager {
                 case 'unique_locations':
                     progress = ((this.stats.uniqueLocations || 0) / req.value) * 100;
                     break;
+                case 'same_location':
+                    progress = ((this.stats.maxSameLocation || 0) / req.value) * 100;
+                    break;
+                case 'unique_rods':
+                    progress = ((this.stats.uniqueRods || 0) / req.value) * 100;
+                    break;
+                case 'unique_reels':
+                    progress = ((this.stats.uniqueReels || 0) / req.value) * 100;
+                    break;
                 default:
                     progress = 0;
             }
