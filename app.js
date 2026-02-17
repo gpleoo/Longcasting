@@ -384,6 +384,8 @@ class LongCastApp {
         this.map = null; // Leaflet map instance
         this.mapMarkers = []; // Array of map markers
         this.currentMapSession = null; // Session displayed on map
+        this.editingMapSession = null; // Session being edited for field direction
+        this.mapFieldMarkers = []; // Markers for field lines only (separate from cast markers)
 
         // Pagination for storico
         this.currentPage = 1;
@@ -1999,12 +2001,20 @@ class LongCastApp {
         // Field Direction Setup - Slider
         document.getElementById('fieldDirectionSlider').addEventListener('input', (e) => {
             const angle = parseInt(e.target.value);
-            this.updateFieldDirection(angle);
+            if (this.editingMapSession) {
+                this.updateFieldDirectionForSaved(angle);
+            } else {
+                this.updateFieldDirection(angle);
+            }
         });
 
         // Field Direction Setup - Confirm Button
         document.getElementById('confirmFieldDirectionBtn').addEventListener('click', () => {
-            this.confirmFieldDirection();
+            if (this.editingMapSession) {
+                this.confirmFieldDirectionForSaved();
+            } else {
+                this.confirmFieldDirection();
+            }
         });
 
         // Profile Form
@@ -4897,6 +4907,28 @@ class LongCastApp {
         // Update session reference
         this.currentMapSession = sessionId;
 
+        // Show field direction editing panel if session has puntoPerno
+        if (session.puntoPerno && session.direzioneCampo !== undefined) {
+            this.editingMapSession = session;
+            const directionPanel = document.getElementById('fieldDirectionPanel');
+            if (directionPanel) {
+                directionPanel.style.display = 'block';
+            }
+            // Set slider to current direction
+            const slider = document.getElementById('fieldDirectionSlider');
+            const display = document.getElementById('fieldDirectionDisplay');
+            const cardinal = document.getElementById('fieldDirectionCardinal');
+            if (slider) {
+                slider.value = session.direzioneCampo;
+                const percentage = (session.direzioneCampo / 359) * 100;
+                slider.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, var(--border) ${percentage}%)`;
+            }
+            if (display) display.textContent = session.direzioneCampo + '°';
+            if (cardinal) cardinal.textContent = this.getCardinalDirection(session.direzioneCampo);
+        } else {
+            this.editingMapSession = null;
+        }
+
         // Show map container in fullscreen mode
         const mapContainer = document.getElementById('storicoMapContainer');
         mapContainer.style.display = 'block';
@@ -4936,6 +4968,8 @@ class LongCastApp {
         }
 
         this.currentMapSession = null;
+        this.editingMapSession = null;
+        this.mapFieldMarkers = [];
     }
 
     addCastMarkersToMap(cast, castNumber, session) {
@@ -5052,6 +5086,7 @@ class LongCastApp {
         });
         idealLine.addTo(this.map);
         this.mapMarkers.push(idealLine);
+        this.mapFieldMarkers.push(idealLine);
 
         // 2. LINEE MAGENTA - Cono del campo (±15°)
         const leftBearing = (bearing - coneAngle + 360) % 360;
@@ -5081,6 +5116,7 @@ class LongCastApp {
         leftConeLine.addTo(this.map);
         rightConeLine.addTo(this.map);
         this.mapMarkers.push(leftConeLine, rightConeLine);
+        this.mapFieldMarkers.push(leftConeLine, rightConeLine);
 
         // 3. ARCHI NERI - Linee di distanza (150, 175, 200, 225, 250m)
         fieldDistances.forEach(distance => {
@@ -5100,7 +5136,97 @@ class LongCastApp {
 
             arc.addTo(this.map);
             this.mapMarkers.push(arc);
+            this.mapFieldMarkers.push(arc);
         });
+    }
+
+    // Clear only field markers (keep pivot and cast markers)
+    clearFieldMarkers() {
+        this.mapFieldMarkers.forEach(marker => {
+            if (this.map && marker) {
+                this.map.removeLayer(marker);
+            }
+        });
+        // Remove field markers from mapMarkers array
+        this.mapMarkers = this.mapMarkers.filter(m => !this.mapFieldMarkers.includes(m));
+        this.mapFieldMarkers = [];
+    }
+
+    // Update field direction for a saved session (keeps cast markers)
+    updateFieldDirectionForSaved(angle) {
+        if (!this.editingMapSession || !this.editingMapSession.puntoPerno || !this.map) {
+            return;
+        }
+
+        try {
+            // Clear only field lines (keep pivot marker and cast markers)
+            this.clearFieldMarkers();
+
+            // Draw casting field with new direction
+            const lat = this.editingMapSession.puntoPerno.latitude;
+            const lng = this.editingMapSession.puntoPerno.longitude;
+            this.drawCastingField(lat, lng, angle);
+
+            // Update UI displays
+            const directionDisplay = document.getElementById('fieldDirectionDisplay');
+            const directionSlider = document.getElementById('fieldDirectionSlider');
+            const directionCardinal = document.getElementById('fieldDirectionCardinal');
+
+            if (directionDisplay) directionDisplay.textContent = angle + '°';
+            if (directionSlider) directionSlider.value = angle;
+
+            // Update cardinal direction text
+            const cardinalDirection = this.getCardinalDirection(angle);
+            if (directionCardinal) directionCardinal.textContent = cardinalDirection;
+
+            // Update slider background gradient
+            if (directionSlider) {
+                const percentage = (angle / 359) * 100;
+                directionSlider.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, var(--border) ${percentage}%)`;
+            }
+        } catch (error) {
+            console.error('Errore aggiornamento direzione salvata:', error);
+        }
+    }
+
+    // Confirm field direction for a saved session
+    confirmFieldDirectionForSaved() {
+        if (!this.editingMapSession) {
+            return;
+        }
+
+        const newDirection = parseInt(document.getElementById('fieldDirectionSlider').value);
+        const session = this.editingMapSession;
+
+        // Update session direction
+        session.direzioneCampo = newDirection;
+
+        // Recalculate deviation angles for each cast
+        if (session.lanci) {
+            session.lanci.forEach(lancio => {
+                if (lancio.gps && lancio.gps.bearing !== undefined) {
+                    lancio.gps.angoloDiDeviazione = this.calculateCastDeviation(lancio.gps.bearing, newDirection);
+                }
+            });
+        }
+
+        // Save updated session to localStorage
+        const sessionIndex = this.sessions.findIndex(s => s.id === session.id);
+        if (sessionIndex !== -1) {
+            this.sessions[sessionIndex] = session;
+            this.saveData();
+        }
+
+        // Hide direction panel
+        document.getElementById('fieldDirectionPanel').style.display = 'none';
+
+        // Reset editing state
+        this.editingMapSession = null;
+
+        // Refresh the map with updated data
+        this.showSessionOnMap(session.id);
+
+        this.showToast(`Direzione campo aggiornata: ${newDirection}° (${this.getCardinalDirection(newDirection)})`, 'info');
     }
 
     // Calcola punto di destinazione dato lat, lng, bearing e distanza
