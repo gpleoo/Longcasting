@@ -384,7 +384,6 @@ class LongCastApp {
         this.map = null; // Leaflet map instance
         this.mapMarkers = []; // Array of map markers
         this.currentMapSession = null; // Session displayed on map
-        this.editingMapSession = null; // Session being edited for field direction
         this.mapFieldMarkers = []; // Markers for field lines only (separate from cast markers)
 
         // Pagination for storico
@@ -2001,20 +2000,12 @@ class LongCastApp {
         // Field Direction Setup - Slider
         document.getElementById('fieldDirectionSlider').addEventListener('input', (e) => {
             const angle = parseInt(e.target.value);
-            if (this.editingMapSession) {
-                this.updateFieldDirectionForSaved(angle);
-            } else {
-                this.updateFieldDirection(angle);
-            }
+            this.updateFieldDirection(angle);
         });
 
         // Field Direction Setup - Confirm Button
         document.getElementById('confirmFieldDirectionBtn').addEventListener('click', () => {
-            if (this.editingMapSession) {
-                this.confirmFieldDirectionForSaved();
-            } else {
-                this.confirmFieldDirection();
-            }
+            this.confirmFieldDirection();
         });
 
         // Profile Form
@@ -3309,6 +3300,17 @@ class LongCastApp {
                 ? this.currentSession.direzioneCampo
                 : 0;
             this.updateFieldDirection(initialDirection);
+
+            // Add existing cast markers if any casts have been made
+            if (this.currentSession.lanci && this.currentSession.lanci.length > 0) {
+                const gpsCasts = this.currentSession.lanci.filter(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
+                gpsCasts.forEach((cast, index) => {
+                    this.addCastMarkersToMap(cast, index + 1, this.currentSession);
+                });
+
+                // Fit map to show all markers including casts
+                this.fitMapToMarkers();
+            }
         } catch (error) {
             console.error('Errore apertura mappa:', error);
             this.showToast('Errore apertura mappa: ' + error.message, 'error');
@@ -3328,13 +3330,8 @@ class LongCastApp {
             // Update current session direction (temporary until confirmed)
             this.currentSession.direzioneCampo = angle;
 
-            // Clear previous field lines (keep pivot marker)
-            const pivotMarker = this.mapMarkers[0]; // Save pivot marker
-            this.clearMapMarkers();
-            if (pivotMarker) {
-                this.mapMarkers.push(pivotMarker);
-                pivotMarker.addTo(this.map);
-            }
+            // Clear only field lines (keep pivot marker and cast markers)
+            this.clearFieldMarkers();
 
             // Draw casting field with new direction
             const lat = this.currentSession.puntoPerno.latitude;
@@ -3397,6 +3394,15 @@ class LongCastApp {
         if (direction === null || direction === undefined) {
             this.showToast('Errore: direzione non impostata', 'error');
             return;
+        }
+
+        // Recalculate deviation angles for existing casts
+        if (this.currentSession.lanci && this.currentSession.lanci.length > 0) {
+            this.currentSession.lanci.forEach(lancio => {
+                if (lancio.gps && lancio.gps.bearing !== undefined) {
+                    lancio.gps.angoloDiDeviazione = this.calculateCastDeviation(lancio.gps.bearing, direction);
+                }
+            });
         }
 
         // Save session with confirmed direction
@@ -4907,28 +4913,6 @@ class LongCastApp {
         // Update session reference
         this.currentMapSession = sessionId;
 
-        // Show field direction editing panel if session has puntoPerno
-        if (session.puntoPerno && session.direzioneCampo !== undefined) {
-            this.editingMapSession = session;
-            const directionPanel = document.getElementById('fieldDirectionPanel');
-            if (directionPanel) {
-                directionPanel.style.display = 'block';
-            }
-            // Set slider to current direction
-            const slider = document.getElementById('fieldDirectionSlider');
-            const display = document.getElementById('fieldDirectionDisplay');
-            const cardinal = document.getElementById('fieldDirectionCardinal');
-            if (slider) {
-                slider.value = session.direzioneCampo;
-                const percentage = (session.direzioneCampo / 359) * 100;
-                slider.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, var(--border) ${percentage}%)`;
-            }
-            if (display) display.textContent = session.direzioneCampo + '°';
-            if (cardinal) cardinal.textContent = this.getCardinalDirection(session.direzioneCampo);
-        } else {
-            this.editingMapSession = null;
-        }
-
         // Show map container in fullscreen mode
         const mapContainer = document.getElementById('storicoMapContainer');
         mapContainer.style.display = 'block';
@@ -4968,7 +4952,6 @@ class LongCastApp {
         }
 
         this.currentMapSession = null;
-        this.editingMapSession = null;
         this.mapFieldMarkers = [];
     }
 
@@ -5150,83 +5133,6 @@ class LongCastApp {
         // Remove field markers from mapMarkers array
         this.mapMarkers = this.mapMarkers.filter(m => !this.mapFieldMarkers.includes(m));
         this.mapFieldMarkers = [];
-    }
-
-    // Update field direction for a saved session (keeps cast markers)
-    updateFieldDirectionForSaved(angle) {
-        if (!this.editingMapSession || !this.editingMapSession.puntoPerno || !this.map) {
-            return;
-        }
-
-        try {
-            // Clear only field lines (keep pivot marker and cast markers)
-            this.clearFieldMarkers();
-
-            // Draw casting field with new direction
-            const lat = this.editingMapSession.puntoPerno.latitude;
-            const lng = this.editingMapSession.puntoPerno.longitude;
-            this.drawCastingField(lat, lng, angle);
-
-            // Update UI displays
-            const directionDisplay = document.getElementById('fieldDirectionDisplay');
-            const directionSlider = document.getElementById('fieldDirectionSlider');
-            const directionCardinal = document.getElementById('fieldDirectionCardinal');
-
-            if (directionDisplay) directionDisplay.textContent = angle + '°';
-            if (directionSlider) directionSlider.value = angle;
-
-            // Update cardinal direction text
-            const cardinalDirection = this.getCardinalDirection(angle);
-            if (directionCardinal) directionCardinal.textContent = cardinalDirection;
-
-            // Update slider background gradient
-            if (directionSlider) {
-                const percentage = (angle / 359) * 100;
-                directionSlider.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, var(--border) ${percentage}%)`;
-            }
-        } catch (error) {
-            console.error('Errore aggiornamento direzione salvata:', error);
-        }
-    }
-
-    // Confirm field direction for a saved session
-    confirmFieldDirectionForSaved() {
-        if (!this.editingMapSession) {
-            return;
-        }
-
-        const newDirection = parseInt(document.getElementById('fieldDirectionSlider').value);
-        const session = this.editingMapSession;
-
-        // Update session direction
-        session.direzioneCampo = newDirection;
-
-        // Recalculate deviation angles for each cast
-        if (session.lanci) {
-            session.lanci.forEach(lancio => {
-                if (lancio.gps && lancio.gps.bearing !== undefined) {
-                    lancio.gps.angoloDiDeviazione = this.calculateCastDeviation(lancio.gps.bearing, newDirection);
-                }
-            });
-        }
-
-        // Save updated session to localStorage
-        const sessionIndex = this.sessions.findIndex(s => s.id === session.id);
-        if (sessionIndex !== -1) {
-            this.sessions[sessionIndex] = session;
-            this.saveData();
-        }
-
-        // Hide direction panel
-        document.getElementById('fieldDirectionPanel').style.display = 'none';
-
-        // Reset editing state
-        this.editingMapSession = null;
-
-        // Refresh the map with updated data
-        this.showSessionOnMap(session.id);
-
-        this.showToast(`Direzione campo aggiornata: ${newDirection}° (${this.getCardinalDirection(newDirection)})`, 'info');
     }
 
     // Calcola punto di destinazione dato lat, lng, bearing e distanza
