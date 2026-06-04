@@ -29,7 +29,15 @@ ritorno sono tre:
 - ✅ **SEC‑4** — aggiunta Content‑Security‑Policy in `index.html`; i 7 `onclick` inline (4 in `app.js` + 3 in `index.html`) convertiti a event delegation `[data-action]`.
 - ✅ **SEC‑5** — verificato: Leaflet ha **già** `integrity` (SRI) + `crossOrigin` → nessuna azione necessaria.
 
-> Prossimo passo proposto: **Fase 2 — Misure GPS** (GPS‑1/2/3), oppure SEC‑6 (cifratura dati a riposo) se si vuole completare prima la sicurezza.
+**Fase 2 — Misure GPS (2026-06-04)**
+
+- ✅ **GPS‑4** — `getAveragePosition` ora pesa i punti per `1/accuracy²` (i fix più precisi contano di più).
+- ✅ **GPS‑3** — incertezza della distanza propagata (`σ_d=√(σ_start²+σ_end²)`), mostrata nel modale di conferma (`212.4 m ± 6.8 m`) e nel popup mappa, e salvata in `cast.gps.incertezzaDistanza`.
+- ✅ **GPS‑1** — punto perno **mediato nel tempo** (`acquireStablePosition`, 5–12 s, gate di qualità) con fallback automatico al flusso di retry.
+- 🧪 Aggiunti unit test della matematica GPS (`tests/gpstracker.test.js`, eseguibili con `npm test`).
+
+> ⚠️ Le modifiche GPS sono verificate con unit test sulla **matematica**, ma il comportamento **live** va collaudato su telefono reale.
+> Prossimi: **GPS‑2** (UI misura statica dell'arrivo — la primitiva `acquireStablePosition` è già pronta), **GPS‑6** (warm‑up/soglie adattive), **GPS‑7** (cerchi di accuratezza in mappa).
 
 ---
 
@@ -75,10 +83,10 @@ record si giocano sul metro. Ecco come passare da "amatoriale" a "ottimo":
 
 | ID | Pri | Miglioramento | Perché | Riferimento |
 |----|-----|---------------|--------|-------------|
-| GPS‑1 | **P0** | **Punto perno mediato e con qualità**: oggi è una **singola lettura** → un perno sbagliato falsa **tutti** i lanci della sessione. Acquisirlo restando fermi 30–60 s, scartando il transitorio di convergenza, fino a stabilizzazione. | Massimo effetto leva: l'errore del perno è errore comune a tutti i lanci. | perno: `app.js:~2712`; media: `js/GPSTracker.js:233` |
-| GPS‑2 | **P0** | **Modalità "misura punto d'arrivo" statica**: invece di mediare gli ultimi N punti *mentre si cammina*, fermarsi sul piombo e mediare finché la deviazione standard si stabilizza, con barra di convergenza live. | Punti in movimento = rumore; la media statica abbatte l'errore. | `js/GPSTracker.js:308‑336` |
-| GPS‑3 | **P0** | **Incertezza sulla DISTANZA, non solo accuracy media**: mostrare `212.4 m ± 6.8 m` propagando l'errore (`σ_d ≈ √(σ_start² + σ_end²)`) ed evidenziare le misure a bassa confidenza. | L'utente oggi vede solo l'accuracy media del tracciato, non l'incertezza del risultato. | stat finali: `js/GPSTracker.js:325‑336`; UI: `app.js:~4609` |
-| GPS‑4 | **P1** | **Media pesata per accuratezza** (peso `1/accuracy²`) al posto della media aritmetica semplice in `getAveragePosition`. | I punti più precisi devono contare di più: stima migliore senza nuovo hardware. | `js/GPSTracker.js:233‑248` |
+| GPS‑1 | ✅ **FATTO** | **Punto perno mediato**: prima singola lettura → ora mediato nel tempo con `acquireStablePosition` (gate di qualità, 5–12 s, fallback). | Massimo effetto leva: l'errore del perno è comune a tutti i lanci. | `app.js` acquireGPSWithRetry; `js/GPSTracker.js` |
+| GPS‑2 | **P0** — primitiva pronta | **Modalità "misura punto d'arrivo" statica** con barra di convergenza live. Manca solo la **UI**: la primitiva `acquireStablePosition` è già disponibile e testata. | Punti in movimento = rumore; la media statica abbatte l'errore. | `js/GPSTracker.js` acquireStablePosition |
+| GPS‑3 | ✅ **FATTO** | **Incertezza sulla DISTANZA**: `m ± Δ` propagando `σ_d=√(σ_start²+σ_end²)`; mostrata nel modale di conferma e nel popup mappa, salvata in `cast.gps.incertezzaDistanza`. | L'utente vede l'incertezza reale del risultato, non solo l'accuracy del tracciato. | `js/GPSTracker.js` calculateFinalStats; `app.js` showGPSConfirmModal |
+| GPS‑4 | ✅ **FATTO** | **Media pesata per accuratezza** (peso `1/accuracy²`) in `getAveragePosition`. | I punti più precisi devono contare di più: stima migliore senza nuovo hardware. | `js/GPSTracker.js` getAveragePosition |
 | GPS‑5 | **P1** | **Calibrazione su baseline nota**: misurare una distanza nota a campo (es. fettuccia da 50/100 m) e calcolare correzione di scala/bias per sessione + un "indice di qualità GPS del giorno". | Misura differenziale: l'errore assoluto è in gran parte comune e si annulla sulla distanza relativa. | nuovo modulo |
 | GPS‑6 | **P1** | **Warm‑up e soglie adattive**: scartare i primi secondi (i primi fix sono i peggiori); `minAccuracy: 50 m` è troppo permissivo per misure al metro → renderlo adattivo e avvisare se non si raggiunge < 10 m. | Migliora la qualità del dato in ingresso a costo zero. | `js/GPSTracker.js:25‑33, 143‑147` |
 | GPS‑7 | **P1** | **Cerchi di accuratezza in mappa**: disegnare un `L.circle` con raggio = accuracy su perno e arrivo, così l'incertezza è visibile. | Rende l'errore intuitivo e onesto. | `app.js:~4958` (marker mappa) |

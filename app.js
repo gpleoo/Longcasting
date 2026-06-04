@@ -2721,57 +2721,62 @@ class LongCastApp {
 
         const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro} = this.sessionFormData;
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                // Success - Create session with pivot point
-                this.currentSession = {
-                    id: Date.now(),
-                    tipo: tipo,
-                    dataInizio: formData.get('session-data'),
-                    luogo: luogo,
-                    pesoPiombo: pesoPiombo,
-                    tecnica: tecnica,
-                    cannaModello: cannaModello,
-                    cannaLunghezza: cannaLunghezza,
-                    cannaGrammatura: cannaGrammatura,
-                    mulinello: mulinello,
-                    cmPerGiro: cmPerGiro,
-                    filo: filo,
-                    vento: vento,
-                    direzioneVento: direzioneVento,
-                    temperatura: temperatura,
-                    umidita: umidita,
-                    note: note,
-                    puntoPerno: {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    },
-                    direzioneCampo: null,
-                    lanci: []
-                };
+        // GPS-1: il punto perno viene MEDIATO nel tempo (non una singola
+        // lettura): è il riferimento comune a tutti i lanci della sessione,
+        // quindi un suo errore falserebbe ogni misura. Fallback automatico al
+        // flusso di errore/retry se non si acquisisce alcun fix valido.
+        this.showToast('Acquisizione punto perno… tieni il telefono fermo', 'info');
 
-                this.saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note);
-                this.saveSession();
+        this.gpsTracker.acquireStablePosition({
+            minDuration: 5000,
+            maxDuration: 12000,
+            targetUncertainty: 4
+        }).then((pivot) => {
+            // Success - Create session with averaged pivot point
+            this.currentSession = {
+                id: Date.now(),
+                tipo: tipo,
+                dataInizio: formData.get('session-data'),
+                luogo: luogo,
+                pesoPiombo: pesoPiombo,
+                tecnica: tecnica,
+                cannaModello: cannaModello,
+                cannaLunghezza: cannaLunghezza,
+                cannaGrammatura: cannaGrammatura,
+                mulinello: mulinello,
+                cmPerGiro: cmPerGiro,
+                filo: filo,
+                vento: vento,
+                direzioneVento: direzioneVento,
+                temperatura: temperatura,
+                umidita: umidita,
+                note: note,
+                puntoPerno: {
+                    latitude: pivot.latitude,
+                    longitude: pivot.longitude,
+                    accuracy: pivot.accuracy,
+                    uncertainty: pivot.uncertainty,
+                    samples: pivot.samples
+                },
+                direzioneCampo: null,
+                lanci: []
+            };
 
-                // Reset form
-                document.getElementById('startSessionForm').reset();
-                this.setDefaultDateTime();
+            this.saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note);
+            this.saveSession();
 
-                // Start session
-                this.showSessionActive();
-                this.showToast(this.t('gps.acquired'), 'success');
-            },
-            (error) => {
-                // GPS Error - show modal or retry
-                console.error('GPS Error:', error);
-                this.handleGPSError(error);
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
-        );
+            // Reset form
+            document.getElementById('startSessionForm').reset();
+            this.setDefaultDateTime();
+
+            // Start session
+            this.showSessionActive();
+            this.showToast(`${this.t('gps.acquired')} (perno ±${pivot.uncertainty.toFixed(1)} m, ${pivot.samples} letture)`, 'success');
+        }).catch((error) => {
+            // GPS Error - show modal or retry
+            console.error('GPS Error:', error);
+            this.handleGPSError(error);
+        });
     }
 
     handleGPSError(error) {
@@ -4654,8 +4659,12 @@ class LongCastApp {
     showGPSConfirmModal(stats) {
         const modal = document.getElementById('gpsConfirmModal');
 
-        // Populate modal with stats
-        document.getElementById('gpsResultDistance').textContent = stats.distance.toFixed(1) + ' m';
+        // Populate modal with stats — distanza con incertezza onesta (GPS-3)
+        const distUnc = (typeof stats.distanceUncertainty === 'number' && isFinite(stats.distanceUncertainty))
+            ? stats.distanceUncertainty
+            : stats.accuracy;
+        document.getElementById('gpsResultDistance').textContent =
+            `${stats.distance.toFixed(1)} m ± ${distUnc.toFixed(1)} m`;
         document.getElementById('gpsResultAccuracy').textContent = `±${stats.accuracy.toFixed(1)} m`;
         document.getElementById('gpsResultPoints').textContent = stats.points;
         document.getElementById('gpsResultDuration').textContent = this.gpsTracker.formatDuration(stats.duration);
@@ -4756,6 +4765,23 @@ class LongCastApp {
             angoloDiDeviazione = this.calculateCastDeviation(bearing, this.currentSession.direzioneCampo);
         }
 
+        // Incertezza della distanza salvata (GPS-3): propaga l'errore del punto
+        // di partenza (perno mediato, se disponibile) e del punto d'arrivo.
+        let incertezzaDistanza;
+        if (this.currentSession.puntoPerno) {
+            const pivotUnc = (typeof this.currentSession.puntoPerno.uncertainty === 'number')
+                ? this.currentSession.puntoPerno.uncertainty
+                : (this.currentSession.puntoPerno.accuracy ?? this.gpsResult.accuracy);
+            const endUnc = (typeof this.gpsResult.endUncertainty === 'number')
+                ? this.gpsResult.endUncertainty
+                : this.gpsResult.accuracy;
+            incertezzaDistanza = Math.sqrt(pivotUnc * pivotUnc + endUnc * endUnc);
+        } else {
+            incertezzaDistanza = (typeof this.gpsResult.distanceUncertainty === 'number')
+                ? this.gpsResult.distanceUncertainty
+                : this.gpsResult.accuracy;
+        }
+
         // Create cast object with GPS metadata
         const cast = {
             distanza: distanzaFinale,
@@ -4777,6 +4803,7 @@ class LongCastApp {
 
                 // Statistiche GPS
                 accuracy: this.gpsResult.accuracy,
+                incertezzaDistanza: incertezzaDistanza,
                 points: this.gpsResult.points,
                 duration: this.gpsResult.duration,
                 quality: this.gpsResult.quality
@@ -5270,7 +5297,7 @@ class LongCastApp {
                 <div class="map-popup-info">
                     <div class="map-popup-row">
                         <span class="map-popup-label">Distanza</span>
-                        <span class="map-popup-value highlight">${cast.distanza.toFixed(1)}m</span>
+                        <span class="map-popup-value highlight">${cast.distanza.toFixed(1)}m${(cast.gps && typeof cast.gps.incertezzaDistanza === 'number') ? ' ± ' + cast.gps.incertezzaDistanza.toFixed(1) + 'm' : ''}</span>
                     </div>
                     <div class="map-popup-row">
                         <span class="map-popup-label">Angolo</span>
