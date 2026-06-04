@@ -20,6 +20,19 @@ ritorno sono tre:
 
 ---
 
+## ✅ Avanzamento
+
+**Fase 1 — Sicurezza (2026-06-04)**
+
+- ✅ **SEC‑2 / SEC‑3** — sink XSS `cast.note` e `${d.value}` ora escapizzati con `escapeHtml`.
+- ✅ **SEC‑1** — import file validato con `DataManager.validateImport()`; i file non riconosciuti vengono rifiutati prima di toccare `localStorage`.
+- ✅ **SEC‑4** — aggiunta Content‑Security‑Policy in `index.html`; i 7 `onclick` inline (4 in `app.js` + 3 in `index.html`) convertiti a event delegation `[data-action]`.
+- ✅ **SEC‑5** — verificato: Leaflet ha **già** `integrity` (SRI) + `crossOrigin` → nessuna azione necessaria.
+
+> Prossimo passo proposto: **Fase 2 — Misure GPS** (GPS‑1/2/3), oppure SEC‑6 (cifratura dati a riposo) se si vuole completare prima la sicurezza.
+
+---
+
 ## 1) 🔐 Cybersicurezza
 
 Contesto: l'app **non ha backend né autenticazione** (è single‑user, locale). Quindi
@@ -29,11 +42,11 @@ che è il principale vettore d'attacco realistico.
 
 | ID | Pri | Problema | Dove | Azione |
 |----|-----|----------|------|--------|
-| SEC‑1 | **P0** | **XSS via import**: `importData()` assegna `data.sessions/profile/suggestions` senza validare né sanificare, pur esistendo già `DataManager.validateImport()` e `Validator.sanitizeObject()` **non usati**. Un file `.json` condiviso (es. "sessioni di esempio") può iniettare `<script>` che legge tutta la cronologia GPS. | `app.js:4335‑4346` | Far passare l'import da `DataManager.validateImport()` + `Validator.sanitizeObject()` prima di salvare; rifiutare i file non validi. |
-| SEC‑2 | **P0** | **XSS nel DOM**: `cast.note` iniettato grezzo in `innerHTML` (negli stessi popup mappa invece è già escapizzato → incoerenza). | `app.js:3031` | Usare `this.escapeHtml(cast.note)`. |
-| SEC‑3 | **P0** | **XSS nel DOM**: dettagli sessione `${d.value}` iniettati senza escape (vento, direzione vento, ecc. sono testo libero). | `app.js:2873‑2880` | Escapizzare `d.value` (o usare `textContent`). |
-| SEC‑4 | **P1** | **Nessuna Content‑Security‑Policy**. Una CSP è la difesa di profondità contro qualsiasi XSS residuo. | `index.html` (`<head>`) | Aggiungere `<meta http-equiv="Content-Security-Policy">` con `default-src 'self'`, consentendo solo `unpkg.com` (Leaflet) e `*.tile.openstreetmap.org`. |
-| SEC‑5 | **P1** | **Leaflet da CDN senza Subresource Integrity (SRI)**: se unpkg/pacchetto viene compromesso, esegue codice arbitrario con accesso a tutti i dati. | `app.js:1549, 1556` | Aggiungere `integrity` + `crossorigin`, oppure **auto‑ospitare** Leaflet (consigliato: già si punta all'offline). |
+| SEC‑1 | ✅ **FATTO** | **XSS via import**: `importData()` assegnava `data.sessions/profile/suggestions` senza validare. | `app.js:4331` | Import ora validato con `DataManager.validateImport()`; file non riconosciuti rifiutati. Scelta: **escape coerente in output** (SEC‑2/3) anziché `sanitizeObject` a riposo, per non corrompere/raddoppiare l'encoding dei testi. |
+| SEC‑2 | ✅ **FATTO** | **XSS nel DOM**: `cast.note` iniettato grezzo in `innerHTML` (nei popup mappa era già escapizzato → incoerenza). | `app.js:3031` | Ora `this.escapeHtml(cast.note)`. |
+| SEC‑3 | ✅ **FATTO** | **XSS nel DOM**: dettagli sessione `${d.value}` senza escape (vento, direzione vento sono testo libero). | `app.js:2873‑2880` | Ora `this.escapeHtml(String(d.value))`. |
+| SEC‑4 | ✅ **FATTO** | **Nessuna Content‑Security‑Policy** (difesa di profondità contro XSS residuo). | `index.html` (`<head>`) | Aggiunta CSP `default-src 'self'` + `unpkg.com`/`*.tile.openstreetmap.org`; rimossi i 7 `onclick` inline (→ event delegation) per usare `script-src` senza `'unsafe-inline'`. |
+| SEC‑5 | ✅ **GIÀ OK** | **Leaflet da CDN**: verificato che SRI (`integrity`) + `crossOrigin` sono **già impostati**. | `app.js:1550‑1551, 1557‑1558` | Nessuna azione. Opzionale: auto‑ospitare Leaflet per eliminare del tutto la dipendenza da CDN. |
 | SEC‑6 | **P1** | **Dati a riposo in chiaro** su `localStorage` (posizioni GPS = dato personale sensibile). | `js/DataManager.js` | Cifratura opzionale lato client (Web Crypto API + passphrase/PIN) almeno per i campi GPS; vedi anche PRIV‑1. |
 | SEC‑7 | **P2** | **Audit completo dei sink `innerHTML`** (34 assegnazioni in `app.js`): garantire che ogni campo utente/importato passi da `escapeHtml`. | `app.js` (vari) | Introdurre un helper unico `safeHtml`/template tag e vietare `innerHTML` grezzo via regola ESLint. |
 | SEC‑8 | **P2** | **Service worker** mette in `RUNTIME_CACHE` qualunque risposta `ok`, senza limiti di origine/size. | `sw.js:104‑108` | Limitare la cache di runtime alle origini note e impostare un budget/eviction. |
@@ -41,7 +54,7 @@ che è il principale vettore d'attacco realistico.
 | SEC‑10 | **P3** | `share_target` dichiarato nel manifest ma i parametri non sono gestiti (feature morta). | `manifest.json:116‑124` | Implementarlo con parsing sicuro oppure rimuoverlo. |
 | SEC‑11 | **P3** | Mismatch path icone push (`/icon-192.png`) vs manifest (`assets/icons/...`). | `sw.js:217‑219` | Allineare i percorsi. |
 
-**Quick win**: SEC‑1/2/3 si risolvono in poche ore e chiudono il rischio XSS reale.
+**Stato Fase 1**: ✅ SEC‑1/2/3/4 completati, SEC‑5 già a posto. Restano **SEC‑6→11** (cifratura dati a riposo, audit completo `innerHTML`, cache SW, stampa report, ecc.).
 
 ---
 
