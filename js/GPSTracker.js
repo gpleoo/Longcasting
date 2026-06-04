@@ -123,7 +123,12 @@ class GPSTracker {
             maxDuration: options.maxDuration ?? 15000,
             targetUncertainty: options.targetUncertainty ?? 3,
             minSamples: options.minSamples ?? 5,
-            minAccuracy: options.minAccuracy ?? this.config.minAccuracy
+            minAccuracy: options.minAccuracy ?? this.config.minAccuracy,
+            // GPS-6: i primi fix dopo l'attivazione sono i peggiori → si scartano
+            // (warm-up) se restano abbastanza campioni successivi.
+            warmupMs: options.warmupMs ?? 1500,
+            // GPS-6: accuratezza "buona" attesa; sopra la quale si segnala un warning.
+            targetAccuracy: options.targetAccuracy ?? 10
         };
         const onProgress = options.onProgress;
 
@@ -150,6 +155,12 @@ class GPSTracker {
                 }
             };
 
+            // GPS-6: usa i punti dopo il warm-up se sono abbastanza, altrimenti tutti.
+            const usablePoints = () => {
+                const warm = points.filter(p => p._elapsed >= cfg.warmupMs);
+                return warm.length >= cfg.minSamples ? warm : points;
+            };
+
             const finish = () => {
                 if (settled) return;
                 settled = true;
@@ -158,34 +169,41 @@ class GPSTracker {
                     reject(new Error('Nessuna posizione GPS valida acquisita'));
                     return;
                 }
-                const center = this.getAveragePosition(points);
-                const uncertainty = this.getPositionUncertainty(points, center);
+                const used = usablePoints();
+                const center = this.getAveragePosition(used);
+                const uncertainty = this.getPositionUncertainty(used, center);
                 resolve({
                     latitude: center.latitude,
                     longitude: center.longitude,
                     accuracy: center.accuracy,
                     uncertainty: uncertainty,
-                    samples: points.length,
-                    quality: this.getQualityForAccuracy(center.accuracy, points.length)
+                    samples: used.length,
+                    quality: this.getQualityForAccuracy(center.accuracy, used.length),
+                    // GPS-6: avvisa se non si è raggiunta un'accuratezza adeguata
+                    warning: center.accuracy > cfg.targetAccuracy
                 });
             };
 
             const evaluate = () => {
                 if (settled) return;
                 const elapsed = Date.now() - startedAt;
+                const used = usablePoints();
                 let uncertainty = Infinity;
                 let accuracy = null;
-                if (points.length > 0) {
-                    const center = this.getAveragePosition(points);
-                    uncertainty = this.getPositionUncertainty(points, center);
-                    accuracy = center.accuracy;
+                let position = null;
+                if (used.length > 0) {
+                    position = this.getAveragePosition(used);
+                    uncertainty = this.getPositionUncertainty(used, position);
+                    accuracy = position.accuracy;
                 }
                 if (onProgress) {
                     onProgress({
                         elapsed,
-                        samples: points.length,
+                        samples: used.length,
                         accuracy,
                         uncertainty: isFinite(uncertainty) ? uncertainty : null,
+                        position,
+                        warning: accuracy != null && accuracy > cfg.targetAccuracy,
                         progress: Math.min(1, elapsed / cfg.maxDuration)
                     });
                 }
@@ -193,7 +211,7 @@ class GPSTracker {
                 if (elapsed >= cfg.maxDuration) {
                     finish();
                 } else if (elapsed >= cfg.minDuration &&
-                           points.length >= cfg.minSamples &&
+                           used.length >= cfg.minSamples &&
                            uncertainty <= cfg.targetUncertainty) {
                     finish();
                 }
@@ -206,6 +224,7 @@ class GPSTracker {
                     if (typeof p.accuracy === 'number' && p.accuracy > cfg.minAccuracy) {
                         return;
                     }
+                    p._elapsed = Date.now() - startedAt;
                     points.push(p);
                     evaluate();
                 },

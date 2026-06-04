@@ -2084,6 +2084,10 @@ class LongCastApp {
         // GPS Tracking
         document.getElementById('gpsStartBtn').addEventListener('click', () => this.startGPSTracking());
         document.getElementById('gpsStopBtn').addEventListener('click', () => this.stopGPSTracking());
+        const gpsMeasureBtn = document.getElementById('gpsMeasureLandingBtn');
+        if (gpsMeasureBtn) {
+            gpsMeasureBtn.addEventListener('click', () => this.measureLandingStatic());
+        }
 
         // GPS Confirm Modal
         document.getElementById('gpsConfirmSave').addEventListener('click', () => this.saveGPSCast());
@@ -4539,6 +4543,11 @@ class LongCastApp {
             return;
         }
 
+        if (this.isMeasuringLanding) {
+            this.showToast('Attendi la fine della misura in corso', 'warning');
+            return;
+        }
+
         // Check GPS availability
         if (!this.gpsTracker.isGPSAvailable()) {
             this.showToast('GPS non disponibile su questo dispositivo', 'error');
@@ -4549,6 +4558,8 @@ class LongCastApp {
             // Update UI
             document.getElementById('gpsStartBtn').style.display = 'none';
             document.getElementById('gpsStopBtn').style.display = 'block';
+            const mBtn = document.getElementById('gpsMeasureLandingBtn');
+            if (mBtn) mBtn.disabled = true;
 
             this.showToast('Inizializzazione GPS...', 'success');
 
@@ -4621,6 +4632,100 @@ class LongCastApp {
 
         // Show confirmation modal
         this.showGPSConfirmModal(stats);
+    }
+
+    // GPS-2: misura STATICA del punto d'arrivo. L'utente si ferma sul piombo e
+    // l'app media le letture finché convergono (anziché mediare punti presi
+    // camminando). Riusa il modale di conferma e il salvataggio esistenti.
+    async measureLandingStatic() {
+        if (!this.currentSession) {
+            this.showToast('Devi prima avviare una sessione di allenamento', 'error');
+            return;
+        }
+        if (!this.currentSession.puntoPerno) {
+            this.showToast('Misura statica disponibile solo con il punto perno (GPS attivo a inizio sessione)', 'warning');
+            return;
+        }
+        if (this.gpsTracker.isTracking || this.isMeasuringLanding) {
+            return;
+        }
+        if (!this.gpsTracker.isGPSAvailable()) {
+            this.showToast('GPS non disponibile su questo dispositivo', 'error');
+            return;
+        }
+
+        this.isMeasuringLanding = true;
+        const pivot = this.currentSession.puntoPerno;
+        const startBtn = document.getElementById('gpsStartBtn');
+        const measureBtn = document.getElementById('gpsMeasureLandingBtn');
+        if (startBtn) startBtn.style.display = 'none';
+        if (measureBtn) measureBtn.disabled = true;
+
+        // Feedback live tramite i pannelli di stato GPS
+        document.getElementById('gpsStatus').style.display = 'block';
+        document.getElementById('gpsTracking').style.display = 'block';
+        this.showToast('Misura arrivo: tieni il telefono fermo sul piombo…', 'info');
+
+        const t0 = Date.now();
+        try {
+            const landing = await this.gpsTracker.acquireStablePosition({
+                minDuration: 6000,
+                maxDuration: 15000,
+                targetUncertainty: 3,
+                onProgress: (st) => {
+                    if (st.position) {
+                        const liveDist = this.gpsTracker.calculateDistance(
+                            { latitude: pivot.latitude, longitude: pivot.longitude },
+                            st.position
+                        );
+                        document.getElementById('gpsDistanceValue').textContent = liveDist.toFixed(1) + ' m';
+                    }
+                    document.getElementById('gpsAccuracy').textContent =
+                        st.uncertainty != null ? `±${st.uncertainty.toFixed(1)} m` : '-- m';
+                    document.getElementById('gpsPoints').textContent = st.samples;
+                    document.getElementById('gpsQuality').textContent = `${Math.round(st.progress * 100)}%`;
+                }
+            });
+
+            // Costruisci un risultato compatibile con showGPSConfirmModal/saveGPSCast
+            const startPos = { latitude: pivot.latitude, longitude: pivot.longitude };
+            const endPos = { latitude: landing.latitude, longitude: landing.longitude };
+            const distance = this.gpsTracker.calculateDistance(startPos, endPos);
+            const bearing = this.gpsTracker.calculateBearing(startPos, endPos);
+            const pivotUnc = (typeof pivot.uncertainty === 'number')
+                ? pivot.uncertainty
+                : (pivot.accuracy ?? landing.uncertainty);
+            const distanceUncertainty = Math.sqrt(
+                pivotUnc * pivotUnc + landing.uncertainty * landing.uncertainty
+            );
+
+            if (landing.warning) {
+                this.showToast('Precisione GPS bassa: misura indicativa', 'warning');
+            }
+
+            this.gpsResult = {
+                distance,
+                distanceUncertainty,
+                startPosition: startPos,
+                endPosition: endPos,
+                startUncertainty: pivotUnc,
+                endUncertainty: landing.uncertainty,
+                bearing,
+                accuracy: landing.accuracy,
+                points: landing.samples,
+                duration: Math.round((Date.now() - t0) / 1000),
+                quality: landing.quality,
+                metodo: 'statico'
+            };
+            this.showGPSConfirmModal(this.gpsResult);
+        } catch (error) {
+            console.error('Errore misura statica:', error);
+            this.showToast(error.message || 'Errore durante la misura GPS', 'error');
+            this.resetGPSUI();
+        } finally {
+            this.isMeasuringLanding = false;
+            if (measureBtn) measureBtn.disabled = false;
+        }
     }
 
     updateGPSUI(stats) {
@@ -4849,6 +4954,8 @@ class LongCastApp {
         // Reset buttons
         document.getElementById('gpsStartBtn').style.display = 'block';
         document.getElementById('gpsStopBtn').style.display = 'none';
+        const measureBtn = document.getElementById('gpsMeasureLandingBtn');
+        if (measureBtn) measureBtn.disabled = false;
 
         // Reset displays
         document.getElementById('gpsDistanceValue').textContent = '0.0 m';
@@ -5073,6 +5180,13 @@ class LongCastApp {
             { icon: endIcon }
         ).bindPopup(this.createEndPopupHTML(cast, castNumber));
 
+        // GPS-7: cerchio di accuratezza attorno al punto d'arrivo (incertezza visiva)
+        const endAccuracy = (cast.gps && typeof cast.gps.accuracy === 'number') ? cast.gps.accuracy : null;
+        const accuracyCircle = (endAccuracy && endAccuracy > 0) ? L.circle(
+            [endPosition.latitude, endPosition.longitude],
+            { radius: endAccuracy, color: '#FF6B6B', weight: 1, opacity: 0.5, fillColor: '#FF6B6B', fillOpacity: 0.08 }
+        ) : null;
+
         // Add line between start and end
         const castLine = L.polyline([
             [startPosition.latitude, startPosition.longitude],
@@ -5099,6 +5213,10 @@ class LongCastApp {
         endMarker.addTo(this.map);
         castLine.addTo(this.map);
         distanceLabel.addTo(this.map);
+        if (accuracyCircle) {
+            accuracyCircle.addTo(this.map);
+            this.mapMarkers.push(accuracyCircle);
+        }
 
         this.mapMarkers.push(endMarker, castLine, distanceLabel);
 
