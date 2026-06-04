@@ -56,6 +56,7 @@
         <button onclick="runAllTests()">▶️ Esegui Tutti i Test</button>
         <button onclick="runUtilsTests()">Utils Tests</button>
         <button onclick="runValidatorTests()">Validator Tests</button>
+        <button onclick="runGPSTrackerTests()">GPSTracker Tests</button>
         <button onclick="clearOutput()">🗑️ Pulisci Output</button>
     </div>
 
@@ -76,6 +77,7 @@
     <!-- Carica i test -->
     <script src="utils.test.js"></script>
     <script src="validator.test.js"></script>
+    <script src="gpstracker.test.js"></script>
 
     <script>
         const output = document.getElementById('output');
@@ -158,6 +160,14 @@
                 }
             } catch (e) {
                 console.error('Errore in Validator tests:', e.message);
+            }
+
+            try {
+                if (typeof window.runGPSTrackerTests === 'function') {
+                    window.runGPSTrackerTests();
+                }
+            } catch (e) {
+                console.error('Errore in GPSTracker tests:', e.message);
             }
 
             output.innerHTML += '\n🏁 Tutti i test completati!\n';
