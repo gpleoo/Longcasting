@@ -1914,6 +1914,39 @@ class LongCastApp {
 
     // Event Listeners
     setupEventListeners() {
+        // Handler delegato per le azioni su elementi generati dinamicamente o
+        // statici (CSP-safe: sostituisce gli onclick inline, vietati da CSP).
+        document.addEventListener('click', (e) => {
+            const el = e.target.closest('[data-action]');
+            if (!el) return;
+            const sessionId = el.dataset.sessionId != null ? Number(el.dataset.sessionId) : null;
+            const castId = el.dataset.castId != null ? Number(el.dataset.castId) : null;
+            switch (el.dataset.action) {
+                case 'session-detail':
+                    this.showSessionDetail(sessionId);
+                    break;
+                case 'session-map':
+                    this.showSessionOnMap(sessionId);
+                    break;
+                case 'session-map-list':
+                    this.showSessionOnMap(sessionId);
+                    this.showSessionsList();
+                    break;
+                case 'delete-cast':
+                    this.deleteCast(sessionId, castId);
+                    break;
+                case 'export-pdf':
+                    exportReportPDF();
+                    break;
+                case 'export-csv':
+                    exportReportCSV();
+                    break;
+                case 'export-json':
+                    exportReportJSON();
+                    break;
+            }
+        });
+
         // Navigation
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -2051,6 +2084,10 @@ class LongCastApp {
         // GPS Tracking
         document.getElementById('gpsStartBtn').addEventListener('click', () => this.startGPSTracking());
         document.getElementById('gpsStopBtn').addEventListener('click', () => this.stopGPSTracking());
+        const gpsMeasureBtn = document.getElementById('gpsMeasureLandingBtn');
+        if (gpsMeasureBtn) {
+            gpsMeasureBtn.addEventListener('click', () => this.measureLandingStatic());
+        }
 
         // GPS Confirm Modal
         document.getElementById('gpsConfirmSave').addEventListener('click', () => this.saveGPSCast());
@@ -2688,57 +2725,62 @@ class LongCastApp {
 
         const {formData, tipo, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note, cmPerGiro} = this.sessionFormData;
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                // Success - Create session with pivot point
-                this.currentSession = {
-                    id: Date.now(),
-                    tipo: tipo,
-                    dataInizio: formData.get('session-data'),
-                    luogo: luogo,
-                    pesoPiombo: pesoPiombo,
-                    tecnica: tecnica,
-                    cannaModello: cannaModello,
-                    cannaLunghezza: cannaLunghezza,
-                    cannaGrammatura: cannaGrammatura,
-                    mulinello: mulinello,
-                    cmPerGiro: cmPerGiro,
-                    filo: filo,
-                    vento: vento,
-                    direzioneVento: direzioneVento,
-                    temperatura: temperatura,
-                    umidita: umidita,
-                    note: note,
-                    puntoPerno: {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    },
-                    direzioneCampo: null,
-                    lanci: []
-                };
+        // GPS-1: il punto perno viene MEDIATO nel tempo (non una singola
+        // lettura): è il riferimento comune a tutti i lanci della sessione,
+        // quindi un suo errore falserebbe ogni misura. Fallback automatico al
+        // flusso di errore/retry se non si acquisisce alcun fix valido.
+        this.showToast('Acquisizione punto perno… tieni il telefono fermo', 'info');
 
-                this.saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note);
-                this.saveSession();
+        this.gpsTracker.acquireStablePosition({
+            minDuration: 5000,
+            maxDuration: 12000,
+            targetUncertainty: 4
+        }).then((pivot) => {
+            // Success - Create session with averaged pivot point
+            this.currentSession = {
+                id: Date.now(),
+                tipo: tipo,
+                dataInizio: formData.get('session-data'),
+                luogo: luogo,
+                pesoPiombo: pesoPiombo,
+                tecnica: tecnica,
+                cannaModello: cannaModello,
+                cannaLunghezza: cannaLunghezza,
+                cannaGrammatura: cannaGrammatura,
+                mulinello: mulinello,
+                cmPerGiro: cmPerGiro,
+                filo: filo,
+                vento: vento,
+                direzioneVento: direzioneVento,
+                temperatura: temperatura,
+                umidita: umidita,
+                note: note,
+                puntoPerno: {
+                    latitude: pivot.latitude,
+                    longitude: pivot.longitude,
+                    accuracy: pivot.accuracy,
+                    uncertainty: pivot.uncertainty,
+                    samples: pivot.samples
+                },
+                direzioneCampo: null,
+                lanci: []
+            };
 
-                // Reset form
-                document.getElementById('startSessionForm').reset();
-                this.setDefaultDateTime();
+            this.saveSuggestionsFromForm(formData, pesoPiombo, tecnica, cannaModello, vento, direzioneVento, luogo, cannaGrammatura, mulinello, filo, cannaLunghezza, temperatura, umidita, note);
+            this.saveSession();
 
-                // Start session
-                this.showSessionActive();
-                this.showToast(this.t('gps.acquired'), 'success');
-            },
-            (error) => {
-                // GPS Error - show modal or retry
-                console.error('GPS Error:', error);
-                this.handleGPSError(error);
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
-        );
+            // Reset form
+            document.getElementById('startSessionForm').reset();
+            this.setDefaultDateTime();
+
+            // Start session
+            this.showSessionActive();
+            this.showToast(`${this.t('gps.acquired')} (perno ±${pivot.uncertainty.toFixed(1)} m, ${pivot.samples} letture)`, 'success');
+        }).catch((error) => {
+            // GPS Error - show modal or retry
+            console.error('GPS Error:', error);
+            this.handleGPSError(error);
+        });
     }
 
     handleGPSError(error) {
@@ -2873,7 +2915,7 @@ class LongCastApp {
         const detailsHTML = details.map(d => `
             <div class="session-detail-item">
                 <span class="session-detail-label">${d.label}</span>
-                <span class="session-detail-value">${d.value}</span>
+                <span class="session-detail-value">${this.escapeHtml(String(d.value))}</span>
             </div>
         `).join('');
 
@@ -3028,7 +3070,7 @@ class LongCastApp {
                     <div class="cast-info">
                         <div class="cast-technique">Lancio #${index + 1}</div>
                         <div class="cast-details">
-                            ${cast.note ? cast.note : 'Nessuna nota'}
+                            ${cast.note ? this.escapeHtml(cast.note) : 'Nessuna nota'}
                         </div>
                     </div>
                     <div>
@@ -3768,14 +3810,14 @@ class LongCastApp {
         const hasGPSCasts = session.lanci && session.lanci.some(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
 
         return `
-            <div class="session-card" onclick="app.showSessionDetail(${session.id})">
+            <div class="session-card" data-action="session-detail" data-session-id="${session.id}">
                 <div class="session-card-header">
                     <div>
                         <div class="session-card-title">${this.escapeHtml(session.luogo || 'Sessione')}</div>
                         <div class="session-card-date">${formattedDate} • ${formattedTime}</div>
                     </div>
                     ${hasGPSCasts ? `
-                    <button class="btn btn-secondary" onclick="event.stopPropagation(); app.showSessionOnMap(${session.id})" style="margin-left: auto;">
+                    <button class="btn btn-secondary" data-action="session-map" data-session-id="${session.id}" style="margin-left: auto;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                             <circle cx="12" cy="10" r="3"/>
@@ -4042,7 +4084,7 @@ class LongCastApp {
                         Lanci: <strong>${numLanci}</strong>
                     </span>
                     ${hasGPSCasts ? `
-                    <button class="btn btn-primary btn-small" onclick="app.showSessionOnMap(${session.id}); app.showSessionsList();" style="margin-left: auto;">
+                    <button class="btn btn-primary btn-small" data-action="session-map-list" data-session-id="${session.id}" style="margin-left: auto;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                             <circle cx="12" cy="10" r="3"/>
@@ -4122,7 +4164,7 @@ class LongCastApp {
                         <span class="cast-distance-large">${lancio.distanza.toFixed(1)}m</span>
                         <span class="cast-time">${formattedTime}</span>
                     </div>
-                    <button class="btn-delete-cast" onclick="app.deleteCast(${sessionId}, ${lancio.id})" title="Elimina lancio">
+                    <button class="btn-delete-cast" data-action="delete-cast" data-session-id="${sessionId}" data-cast-id="${lancio.id}" title="Elimina lancio">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                             <line x1="10" y1="11" x2="10" y2="17"/>
@@ -4330,6 +4372,22 @@ class LongCastApp {
             try {
                 const data = JSON.parse(e.target.result);
 
+                // Sicurezza: valida la struttura del file PRIMA di applicarlo.
+                // Riusa DataManager.validateImport (già presente) per rifiutare file
+                // non riconosciuti/malformati prima che finiscano in localStorage.
+                const validation = (typeof DataManager !== 'undefined' && DataManager.validateImport)
+                    ? DataManager.validateImport(data)
+                    : { valid: true, errors: [], warnings: [] };
+
+                if (!validation.valid) {
+                    this.showToast('File non valido: ' + (validation.errors[0] || 'formato non riconosciuto'), 'error');
+                    console.warn('Import rifiutato:', validation.errors);
+                    return;
+                }
+                if (validation.warnings && validation.warnings.length > 0) {
+                    console.warn('Avvisi durante l\'import:', validation.warnings);
+                }
+
                 if (confirm('Importare i dati? Questo sovrascriverà i dati attuali.')) {
                     // Support both old (casts) and new (sessions) format
                     if (data.sessions) {
@@ -4485,6 +4543,11 @@ class LongCastApp {
             return;
         }
 
+        if (this.isMeasuringLanding) {
+            this.showToast('Attendi la fine della misura in corso', 'warning');
+            return;
+        }
+
         // Check GPS availability
         if (!this.gpsTracker.isGPSAvailable()) {
             this.showToast('GPS non disponibile su questo dispositivo', 'error');
@@ -4495,6 +4558,8 @@ class LongCastApp {
             // Update UI
             document.getElementById('gpsStartBtn').style.display = 'none';
             document.getElementById('gpsStopBtn').style.display = 'block';
+            const mBtn = document.getElementById('gpsMeasureLandingBtn');
+            if (mBtn) mBtn.disabled = true;
 
             this.showToast('Inizializzazione GPS...', 'success');
 
@@ -4569,6 +4634,100 @@ class LongCastApp {
         this.showGPSConfirmModal(stats);
     }
 
+    // GPS-2: misura STATICA del punto d'arrivo. L'utente si ferma sul piombo e
+    // l'app media le letture finché convergono (anziché mediare punti presi
+    // camminando). Riusa il modale di conferma e il salvataggio esistenti.
+    async measureLandingStatic() {
+        if (!this.currentSession) {
+            this.showToast('Devi prima avviare una sessione di allenamento', 'error');
+            return;
+        }
+        if (!this.currentSession.puntoPerno) {
+            this.showToast('Misura statica disponibile solo con il punto perno (GPS attivo a inizio sessione)', 'warning');
+            return;
+        }
+        if (this.gpsTracker.isTracking || this.isMeasuringLanding) {
+            return;
+        }
+        if (!this.gpsTracker.isGPSAvailable()) {
+            this.showToast('GPS non disponibile su questo dispositivo', 'error');
+            return;
+        }
+
+        this.isMeasuringLanding = true;
+        const pivot = this.currentSession.puntoPerno;
+        const startBtn = document.getElementById('gpsStartBtn');
+        const measureBtn = document.getElementById('gpsMeasureLandingBtn');
+        if (startBtn) startBtn.style.display = 'none';
+        if (measureBtn) measureBtn.disabled = true;
+
+        // Feedback live tramite i pannelli di stato GPS
+        document.getElementById('gpsStatus').style.display = 'block';
+        document.getElementById('gpsTracking').style.display = 'block';
+        this.showToast('Misura arrivo: tieni il telefono fermo sul piombo…', 'info');
+
+        const t0 = Date.now();
+        try {
+            const landing = await this.gpsTracker.acquireStablePosition({
+                minDuration: 6000,
+                maxDuration: 15000,
+                targetUncertainty: 3,
+                onProgress: (st) => {
+                    if (st.position) {
+                        const liveDist = this.gpsTracker.calculateDistance(
+                            { latitude: pivot.latitude, longitude: pivot.longitude },
+                            st.position
+                        );
+                        document.getElementById('gpsDistanceValue').textContent = liveDist.toFixed(1) + ' m';
+                    }
+                    document.getElementById('gpsAccuracy').textContent =
+                        st.uncertainty != null ? `±${st.uncertainty.toFixed(1)} m` : '-- m';
+                    document.getElementById('gpsPoints').textContent = st.samples;
+                    document.getElementById('gpsQuality').textContent = `${Math.round(st.progress * 100)}%`;
+                }
+            });
+
+            // Costruisci un risultato compatibile con showGPSConfirmModal/saveGPSCast
+            const startPos = { latitude: pivot.latitude, longitude: pivot.longitude };
+            const endPos = { latitude: landing.latitude, longitude: landing.longitude };
+            const distance = this.gpsTracker.calculateDistance(startPos, endPos);
+            const bearing = this.gpsTracker.calculateBearing(startPos, endPos);
+            const pivotUnc = (typeof pivot.uncertainty === 'number')
+                ? pivot.uncertainty
+                : (pivot.accuracy ?? landing.uncertainty);
+            const distanceUncertainty = Math.sqrt(
+                pivotUnc * pivotUnc + landing.uncertainty * landing.uncertainty
+            );
+
+            if (landing.warning) {
+                this.showToast('Precisione GPS bassa: misura indicativa', 'warning');
+            }
+
+            this.gpsResult = {
+                distance,
+                distanceUncertainty,
+                startPosition: startPos,
+                endPosition: endPos,
+                startUncertainty: pivotUnc,
+                endUncertainty: landing.uncertainty,
+                bearing,
+                accuracy: landing.accuracy,
+                points: landing.samples,
+                duration: Math.round((Date.now() - t0) / 1000),
+                quality: landing.quality,
+                metodo: 'statico'
+            };
+            this.showGPSConfirmModal(this.gpsResult);
+        } catch (error) {
+            console.error('Errore misura statica:', error);
+            this.showToast(error.message || 'Errore durante la misura GPS', 'error');
+            this.resetGPSUI();
+        } finally {
+            this.isMeasuringLanding = false;
+            if (measureBtn) measureBtn.disabled = false;
+        }
+    }
+
     updateGPSUI(stats) {
         // Update status display
         const satellites = stats.points > 0 ? Math.min(12, Math.floor(stats.points / 3) + 4) : '--';
@@ -4605,8 +4764,12 @@ class LongCastApp {
     showGPSConfirmModal(stats) {
         const modal = document.getElementById('gpsConfirmModal');
 
-        // Populate modal with stats
-        document.getElementById('gpsResultDistance').textContent = stats.distance.toFixed(1) + ' m';
+        // Populate modal with stats — distanza con incertezza onesta (GPS-3)
+        const distUnc = (typeof stats.distanceUncertainty === 'number' && isFinite(stats.distanceUncertainty))
+            ? stats.distanceUncertainty
+            : stats.accuracy;
+        document.getElementById('gpsResultDistance').textContent =
+            `${stats.distance.toFixed(1)} m ± ${distUnc.toFixed(1)} m`;
         document.getElementById('gpsResultAccuracy').textContent = `±${stats.accuracy.toFixed(1)} m`;
         document.getElementById('gpsResultPoints').textContent = stats.points;
         document.getElementById('gpsResultDuration').textContent = this.gpsTracker.formatDuration(stats.duration);
@@ -4707,6 +4870,23 @@ class LongCastApp {
             angoloDiDeviazione = this.calculateCastDeviation(bearing, this.currentSession.direzioneCampo);
         }
 
+        // Incertezza della distanza salvata (GPS-3): propaga l'errore del punto
+        // di partenza (perno mediato, se disponibile) e del punto d'arrivo.
+        let incertezzaDistanza;
+        if (this.currentSession.puntoPerno) {
+            const pivotUnc = (typeof this.currentSession.puntoPerno.uncertainty === 'number')
+                ? this.currentSession.puntoPerno.uncertainty
+                : (this.currentSession.puntoPerno.accuracy ?? this.gpsResult.accuracy);
+            const endUnc = (typeof this.gpsResult.endUncertainty === 'number')
+                ? this.gpsResult.endUncertainty
+                : this.gpsResult.accuracy;
+            incertezzaDistanza = Math.sqrt(pivotUnc * pivotUnc + endUnc * endUnc);
+        } else {
+            incertezzaDistanza = (typeof this.gpsResult.distanceUncertainty === 'number')
+                ? this.gpsResult.distanceUncertainty
+                : this.gpsResult.accuracy;
+        }
+
         // Create cast object with GPS metadata
         const cast = {
             distanza: distanzaFinale,
@@ -4728,6 +4908,7 @@ class LongCastApp {
 
                 // Statistiche GPS
                 accuracy: this.gpsResult.accuracy,
+                incertezzaDistanza: incertezzaDistanza,
                 points: this.gpsResult.points,
                 duration: this.gpsResult.duration,
                 quality: this.gpsResult.quality
@@ -4773,6 +4954,8 @@ class LongCastApp {
         // Reset buttons
         document.getElementById('gpsStartBtn').style.display = 'block';
         document.getElementById('gpsStopBtn').style.display = 'none';
+        const measureBtn = document.getElementById('gpsMeasureLandingBtn');
+        if (measureBtn) measureBtn.disabled = false;
 
         // Reset displays
         document.getElementById('gpsDistanceValue').textContent = '0.0 m';
@@ -4997,6 +5180,13 @@ class LongCastApp {
             { icon: endIcon }
         ).bindPopup(this.createEndPopupHTML(cast, castNumber));
 
+        // GPS-7: cerchio di accuratezza attorno al punto d'arrivo (incertezza visiva)
+        const endAccuracy = (cast.gps && typeof cast.gps.accuracy === 'number') ? cast.gps.accuracy : null;
+        const accuracyCircle = (endAccuracy && endAccuracy > 0) ? L.circle(
+            [endPosition.latitude, endPosition.longitude],
+            { radius: endAccuracy, color: '#FF6B6B', weight: 1, opacity: 0.5, fillColor: '#FF6B6B', fillOpacity: 0.08 }
+        ) : null;
+
         // Add line between start and end
         const castLine = L.polyline([
             [startPosition.latitude, startPosition.longitude],
@@ -5023,6 +5213,10 @@ class LongCastApp {
         endMarker.addTo(this.map);
         castLine.addTo(this.map);
         distanceLabel.addTo(this.map);
+        if (accuracyCircle) {
+            accuracyCircle.addTo(this.map);
+            this.mapMarkers.push(accuracyCircle);
+        }
 
         this.mapMarkers.push(endMarker, castLine, distanceLabel);
 
@@ -5221,7 +5415,7 @@ class LongCastApp {
                 <div class="map-popup-info">
                     <div class="map-popup-row">
                         <span class="map-popup-label">Distanza</span>
-                        <span class="map-popup-value highlight">${cast.distanza.toFixed(1)}m</span>
+                        <span class="map-popup-value highlight">${cast.distanza.toFixed(1)}m${(cast.gps && typeof cast.gps.incertezzaDistanza === 'number') ? ' ± ' + cast.gps.incertezzaDistanza.toFixed(1) + 'm' : ''}</span>
                     </div>
                     <div class="map-popup-row">
                         <span class="map-popup-label">Angolo</span>

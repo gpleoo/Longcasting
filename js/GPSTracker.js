@@ -103,6 +103,149 @@ class GPSTracker {
         return this.calculateFinalStats();
     }
 
+    /**
+     * Acquisisce una posizione "stabile" mediando più letture GPS nel tempo,
+     * stando fermi. Base per il punto perno (GPS-1) e il punto d'arrivo (GPS-2).
+     * Termina al raggiungimento dell'incertezza target (dopo minDuration) o a
+     * maxDuration. Con fallback: se non arriva alcun fix valido, fa reject.
+     *
+     * @param {object} [options]
+     * @param {number} [options.minDuration=6000]  ms minimi di raccolta
+     * @param {number} [options.maxDuration=15000] ms massimi di raccolta
+     * @param {number} [options.targetUncertainty=3] m: termina prima se l'incertezza scende sotto
+     * @param {number} [options.minSamples=5]       campioni minimi per terminare prima
+     * @param {Function} [options.onProgress]       callback({elapsed, samples, accuracy, uncertainty, progress})
+     * @returns {Promise<{latitude,longitude,accuracy,uncertainty,samples,quality}>}
+     */
+    acquireStablePosition(options = {}) {
+        const cfg = {
+            minDuration: options.minDuration ?? 6000,
+            maxDuration: options.maxDuration ?? 15000,
+            targetUncertainty: options.targetUncertainty ?? 3,
+            minSamples: options.minSamples ?? 5,
+            minAccuracy: options.minAccuracy ?? this.config.minAccuracy,
+            // GPS-6: i primi fix dopo l'attivazione sono i peggiori → si scartano
+            // (warm-up) se restano abbastanza campioni successivi.
+            warmupMs: options.warmupMs ?? 1500,
+            // GPS-6: accuratezza "buona" attesa; sopra la quale si segnala un warning.
+            targetAccuracy: options.targetAccuracy ?? 10
+        };
+        const onProgress = options.onProgress;
+
+        return new Promise((resolve, reject) => {
+            if (!this.isGPSAvailable()) {
+                reject(new Error('GPS non disponibile su questo dispositivo'));
+                return;
+            }
+
+            const points = [];
+            const startedAt = Date.now();
+            let watchId = null;
+            let ticker = null;
+            let settled = false;
+
+            const cleanup = () => {
+                if (watchId !== null) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
+                if (ticker !== null) {
+                    clearInterval(ticker);
+                    ticker = null;
+                }
+            };
+
+            // GPS-6: usa i punti dopo il warm-up se sono abbastanza, altrimenti tutti.
+            const usablePoints = () => {
+                const warm = points.filter(p => p._elapsed >= cfg.warmupMs);
+                return warm.length >= cfg.minSamples ? warm : points;
+            };
+
+            const finish = () => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                if (points.length === 0) {
+                    reject(new Error('Nessuna posizione GPS valida acquisita'));
+                    return;
+                }
+                const used = usablePoints();
+                const center = this.getAveragePosition(used);
+                const uncertainty = this.getPositionUncertainty(used, center);
+                resolve({
+                    latitude: center.latitude,
+                    longitude: center.longitude,
+                    accuracy: center.accuracy,
+                    uncertainty: uncertainty,
+                    samples: used.length,
+                    quality: this.getQualityForAccuracy(center.accuracy, used.length),
+                    // GPS-6: avvisa se non si è raggiunta un'accuratezza adeguata
+                    warning: center.accuracy > cfg.targetAccuracy
+                });
+            };
+
+            const evaluate = () => {
+                if (settled) return;
+                const elapsed = Date.now() - startedAt;
+                const used = usablePoints();
+                let uncertainty = Infinity;
+                let accuracy = null;
+                let position = null;
+                if (used.length > 0) {
+                    position = this.getAveragePosition(used);
+                    uncertainty = this.getPositionUncertainty(used, position);
+                    accuracy = position.accuracy;
+                }
+                if (onProgress) {
+                    onProgress({
+                        elapsed,
+                        samples: used.length,
+                        accuracy,
+                        uncertainty: isFinite(uncertainty) ? uncertainty : null,
+                        position,
+                        warning: accuracy != null && accuracy > cfg.targetAccuracy,
+                        progress: Math.min(1, elapsed / cfg.maxDuration)
+                    });
+                }
+                // Terminazione: tempo massimo, oppure convergenza dopo il minimo.
+                if (elapsed >= cfg.maxDuration) {
+                    finish();
+                } else if (elapsed >= cfg.minDuration &&
+                           used.length >= cfg.minSamples &&
+                           uncertainty <= cfg.targetUncertainty) {
+                    finish();
+                }
+            };
+
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const p = this.createGPSPoint(position);
+                    // Scarta letture troppo imprecise
+                    if (typeof p.accuracy === 'number' && p.accuracy > cfg.minAccuracy) {
+                        return;
+                    }
+                    p._elapsed = Date.now() - startedAt;
+                    points.push(p);
+                    evaluate();
+                },
+                (error) => {
+                    // Errore: fallisci solo se non abbiamo ancora nulla,
+                    // altrimenti ignora e continua fino a maxDuration.
+                    if (points.length === 0 && !settled) {
+                        settled = true;
+                        cleanup();
+                        reject(this.handleGPSError(error));
+                    }
+                },
+                { enableHighAccuracy: true, timeout: cfg.maxDuration, maximumAge: 0 }
+            );
+
+            // Tick periodico: aggiorna UI e garantisce il rispetto di maxDuration
+            // anche se non arrivano nuovi fix.
+            ticker = setInterval(evaluate, 500);
+        });
+    }
+
     // Reset tracker state
     reset() {
         this.trackingPoints = [];
@@ -230,21 +373,59 @@ class GPSTracker {
         return bearing; // 0° = North, 90° = East, 180° = South, 270° = West
     }
 
-    // Calculate average position from multiple GPS points
+    // Calcola la posizione media da più punti GPS.
+    // Media PESATA per accuratezza (GPS-4): i punti più precisi (accuracy
+    // minore) pesano di più, con peso = 1/accuracy² (inverso della varianza).
     getAveragePosition(points) {
         if (!points || points.length === 0) return null;
 
-        const sum = points.reduce((acc, p) => ({
-            latitude: acc.latitude + p.latitude,
-            longitude: acc.longitude + p.longitude,
-            accuracy: acc.accuracy + p.accuracy
-        }), { latitude: 0, longitude: 0, accuracy: 0 });
+        let sumW = 0, sumLat = 0, sumLng = 0, sumAcc = 0;
+        for (const p of points) {
+            const acc = (typeof p.accuracy === 'number' && p.accuracy > 0) ? p.accuracy : 1;
+            const w = 1 / (acc * acc);
+            sumW += w;
+            sumLat += p.latitude * w;
+            sumLng += p.longitude * w;
+            sumAcc += (typeof p.accuracy === 'number' ? p.accuracy : 0);
+        }
+        if (sumW === 0) sumW = points.length; // fallback: media semplice
 
         return {
-            latitude: sum.latitude / points.length,
-            longitude: sum.longitude / points.length,
-            accuracy: sum.accuracy / points.length
+            latitude: sumLat / sumW,
+            longitude: sumLng / sumW,
+            accuracy: sumAcc / points.length // accuracy media (informativa)
         };
+    }
+
+    // Stima dell'incertezza (1σ, in metri) di un cluster di punti mediati (GPS-3).
+    // Scelta CONSERVATIVA/onesta: gli errori GPS sono fortemente correlati nel
+    // breve periodo (multipath, atmosfera, geometria satelliti), quindi NON si
+    // divide per sqrt(N) — mediare non riduce l'errore come se fosse casuale.
+    // Si usa il massimo tra l'accuratezza media dichiarata dal GPS e la
+    // dispersione spaziale empirica dei punti rispetto al centro.
+    getPositionUncertainty(points, center = null) {
+        if (!points || points.length === 0) return Infinity;
+
+        const c = center || this.getAveragePosition(points);
+        const meanAccuracy = points.reduce((s, p) => s + (p.accuracy || 0), 0) / points.length;
+
+        let sumSq = 0;
+        for (const p of points) {
+            const d = this.calculateDistance(c, p);
+            sumSq += d * d;
+        }
+        const spatialStd = Math.sqrt(sumSq / points.length);
+
+        return Math.max(meanAccuracy, spatialStd);
+    }
+
+    // Rating qualità per una data accuratezza/numero di punti (riusabile).
+    getQualityForAccuracy(accuracy, points) {
+        if (points < 5) return 'Scarsa';
+        if (accuracy > 20) return 'Bassa';
+        if (accuracy > 10) return 'Media';
+        if (accuracy > 5) return 'Buona';
+        return 'Ottima';
     }
 
     // Get straight-line distance (real-time)
@@ -322,10 +503,21 @@ class GPSTracker {
         // Calculate bearing (angle) of the cast
         const bearing = this.calculateBearing(startAvg, endAvg);
 
+        // Incertezza della distanza (GPS-3): propagazione degli errori dei
+        // due estremi. σ_d = sqrt(σ_start² + σ_end²).
+        const startUncertainty = this.getPositionUncertainty(startPoints, startAvg);
+        const endUncertainty = this.getPositionUncertainty(endPoints, endAvg);
+        const distanceUncertainty = Math.sqrt(
+            startUncertainty * startUncertainty + endUncertainty * endUncertainty
+        );
+
         return {
             distance: straightLineDistance,
+            distanceUncertainty: distanceUncertainty,
             startPosition: startAvg,
             endPosition: endAvg,
+            startUncertainty: startUncertainty,
+            endUncertainty: endUncertainty,
             bearing: bearing,
             accuracy: this.averageAccuracy,
             points: this.pointsCollected,
@@ -343,11 +535,7 @@ class GPSTracker {
 
     // Get quality rating based on accuracy and points
     getQualityRating() {
-        if (this.pointsCollected < 5) return 'Scarsa';
-        if (this.averageAccuracy > 20) return 'Bassa';
-        if (this.averageAccuracy > 10) return 'Media';
-        if (this.averageAccuracy > 5) return 'Buona';
-        return 'Ottima';
+        return this.getQualityForAccuracy(this.averageAccuracy, this.pointsCollected);
     }
 
     // Format duration as MM:SS
@@ -371,4 +559,9 @@ class GPSTracker {
 // For now, also expose globally for compatibility
 if (typeof window !== 'undefined') {
     window.GPSTracker = GPSTracker;
+}
+
+// Export CommonJS per i test in node
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = GPSTracker;
 }
