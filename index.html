@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+
+    <!-- Content Security Policy: limita le origini di script/stili/immagini.
+         Consente solo 'self', Leaflet (unpkg) e i tile OpenStreetMap.
+         Nessuno script inline: gli handler sono gestiti via event delegation. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://*.tile.openstreetmap.org https://unpkg.com; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
     <title>Longcasting Pro - App per Long Casting</title>
 
     <!-- PWA Manifest -->
@@ -862,15 +867,15 @@
 
                 <!-- Export Actions -->
                 <div class="report-actions">
-                    <button class="report-btn" onclick="exportReportPDF()">
+                    <button class="report-btn" data-action="export-pdf">
                         <span class="icon">📄</span>
                         <span>Esporta PDF</span>
                     </button>
-                    <button class="report-btn" onclick="exportReportCSV()">
+                    <button class="report-btn" data-action="export-csv">
                         <span class="icon">📊</span>
                         <span>Esporta CSV</span>
                     </button>
-                    <button class="report-btn" onclick="exportReportJSON()">
+                    <button class="report-btn" data-action="export-json">
                         <span class="icon">💾</span>
                         <span>Esporta JSON</span>
                     </button>

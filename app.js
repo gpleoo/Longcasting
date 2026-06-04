@@ -1914,6 +1914,39 @@ class LongCastApp {
 
     // Event Listeners
     setupEventListeners() {
+        // Handler delegato per le azioni su elementi generati dinamicamente o
+        // statici (CSP-safe: sostituisce gli onclick inline, vietati da CSP).
+        document.addEventListener('click', (e) => {
+            const el = e.target.closest('[data-action]');
+            if (!el) return;
+            const sessionId = el.dataset.sessionId != null ? Number(el.dataset.sessionId) : null;
+            const castId = el.dataset.castId != null ? Number(el.dataset.castId) : null;
+            switch (el.dataset.action) {
+                case 'session-detail':
+                    this.showSessionDetail(sessionId);
+                    break;
+                case 'session-map':
+                    this.showSessionOnMap(sessionId);
+                    break;
+                case 'session-map-list':
+                    this.showSessionOnMap(sessionId);
+                    this.showSessionsList();
+                    break;
+                case 'delete-cast':
+                    this.deleteCast(sessionId, castId);
+                    break;
+                case 'export-pdf':
+                    exportReportPDF();
+                    break;
+                case 'export-csv':
+                    exportReportCSV();
+                    break;
+                case 'export-json':
+                    exportReportJSON();
+                    break;
+            }
+        });
+
         // Navigation
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -3768,14 +3801,14 @@ class LongCastApp {
         const hasGPSCasts = session.lanci && session.lanci.some(cast => cast.gps && cast.gps.misurato && cast.gps.startPosition);
 
         return `
-            <div class="session-card" onclick="app.showSessionDetail(${session.id})">
+            <div class="session-card" data-action="session-detail" data-session-id="${session.id}">
                 <div class="session-card-header">
                     <div>
                         <div class="session-card-title">${this.escapeHtml(session.luogo || 'Sessione')}</div>
                         <div class="session-card-date">${formattedDate} • ${formattedTime}</div>
                     </div>
                     ${hasGPSCasts ? `
-                    <button class="btn btn-secondary" onclick="event.stopPropagation(); app.showSessionOnMap(${session.id})" style="margin-left: auto;">
+                    <button class="btn btn-secondary" data-action="session-map" data-session-id="${session.id}" style="margin-left: auto;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                             <circle cx="12" cy="10" r="3"/>
@@ -4042,7 +4075,7 @@ class LongCastApp {
                         Lanci: <strong>${numLanci}</strong>
                     </span>
                     ${hasGPSCasts ? `
-                    <button class="btn btn-primary btn-small" onclick="app.showSessionOnMap(${session.id}); app.showSessionsList();" style="margin-left: auto;">
+                    <button class="btn btn-primary btn-small" data-action="session-map-list" data-session-id="${session.id}" style="margin-left: auto;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                             <circle cx="12" cy="10" r="3"/>
@@ -4122,7 +4155,7 @@ class LongCastApp {
                         <span class="cast-distance-large">${lancio.distanza.toFixed(1)}m</span>
                         <span class="cast-time">${formattedTime}</span>
                     </div>
-                    <button class="btn-delete-cast" onclick="app.deleteCast(${sessionId}, ${lancio.id})" title="Elimina lancio">
+                    <button class="btn-delete-cast" data-action="delete-cast" data-session-id="${sessionId}" data-cast-id="${lancio.id}" title="Elimina lancio">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                             <line x1="10" y1="11" x2="10" y2="17"/>
