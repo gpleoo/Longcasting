@@ -2873,7 +2873,7 @@ class LongCastApp {
         const detailsHTML = details.map(d => `
             <div class="session-detail-item">
                 <span class="session-detail-label">${d.label}</span>
-                <span class="session-detail-value">${d.value}</span>
+                <span class="session-detail-value">${this.escapeHtml(String(d.value))}</span>
             </div>
         `).join('');
 
@@ -3028,7 +3028,7 @@ class LongCastApp {
                     <div class="cast-info">
                         <div class="cast-technique">Lancio #${index + 1}</div>
                         <div class="cast-details">
-                            ${cast.note ? cast.note : 'Nessuna nota'}
+                            ${cast.note ? this.escapeHtml(cast.note) : 'Nessuna nota'}
                         </div>
                     </div>
                     <div>
@@ -4329,6 +4329,22 @@ class LongCastApp {
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
+
+                // Sicurezza: valida la struttura del file PRIMA di applicarlo.
+                // Riusa DataManager.validateImport (già presente) per rifiutare file
+                // non riconosciuti/malformati prima che finiscano in localStorage.
+                const validation = (typeof DataManager !== 'undefined' && DataManager.validateImport)
+                    ? DataManager.validateImport(data)
+                    : { valid: true, errors: [], warnings: [] };
+
+                if (!validation.valid) {
+                    this.showToast('File non valido: ' + (validation.errors[0] || 'formato non riconosciuto'), 'error');
+                    console.warn('Import rifiutato:', validation.errors);
+                    return;
+                }
+                if (validation.warnings && validation.warnings.length > 0) {
+                    console.warn('Avvisi durante l\'import:', validation.warnings);
+                }
 
                 if (confirm('Importare i dati? Questo sovrascriverà i dati attuali.')) {
                     // Support both old (casts) and new (sessions) format
